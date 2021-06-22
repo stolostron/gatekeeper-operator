@@ -505,9 +505,12 @@ spec:
   links:
   - name: Gatekeeper Operator
     url: https://github.com/gatekeeper/gatekeeper-operator
+  maintainers:
+  - email: acm-contact@redhat.com
+    name: acm-contact
   maturity: alpha
   provider:
-    name: Open Policy Agent Gatekeeper community
+    name: Red Hat
   relatedImages:
   - image: openpolicyagent/gatekeeper:v3.11.1
     name: gatekeeper
