@@ -78,5 +78,5 @@ spec:
   maturity: alpha
   provider:
     name: Red Hat
-  replaces: gatekeeper-operator.v0.2.0
+  replaces: gatekeeper-operator.v0.2.2
   version: 0.0.1
