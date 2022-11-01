@@ -14,3 +14,5 @@ require (
 	k8s.io/client-go v0.21.2
 	sigs.k8s.io/controller-runtime v0.9.2
 )
+
+replace golang.org/x/text => golang.org/x/text v0.3.8 // CVE-2022-32149
