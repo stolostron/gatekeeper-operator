@@ -323,6 +323,12 @@ import-manifests: kustomize
 		$(KUSTOMIZE) build --load-restrictor LoadRestrictionsNone $(IMPORT_MANIFESTS_PATH)/config/overlays/mutation -o $(GATEKEEPER_MANIFEST_DIR); \
 	fi
 
+	# PodSecurityPolicy was removed from newer Kubernetes versions, so this automates the modification
+	# done in cf371a0640092437db97a02b63765ea4bf861b29.
+	yq e '.rules[] |= del(select(.resources[] == "podsecuritypolicies"))' -i $(GATEKEEPER_MANIFEST_DIR)/rbac.authorization.k8s.io_v1_clusterrole_gatekeeper-manager-role.yaml
+	rm -f $(GATEKEEPER_MANIFEST_DIR)/policy_v1beta1_poddisruptionbudget_gatekeeper-controller-manager.yaml
+	rm -f $(GATEKEEPER_MANIFEST_DIR)/policy_v1beta1_podsecuritypolicy_gatekeeper-admin.yaml
+
 # Get previous index image version
 .PHONY: prev-bundle-index-image-version
 prev-bundle-index-image-version:
