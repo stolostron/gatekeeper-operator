@@ -874,6 +874,8 @@ spec:
                     enum:
                     - Enabled
                     - Disabled
+                    - automatic
+                    - Automatic
                     type: string
                   auditInterval:
                     type: string

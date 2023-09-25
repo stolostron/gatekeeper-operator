@@ -190,6 +190,7 @@ func (r *GatekeeperReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	gatekeeper := &operatorv1alpha1.Gatekeeper{}
+
 	err := r.Get(ctx, req.NamespacedName, gatekeeper)
 	if err != nil {
 		if apierrors.IsNotFound(err) {

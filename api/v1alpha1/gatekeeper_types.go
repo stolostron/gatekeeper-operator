@@ -140,12 +140,13 @@ const (
 	LogLevelError   LogLevelMode = "ERROR"
 )
 
-// +kubebuilder:validation:Enum:=Enabled;Disabled
+// +kubebuilder:validation:Enum:=Enabled;Disabled;Automatic
 type AuditFromCacheMode string
 
 const (
-	AuditFromCacheEnabled  AuditFromCacheMode = "Enabled"
-	AuditFromCacheDisabled AuditFromCacheMode = "Disabled"
+	AuditFromCacheEnabled   AuditFromCacheMode = "Enabled"
+	AuditFromCacheDisabled  AuditFromCacheMode = "Disabled"
+	AuditFromCacheAutomatic AuditFromCacheMode = "Automatic"
 )
 
 // +kubebuilder:validation:Enum:=Enabled;Disabled

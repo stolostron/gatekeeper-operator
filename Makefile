@@ -64,7 +64,7 @@ IMG ?= $(IMAGE_TAG_BASE):v$(VERSION)
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true,preserveUnknownFields=false"
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
-ENVTEST_K8S_VERSION = 1.21
+ENVTEST_K8S_VERSION = 1.28.0
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -112,7 +112,15 @@ OPM_VERSION ?= v1.27.0
 GO_BINDATA_VERSION ?= v3.1.2+incompatible
 BATS_VERSION ?= 1.2.1
 OLM_VERSION ?= v0.18.2
-KUBERNETES_VERSION ?= v1.26.4
+KUBERNETES_VERSION ?= v1.28.0
+
+.PHONY: install-crds
+install-crds:
+	## add config and constraintpodstatuses crds 
+	@echo installing external crds
+	kubectl apply -f https://raw.githubusercontent.com/open-policy-agent/gatekeeper/master/config/crd/bases/config.gatekeeper.sh_configs.yaml
+	kubectl apply -f https://raw.githubusercontent.com/open-policy-agent/gatekeeper/master/config/crd/bases/status.gatekeeper.sh_constraintpodstatuses.yaml
+
 
 .PHONY: manifests
 manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
@@ -135,11 +143,11 @@ tidy: ## Run go mod tidy
 	GO111MODULE=on GOFLAGS=$(GOFLAGS) go mod tidy
 
 .PHONY: test
-test: manifests generate fmt vet envtest ## Run tests.
+test: manifests generate fmt vet envtest install-crds ## Run tests.
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" GOFLAGS=$(GOFLAGS) go test ./... -coverprofile cover.out
 
 .PHONY: test-e2e
-test-e2e: generate fmt vet ## Run e2e tests, using the configured Kubernetes cluster in ~/.kube/config
+test-e2e: generate fmt vet install-crds ## Run e2e tests, using the configured Kubernetes cluster in ~/.kube/config
 	GOFLAGS=$(GOFLAGS) USE_EXISTING_CLUSTER=true go test -v ./test/e2e -coverprofile cover.out -race -args -ginkgo.v -ginkgo.progress -ginkgo.trace -namespace $(NAMESPACE) -timeout 5m -delete-timeout 10m
 
 .PHONY: test-cluster
@@ -158,6 +166,17 @@ download-binaries: kustomize go-bindata envtest controller-gen
 	curl -sSLO https://github.com/bats-core/bats-core/archive/v${BATS_VERSION}.tar.gz && tar -zxvf v${BATS_VERSION}.tar.gz && bash bats-core-${BATS_VERSION}/install.sh $(PWD)/ci-tools
 	rm -rf bats-core-${BATS_VERSION} v${BATS_VERSION}.tar.gz
 
+DEV_IMG=localhost:5000/gatekeeper-operator:dev
+.PHONY: kind-bootstrap-cluster
+kind-bootstrap-cluster: test-cluster generate fmt vet install-crds dev-build
+	kind load docker-image $(DEV_IMG)
+	$(MAKE) deploy-ci NAMESPACE=$(NAMESPACE) IMG=$(DEV_IMG)
+	kubectl -n $(NAMESPACE) wait deployment/gatekeeper-operator-controller --for condition=Available --timeout=90s
+
+.PHONY: docker-build
+dev-build: export DOCKER_DEFAULT_PLATFORM=linux/amd64
+dev-build: ## Build docker image with the manager.
+	$(DOCKER) build --build-arg GOOS=${GOOS} --build-arg GOARCH=${GOARCH} --build-arg LDFLAGS=${LDFLAGS} -t $(DEV_IMG) .
 ##@ Build
 
 .PHONY: build
@@ -169,6 +188,7 @@ run: manifests generate fmt vet ## Run a controller from your host, using the co
 	GOFLAGS=$(GOFLAGS) GATEKEEPER_TARGET_NAMESPACE=$(NAMESPACE) go run -ldflags $(LDFLAGS) ./main.go
 
 .PHONY: docker-build
+docker-build: export DOCKER_DEFAULT_PLATFORM=linux/amd64
 docker-build: test ## Build docker image with the manager.
 	$(DOCKER) build --build-arg GOOS=${GOOS} --build-arg GOARCH=${GOARCH} --build-arg LDFLAGS=${LDFLAGS} -t ${IMG} .
 
@@ -220,7 +240,7 @@ release: manifests kustomize
 ##@ Deployment
 
 .PHONY: install
-install: manifests kustomize ## Install CRDs into the K8s cluster specified in ~/.kube/config.
+install: manifests kustomize install-crds ## Install CRDs into the K8s cluster specified in ~/.kube/config.
 	$(KUSTOMIZE) build config/crd | kubectl apply -f -
 
 .PHONY: uninstall
@@ -228,7 +248,7 @@ uninstall: manifests kustomize ## Uninstall CRDs from the K8s cluster specified 
 	$(KUSTOMIZE) build config/crd | kubectl delete -f -
 
 .PHONY: deploy
-deploy: manifests kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
+deploy: manifests kustomize  ## Deploy controller to the K8s cluster specified in ~/.kube/config.
 	cd config/default && $(KUSTOMIZE) edit set namespace $(NAMESPACE)
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
 	$(KUSTOMIZE) build config/default | kubectl apply -f -
