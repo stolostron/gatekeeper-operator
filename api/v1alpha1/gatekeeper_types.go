@@ -92,6 +92,8 @@ type AuditConfig struct {
 	// +optional
 	ConstraintViolationLimit *uint64 `json:"constraintViolationLimit,omitempty"`
 	// +optional
+	// Setting Automatic lets the Gatekeeper operator manage syncOnly in the config resource.
+	// It is not recommended to use Automatic when using referential constraints since those are not detected.
 	AuditFromCache *AuditFromCacheMode `json:"auditFromCache,omitempty"`
 	// +kubebuilder:validation:Minimum:=0
 	// +optional
@@ -140,12 +142,13 @@ const (
 	LogLevelError   LogLevelMode = "ERROR"
 )
 
-// +kubebuilder:validation:Enum:=Enabled;Disabled
+// +kubebuilder:validation:Enum:=Enabled;Disabled;Automatic
 type AuditFromCacheMode string
 
 const (
-	AuditFromCacheEnabled  AuditFromCacheMode = "Enabled"
-	AuditFromCacheDisabled AuditFromCacheMode = "Disabled"
+	AuditFromCacheEnabled   AuditFromCacheMode = "Enabled"
+	AuditFromCacheDisabled  AuditFromCacheMode = "Disabled"
+	AuditFromCacheAutomatic AuditFromCacheMode = "Automatic"
 )
 
 // +kubebuilder:validation:Enum:=Enabled;Disabled

@@ -1,0 +1,20 @@
+apiVersion: templates.gatekeeper.sh/v1
+kind: ConstraintTemplate
+metadata:
+  name: case1template
+spec:
+  crd:
+    spec:
+      names:
+        kind: Case1Template
+  targets:
+    - target: admission.k8s.gatekeeper.sh
+      rego: |
+        package case1template
+
+        violation[{"msg": msg}] {
+          1 > 0
+          msg := sprintf("This is test %v",["hi"])
+        }{
+          msg := sprintf("cached data: %v",[data.inventory.namespace["case1-allow"]["v1"]["Pod"]])
+        }
