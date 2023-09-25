@@ -18,25 +18,34 @@ package e2e
 
 import (
 	"context"
+	"fmt"
 	"os"
+	"os/user"
 	"path/filepath"
 	"testing"
 
+	test "github.com/gatekeeper/gatekeeper-operator/test/e2e/util"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
 	extv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes/scheme"
 	"k8s.io/client-go/rest"
+	"k8s.io/client-go/tools/clientcmd"
+	"k8s.io/klog"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/envtest"
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	operatorv1alpha1 "github.com/gatekeeper/gatekeeper-operator/api/v1alpha1"
+	"github.com/open-policy-agent/gatekeeper/v3/apis/config/v1alpha1"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -44,16 +53,17 @@ import (
 // http://onsi.github.io/ginkgo/ to learn more about Ginkgo.
 
 var (
-	cfg          *rest.Config
-	K8sClient    client.Client
-	testEnv      *envtest.Environment
-	affinityPod  *corev1.Pod
-	affinityNode *corev1.Node
+	cfg              *rest.Config
+	K8sClient        client.Client
+	testEnv          *envtest.Environment
+	affinityPod      *corev1.Pod
+	affinityNode     *corev1.Node
+	clientHubDynamic dynamic.Interface
+	deploymentGVR    schema.GroupVersionResource
 )
 
 func TestE2e(t *testing.T) {
 	RegisterFailHandler(Fail)
-
 	RunSpecs(t, "Controller Suite")
 }
 
@@ -87,6 +97,26 @@ var _ = BeforeSuite(func() {
 	if affinityNode != nil {
 		Expect(labelNode(affinityNode)).Should(Succeed())
 		createAffinityPod()
+	}
+
+	err = v1alpha1.AddToScheme(scheme.Scheme)
+	Expect(err).NotTo(HaveOccurred())
+
+	clientHubDynamic = NewKubeClientDynamic("", "", "")
+	deploymentGVR = schema.GroupVersionResource{Group: "apps", Version: "v1", Resource: "deployments"}
+
+	test.DefaultDeployment.NamespaceSelector = &metav1.LabelSelector{
+		MatchExpressions: []metav1.LabelSelectorRequirement{
+			{
+				Key:      "admission.gatekeeper.sh/ignore",
+				Operator: metav1.LabelSelectorOpDoesNotExist,
+			},
+			{
+				Key:      "kubernetes.io/metadata.name",
+				Operator: metav1.LabelSelectorOpNotIn,
+				Values:   []string{gatekeeperNamespace},
+			},
+		},
 	}
 })
 
@@ -167,4 +197,61 @@ func loadAffinityPodFromFile(namespace string) (*corev1.Pod, error) {
 	err = decodeYAML(f, pod)
 	pod.ObjectMeta.Namespace = namespace
 	return pod, err
+}
+
+func NewKubeClientDynamic(url, kubeconfig, context string) dynamic.Interface {
+	klog.V(5).Infof("Create kubeclient dynamic for url %s using kubeconfig path %s\n", url, kubeconfig)
+
+	config, err := LoadConfig(url, kubeconfig, context)
+	if err != nil {
+		panic(err)
+	}
+
+	clientset, err := dynamic.NewForConfig(config)
+	if err != nil {
+		panic(err)
+	}
+
+	return clientset
+}
+
+func LoadConfig(url, kubeconfig, context string) (*rest.Config, error) {
+	if kubeconfig == "" {
+		kubeconfig = os.Getenv("KUBECONFIG")
+	}
+
+	klog.V(5).Infof("Kubeconfig path %s\n", kubeconfig)
+
+	// If we have an explicit indication of where the kubernetes config lives, read that.
+	if kubeconfig != "" {
+		if context == "" {
+			return clientcmd.BuildConfigFromFlags(url, kubeconfig)
+		}
+
+		return clientcmd.NewNonInteractiveDeferredLoadingClientConfig(
+			&clientcmd.ClientConfigLoadingRules{ExplicitPath: kubeconfig},
+			&clientcmd.ConfigOverrides{
+				CurrentContext: context,
+			}).ClientConfig()
+	}
+
+	// If not, try the in-cluster config.
+	if c, err := rest.InClusterConfig(); err == nil {
+		return c, nil
+	}
+
+	// If no in-cluster config, try the default location in the user's home directory.
+	if usr, err := user.Current(); err == nil {
+		klog.V(5).Infof(
+			"clientcmd.BuildConfigFromFlags for url %s using %s\n",
+			url,
+			filepath.Join(usr.HomeDir, ".kube", "config"),
+		)
+
+		if c, err := clientcmd.BuildConfigFromFlags("", filepath.Join(usr.HomeDir, ".kube", "config")); err == nil {
+			return c, nil
+		}
+	}
+
+	return nil, fmt.Errorf("could not create a valid kubeconfig")
 }

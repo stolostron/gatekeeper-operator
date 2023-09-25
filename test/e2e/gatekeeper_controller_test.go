@@ -102,11 +102,30 @@ var _ = Describe("Gatekeeper", func() {
 			if err == nil {
 				return false
 			}
+
+			return apierrors.IsNotFound(err)
+		}, deleteTimeout, pollInterval).Should(BeTrue())
+
+		Eventually(func() bool {
+			err := K8sClient.Get(ctx, auditName, &appsv1.Deployment{})
+			if err == nil {
+				return false
+			}
+
+			return apierrors.IsNotFound(err)
+		}, deleteTimeout, pollInterval).Should(BeTrue())
+
+		Eventually(func() bool {
+			err := K8sClient.Get(ctx, controllerManagerName, &appsv1.Deployment{})
+			if err == nil {
+				return false
+			}
+
 			return apierrors.IsNotFound(err)
 		}, deleteTimeout, pollInterval).Should(BeTrue())
 	})
 
-	Describe("Overriding CR", func() {
+	Describe("Overriding CR", Ordered, func() {
 		It("Creating an empty gatekeeper contains default values", func() {
 			gatekeeper := emptyGatekeeper()
 			err := loadGatekeeperFromFile(gatekeeper, "gatekeeper_empty.yaml")

@@ -23,10 +23,12 @@ import (
 	"github.com/gatekeeper/gatekeeper-operator/pkg/util"
 )
 
-var gatekeeperNamespace string
-var pollInterval time.Duration
-var timeout time.Duration
-var deleteTimeout time.Duration
+var (
+	gatekeeperNamespace string
+	pollInterval        time.Duration
+	timeout             time.Duration
+	deleteTimeout       time.Duration
+)
 
 func init() {
 	flag.StringVar(&gatekeeperNamespace, "namespace", util.DefaultGatekeeperNamespace, "The namespace to run tests")
