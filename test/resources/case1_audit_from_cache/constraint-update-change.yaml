@@ -1,0 +1,13 @@
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: Case1Template
+metadata:
+  name: case1-update
+spec:
+  match:
+    kinds:
+      - apiGroups: ["apps"]
+        kinds: ["StatefulSet"]
+      - apiGroups: ["batch"]
+        kinds: ["CronJob"]
+      - apiGroups: ["events.k8s.io"]
+        kinds: ["Event"]

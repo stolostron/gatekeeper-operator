@@ -33,10 +33,15 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/dynamic"
+	"k8s.io/client-go/rest"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/event"
+	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 
 	operatorv1alpha1 "github.com/gatekeeper/gatekeeper-operator/api/v1alpha1"
 	"github.com/gatekeeper/gatekeeper-operator/controllers/merge"
@@ -123,17 +128,24 @@ var (
 // GatekeeperReconciler reconciles a Gatekeeper object
 type GatekeeperReconciler struct {
 	client.Client
-	Log          logr.Logger
-	Scheme       *runtime.Scheme
-	Namespace    string
-	PlatformInfo platform.PlatformInfo
+	Log                    logr.Logger
+	Scheme                 *runtime.Scheme
+	Namespace              string
+	PlatformInfo           platform.PlatformInfo
+	DiscoveryStorage       *DiscoveryStorage
+	ManualReconcileTrigger chan event.GenericEvent
+	isCPSCtrlRunning       bool
+	DynamicClient          *dynamic.DynamicClient
+	KubeConfig             *rest.Config
+	EnableLeaderElection   bool
+	cpsCtrlCtxCancel       context.CancelFunc
 }
 
 type crudOperation uint32
 
 const (
-	apply  crudOperation = iota
-	delete crudOperation = iota
+	applyCrud  crudOperation = iota
+	deleteCrud crudOperation = iota
 )
 
 // Gatekeeper Operator RBAC permissions to manage Gatekeeper custom resource
@@ -193,8 +205,13 @@ func (r *GatekeeperReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	err := r.Get(ctx, req.NamespacedName, gatekeeper)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
+			if r.isCPSCtrlRunning {
+				r.StopCPSController()
+			}
+
 			return ctrl.Result{}, nil
 		}
+
 		return ctrl.Result{}, err
 	}
 
@@ -210,12 +227,22 @@ func (r *GatekeeperReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return ctrl.Result{RequeueAfter: 5 * time.Second}, nil
 	}
 
+	if err := r.handleCPSController(ctx, gatekeeper); err != nil {
+		if errors.Is(err, errCrdNotReady) {
+			// ConstraintPodStatus CRD is not ready, wait for the CRD is ready
+			return ctrl.Result{RequeueAfter: time.Second * 3}, nil
+		} else {
+			return ctrl.Result{}, err
+		}
+	}
+
 	return ctrl.Result{}, nil
 }
 
 // SetupWithManager sets up the controller with the Manager.
-func (r *GatekeeperReconciler) SetupWithManager(mgr ctrl.Manager) error {
+func (r *GatekeeperReconciler) SetupWithManager(mgr ctrl.Manager, fromCPSMgrSource *source.Channel) error {
 	return ctrl.NewControllerManagedBy(mgr).
+		WithOptions(controller.Options{MaxConcurrentReconciles: int(1)}).
 		For(&operatorv1alpha1.Gatekeeper{}).
 		WithEventFilter(predicate.Funcs{
 			UpdateFunc: func(e event.UpdateEvent) bool {
@@ -224,10 +251,8 @@ func (r *GatekeeperReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 				return oldGeneration != newGeneration
 			},
-			DeleteFunc: func(e event.DeleteEvent) bool {
-				return false
-			},
 		}).
+		WatchesRawSource(fromCPSMgrSource, &handler.EnqueueRequestForObject{}).
 		Complete(r)
 }
 
@@ -268,7 +293,7 @@ func (r *GatekeeperReconciler) deleteAssets(assets []string, gatekeeper *operato
 			return err
 		}
 
-		if err = r.crudResource(obj, gatekeeper, delete); err != nil {
+		if err = r.crudResource(obj, gatekeeper, deleteCrud); err != nil {
 			return err
 		}
 	}
@@ -295,7 +320,7 @@ func (r *GatekeeperReconciler) applyAsset(gatekeeper *operatorv1alpha1.Gatekeepe
 		return err
 	}
 
-	if err = r.crudResource(obj, gatekeeper, apply); err != nil {
+	if err = r.crudResource(obj, gatekeeper, applyCrud); err != nil {
 		return err
 	}
 	return nil
@@ -425,7 +450,7 @@ func (r *GatekeeperReconciler) crudResource(obj *unstructured.Unstructured, gate
 
 	switch {
 	case err == nil:
-		if operation == apply {
+		if operation == applyCrud {
 			err = merge.RetainClusterObjectFields(obj, clusterObj)
 			if err != nil {
 				return errors.Wrapf(err, "Unable to retain cluster object fields from %s", namespacedName)
@@ -436,7 +461,7 @@ func (r *GatekeeperReconciler) crudResource(obj *unstructured.Unstructured, gate
 			}
 
 			logger.Info(fmt.Sprintf("Updated Gatekeeper resource"))
-		} else if operation == delete {
+		} else if operation == deleteCrud {
 			if err = r.Delete(ctx, obj); err != nil {
 				return errors.Wrapf(err, "Error attempting to delete resource %s", namespacedName)
 			}
@@ -444,7 +469,7 @@ func (r *GatekeeperReconciler) crudResource(obj *unstructured.Unstructured, gate
 		}
 
 	case apierrors.IsNotFound(err):
-		if operation == apply {
+		if operation == applyCrud {
 			if err = r.Create(ctx, obj); err != nil {
 				return errors.Wrapf(err, "Error attempting to create resource %s", namespacedName)
 			}
@@ -667,6 +692,7 @@ func removeMutatingRBACRules(obj *unstructured.Unstructured) error {
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -805,7 +831,8 @@ func setConstraintViolationLimit(obj *unstructured.Unstructured, constraintViola
 func setAuditFromCache(obj *unstructured.Unstructured, auditFromCache *operatorv1alpha1.AuditFromCacheMode) error {
 	if auditFromCache != nil {
 		auditFromCacheValue := "false"
-		if *auditFromCache == operatorv1alpha1.AuditFromCacheEnabled {
+		if *auditFromCache == operatorv1alpha1.AuditFromCacheEnabled ||
+			*auditFromCache == operatorv1alpha1.AuditFromCacheAutomatic {
 			auditFromCacheValue = "true"
 		}
 		return setContainerArg(obj, managerContainer, AuditFromCacheArg, auditFromCacheValue, false)

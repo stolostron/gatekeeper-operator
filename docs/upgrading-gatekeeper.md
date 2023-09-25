@@ -112,3 +112,13 @@ imported Gatekeeper manifests.
 
 Make sure to add or modify any unit and e2e tests as a result of any operator
 controller changes.
+
+## 11. Updating the gatekeeper Go module 
+
+### Update gatekeeper package according to gatekeeper version 
+
+The Gatekeeper Go module version in `go.mod` should be updated to match the Gatekeeper version being deployed by the operator.
+```
+sed -i "s/require github.com/open-policy-agent/gatekeeper/v3  .*/require github.com/open-policy-agent/gatekeeper/v3 ${GATEKEEPER_VERSION}/" go.mod
+go mod tidy
+```
