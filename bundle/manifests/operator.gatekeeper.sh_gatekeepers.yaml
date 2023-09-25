@@ -864,9 +864,14 @@ spec:
                     minimum: 0
                     type: integer
                   auditFromCache:
+                    description: Setting Automatic lets the Gatekeeper operator manage
+                      syncOnly in the config resource. It is not recommended to use
+                      Automatic when using referential constraints since those are
+                      not detected.
                     enum:
                     - Enabled
                     - Disabled
+                    - Automatic
                     type: string
                   auditInterval:
                     type: string

@@ -23,15 +23,13 @@ import (
 
 	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
 	// to ensure that exec-entrypoint and run can make use of them.
+
+	"k8s.io/client-go/kubernetes"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
-	"k8s.io/apimachinery/pkg/runtime"
-	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
-	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/healthz"
-	"sigs.k8s.io/controller-runtime/pkg/log/zap"
+	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/metrics/server"
+	"sigs.k8s.io/controller-runtime/pkg/source"
 	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
 	operatorv1alpha1 "github.com/gatekeeper/gatekeeper-operator/api/v1alpha1"
@@ -39,7 +37,18 @@ import (
 	"github.com/gatekeeper/gatekeeper-operator/pkg/platform"
 	"github.com/gatekeeper/gatekeeper-operator/pkg/util"
 	"github.com/gatekeeper/gatekeeper-operator/pkg/version"
+	constraintV1 "github.com/open-policy-agent/frameworks/constraint/pkg/apis/templates/v1beta1"
+	gkv1alpha1 "github.com/open-policy-agent/gatekeeper/v3/apis/config/v1alpha1"
+	gkv1beta1 "github.com/open-policy-agent/gatekeeper/v3/apis/status/v1beta1"
 	"github.com/pkg/errors"
+	"k8s.io/apimachinery/pkg/runtime"
+	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
+	"k8s.io/client-go/dynamic"
+	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
+	_ "k8s.io/client-go/plugin/pkg/client/auth"
+	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/healthz"
+	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 	// +kubebuilder:scaffold:imports
 )
 
@@ -50,8 +59,10 @@ var (
 
 func init() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
-
 	utilruntime.Must(operatorv1alpha1.AddToScheme(scheme))
+	utilruntime.Must(gkv1beta1.AddToScheme(scheme))
+	utilruntime.Must(gkv1alpha1.AddToScheme(scheme))
+	utilruntime.Must(constraintV1.AddToScheme(scheme))
 	// +kubebuilder:scaffold:scheme
 }
 
@@ -59,6 +70,7 @@ func main() {
 	var metricsAddr string
 	var enableLeaderElection bool
 	var probeAddr string
+
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
 	flag.StringVar(&probeAddr, "health-probe-bind-address", ":8081", "The address the probe endpoint binds to.")
 	flag.BoolVar(&enableLeaderElection, "leader-elect", false,
@@ -73,6 +85,7 @@ func main() {
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 
 	ctrl.Log.WithName("Gatekeeper Operator version").Info(fmt.Sprintf("%#v", version.Get()))
+	ctx := ctrl.SetupSignalHandler()
 
 	metricsOptions := server.Options{
 		BindAddress: metricsAddr,
@@ -110,16 +123,29 @@ func main() {
 		os.Exit(1)
 	}
 
+	dynamicClient := dynamic.NewForConfigOrDie(mgr.GetConfig())
+	manualReconcileTrigger := make(chan event.GenericEvent, 1024)
+	fromCPSMgrSource := &source.Channel{Source: manualReconcileTrigger, DestBufferSize: 1024}
+
 	if err = (&controllers.GatekeeperReconciler{
-		Client:       mgr.GetClient(),
-		Log:          ctrl.Log.WithName("controllers").WithName("Gatekeeper"),
-		Scheme:       mgr.GetScheme(),
-		Namespace:    namespace,
-		PlatformInfo: platformInfo,
-	}).SetupWithManager(mgr); err != nil {
+		Client:                 mgr.GetClient(),
+		Log:                    ctrl.Log.WithName("controllers").WithName("Gatekeeper"),
+		Scheme:                 mgr.GetScheme(),
+		Namespace:              namespace,
+		PlatformInfo:           platformInfo,
+		DynamicClient:          dynamicClient,
+		KubeConfig:             cfg,
+		EnableLeaderElection:   enableLeaderElection,
+		ManualReconcileTrigger: manualReconcileTrigger,
+		DiscoveryStorage: &controllers.DiscoveryStorage{
+			Log:       ctrl.Log.WithName("discovery_storage"),
+			ClientSet: kubernetes.NewForConfigOrDie(mgr.GetConfig()),
+		},
+	}).SetupWithManager(mgr, fromCPSMgrSource); err != nil {
 		setupLog.Error(err, "unable to create controller", "controller", "Gatekeeper")
 		os.Exit(1)
 	}
+
 	// +kubebuilder:scaffold:builder
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
@@ -132,8 +158,9 @@ func main() {
 	}
 
 	setupLog.Info("starting manager")
-	if err := mgr.Start(ctrl.SetupSignalHandler()); err != nil {
+	if err := mgr.Start(ctx); err != nil {
 		setupLog.Error(err, "problem running manager")
+
 		os.Exit(1)
 	}
 }
