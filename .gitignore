@@ -19,3 +19,5 @@ testbin/*
 !vendor/**/zz_generated.*
 
 ci-tools/
+
+.vscode/*

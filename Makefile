@@ -146,11 +146,11 @@ tidy: ## Run go mod tidy
 
 .PHONY: test
 test: manifests generate fmt vet envtest ## Run tests.
-	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" GOFLAGS=$(GOFLAGS) go test ./... -coverprofile cover.out
+	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" GOFLAGS=$(GOFLAGS) go test $(go list ./... | grep -v /test/) -coverprofile cover.out
 
 .PHONY: test-e2e
 test-e2e: e2e-dependencies generate fmt vet ## Run e2e tests, using the configured Kubernetes cluster in ~/.kube/config
-	GOFLAGS=$(GOFLAGS) USE_EXISTING_CLUSTER=true $(GINKGO) -v --trace --fail-fast --label-filter="$(LABEL_FILTER)" ./test/e2e -- --namespace="$(NAMESPACE)" --timeout="5m" --delete-timeout="10m"
+	GOFLAGS=$(GOFLAGS) USE_EXISTING_CLUSTER=true $(GINKGO) -v --trace --fail-fast ./test/e2e -- --namespace="$(NAMESPACE)" --timeout="5m" --delete-timeout="10m"
 
 .PHONY: test-cluster
 test-cluster: ## Create a local kind cluster with a registry for testing
@@ -182,7 +182,14 @@ download-binaries: kustomize go-bindata envtest controller-gen
 		rm -rf bats-core-${BATS_VERSION} v${BATS_VERSION}.tar.gz; \
 	fi
 
-##@ Build
+.PHONY: kind-bootstrap-cluster
+kind-bootstrap-cluster: test-cluster install dev-build
+	kubectl label ns $(NAMESPACE)  --overwrite pod-security.kubernetes.io/audit=privileged
+	kubectl label ns $(NAMESPACE)  --overwrite pod-security.kubernetes.io/enforce=privileged
+	kubectl label ns $(NAMESPACE)  --overwrite pod-security.kubernetes.io/warn=privileged
+	kind load docker-image $(IMG)
+	$(MAKE) deploy-ci NAMESPACE=$(NAMESPACE) IMG=$(IMG)
+	kubectl -n $(NAMESPACE) wait deployment/gatekeeper-operator-controller --for condition=Available --timeout=90s
 
 .PHONY: build
 build: generate fmt vet ## Build manager binary.
