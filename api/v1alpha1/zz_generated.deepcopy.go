@@ -312,6 +312,15 @@ func (in *WebhookConfig) DeepCopyInto(out *WebhookConfig) {
 		*out = new(v1.ResourceRequirements)
 		(*in).DeepCopyInto(*out)
 	}
+	if in.Operations != nil {
+		in, out := &in.Operations, &out.Operations
+		*out = new([]OperationType)
+		if **in != nil {
+			in, out := *in, *out
+			*out = make([]OperationType, len(*in))
+			copy(*out, *in)
+		}
+	}
 	if in.DisabledBuiltins != nil {
 		in, out := &in.DisabledBuiltins, &out.DisabledBuiltins
 		*out = make([]string, len(*in))

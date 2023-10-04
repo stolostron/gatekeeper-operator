@@ -129,8 +129,13 @@ type WebhookConfig struct {
 	// +optional
 	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
 	// +optional
+	Operations *[]OperationType `json:"operations,omitempty"`
+	// +optional
 	DisabledBuiltins []string `json:"disabledBuiltins,omitempty"`
 }
+
+// +kubebuilder:validation:Enum:=CONNECT;CREATE;UPDATE;DELETE;*
+type OperationType admregv1.OperationType
 
 // +kubebuilder:validation:Enum:=DEBUG;INFO;WARNING;ERROR
 type LogLevelMode string

@@ -43,6 +43,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
+	"github.com/gatekeeper/gatekeeper-operator/api/v1alpha1"
 	operatorv1alpha1 "github.com/gatekeeper/gatekeeper-operator/api/v1alpha1"
 	"github.com/gatekeeper/gatekeeper-operator/controllers/merge"
 	"github.com/gatekeeper/gatekeeper-operator/pkg/platform"
@@ -645,6 +646,7 @@ func webhookOverrides(obj *unstructured.Unstructured, webhook *operatorv1alpha1.
 	return nil
 }
 
+// override common properties
 func webhookConfigurationOverrides(
 	obj *unstructured.Unstructured,
 	webhook *operatorv1alpha1.WebhookConfig,
@@ -669,9 +671,15 @@ func webhookConfigurationOverrides(
 				return err
 			}
 		}
+
+		if err := setOperators(obj, webhook.Operations, webhookName); err != nil {
+			return err
+		}
+
 		if err := setNamespaceSelector(obj, webhook.NamespaceSelector, gatekeeperNamespace, webhookName); err != nil {
 			return err
 		}
+
 	} else if err := setNamespaceSelector(obj, nil, gatekeeperNamespace, webhookName); err != nil {
 		return err
 	}
@@ -988,6 +996,44 @@ func setNamespaceSelector(
 	}
 
 	return setWebhookConfigurationWithFn(obj, webhookName, setNamespaceSelectorFn)
+}
+
+func setOperators(
+	obj *unstructured.Unstructured, operations *[]v1alpha1.OperationType, webhookName string,
+) error {
+	// If no operations is provided, no override for operations
+	if operations == nil {
+		return nil
+	}
+
+	setOperatorsFn := func(webhook map[string]interface{}) error {
+		rules := webhook["rules"].([]interface{})
+		if rules[0] == nil {
+			return nil
+		}
+
+		converted := make([]interface{}, len(*operations))
+		for i, op := range *operations {
+			converted[i] = string(op)
+		}
+
+		firtRuleObj := rules[0].(map[string]interface{})
+		newfirstRule := map[string]interface{}{
+			"apiGroups":   firtRuleObj["apiGroups"],
+			"apiVersions": firtRuleObj["apiVersions"],
+			"operations":  converted,
+			"resources":   firtRuleObj["resources"],
+			"scope":       firtRuleObj["scope"],
+		}
+
+		if err := unstructured.SetNestedSlice(webhook, []interface{}{newfirstRule}, "rules"); err != nil {
+			return errors.Wrapf(err, "Failed to set webhook namespace selector")
+		}
+
+		return nil
+	}
+
+	return setWebhookConfigurationWithFn(obj, webhookName, setOperatorsFn)
 }
 
 // Generic setters

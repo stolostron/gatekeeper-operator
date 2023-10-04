@@ -24,6 +24,7 @@ import (
 	"os"
 	"strings"
 
+	. "github.com/gatekeeper/gatekeeper-operator/test/e2e/util"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	admregv1 "k8s.io/api/admissionregistration/v1"
@@ -36,7 +37,6 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/yaml"
-	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/gatekeeper/gatekeeper-operator/api/v1alpha1"
 	"github.com/gatekeeper/gatekeeper-operator/controllers"
@@ -48,6 +48,7 @@ const (
 	// Gatekeeper name and namespace
 	gkName                      = "gatekeeper"
 	gatekeeperWithAllValuesFile = "gatekeeper_with_all_values.yaml"
+	gatekeeperWithOperations    = "gatekeeper_operations.yaml"
 )
 
 var (
@@ -93,39 +94,37 @@ var _ = Describe("Gatekeeper", func() {
 		}
 	})
 
-	AfterEach(func() {
-		Expect(K8sClient.Delete(ctx, emptyGatekeeper(), client.PropagationPolicy(v1.DeletePropagationForeground))).Should(Succeed())
-
-		// Once this succeeds, clean up has happened for all owned resources.
-		Eventually(func() bool {
-			err := K8sClient.Get(ctx, gatekeeperName, &v1alpha1.Gatekeeper{})
-			if err == nil {
-				return false
-			}
-
-			return apierrors.IsNotFound(err)
-		}, deleteTimeout, pollInterval).Should(BeTrue())
-
-		Eventually(func() bool {
-			err := K8sClient.Get(ctx, auditName, &appsv1.Deployment{})
-			if err == nil {
-				return false
-			}
-
-			return apierrors.IsNotFound(err)
-		}, deleteTimeout, pollInterval).Should(BeTrue())
-
-		Eventually(func() bool {
-			err := K8sClient.Get(ctx, controllerManagerName, &appsv1.Deployment{})
-			if err == nil {
-				return false
-			}
-
-			return apierrors.IsNotFound(err)
-		}, deleteTimeout, pollInterval).Should(BeTrue())
-	})
-
 	Describe("Overriding CR", Ordered, func() {
+		AfterEach(func() {
+			Kubectl("delete", "gatekeeper", "gatekeeper", "--ignore-not-found")
+			// Once this succeeds, clean up has happened for all owned resources.
+			Eventually(func() bool {
+				err := K8sClient.Get(ctx, gatekeeperName, &v1alpha1.Gatekeeper{})
+				if err == nil {
+					return false
+				}
+
+				return apierrors.IsNotFound(err)
+			}, deleteTimeout, pollInterval).Should(BeTrue())
+
+			Eventually(func() bool {
+				err := K8sClient.Get(ctx, auditName, &appsv1.Deployment{})
+				if err == nil {
+					return false
+				}
+
+				return apierrors.IsNotFound(err)
+			}, deleteTimeout, pollInterval).Should(BeTrue())
+
+			Eventually(func() bool {
+				err := K8sClient.Get(ctx, controllerManagerName, &appsv1.Deployment{})
+				if err == nil {
+					return false
+				}
+
+				return apierrors.IsNotFound(err)
+			}, deleteTimeout, pollInterval).Should(BeTrue())
+		})
 		It("Creating an empty gatekeeper contains default values", func() {
 			gatekeeper := emptyGatekeeper()
 			err := loadGatekeeperFromFile(gatekeeper, "gatekeeper_empty.yaml")
@@ -493,6 +492,55 @@ var _ = Describe("Gatekeeper", func() {
 
 			auditDeployment, webhookDeployment = gatekeeperDeployments()
 			byCheckingMutationDisabled(auditDeployment, webhookDeployment)
+		})
+
+		It("Override Webhook operations with Create, Update, Delete, Connect", func() {
+			gatekeeper := &v1alpha1.Gatekeeper{}
+			gatekeeper.Namespace = gatekeeperNamespace
+			err := loadGatekeeperFromFile(gatekeeper, gatekeeperWithOperations)
+			Expect(err).ToNot(HaveOccurred())
+			Expect(K8sClient.Create(ctx, gatekeeper)).Should(Succeed())
+
+			By("Wait until new Deployments loaded")
+			gatekeeperDeployments()
+
+			By("ValidatingWebhookConfiguration Rules should have 4 operations")
+			validatingWebhookConfiguration := &admregv1.ValidatingWebhookConfiguration{}
+			Eventually(func(g Gomega) {
+				err := K8sClient.Get(ctx, validatingWebhookName, validatingWebhookConfiguration)
+				g.Expect(err).ShouldNot(HaveOccurred())
+				g.Expect(validatingWebhookConfiguration.Webhooks[0].Rules[0].Operations).Should(HaveLen(4))
+				g.Expect(validatingWebhookConfiguration.Webhooks[1].Rules[0].Operations).Should(HaveLen(4))
+			}, timeout, pollInterval).Should(Succeed())
+
+			By("MutatingWebhookConfiguration Rules should have 4 operations")
+			mutatingWebhookConfiguration := &admregv1.MutatingWebhookConfiguration{}
+			Eventually(func(g Gomega) {
+				err := K8sClient.Get(ctx, mutatingWebhookName, mutatingWebhookConfiguration)
+				g.Expect(err).ShouldNot(HaveOccurred())
+				g.Expect(mutatingWebhookConfiguration.Webhooks[0].Rules[0].Operations).Should(HaveLen(4))
+			}, timeout, pollInterval).Should(Succeed())
+
+			gatekeeper.Spec.Webhook.Operations = &[]v1alpha1.OperationType{"*"}
+			Expect(K8sClient.Update(ctx, gatekeeper)).Should(Succeed())
+
+			By("ValidatingWebhookConfiguration Rules should have 1 operations")
+			Eventually(func(g Gomega) {
+				err := K8sClient.Get(ctx, validatingWebhookName, validatingWebhookConfiguration)
+				g.Expect(err).ShouldNot(HaveOccurred())
+				g.Expect(validatingWebhookConfiguration.Webhooks[0].Rules[0].Operations).Should(HaveLen(1))
+				g.Expect(validatingWebhookConfiguration.Webhooks[0].Rules[0].Operations[0]).Should(BeEquivalentTo("*"))
+				g.Expect(validatingWebhookConfiguration.Webhooks[1].Rules[0].Operations).Should(HaveLen(1))
+				g.Expect(validatingWebhookConfiguration.Webhooks[1].Rules[0].Operations[0]).Should(BeEquivalentTo("*"))
+			}, timeout*2, pollInterval).Should(Succeed())
+
+			By("MutatingWebhookConfiguration Rules should have 1 operations")
+			Eventually(func(g Gomega) {
+				err := K8sClient.Get(ctx, mutatingWebhookName, mutatingWebhookConfiguration)
+				g.Expect(err).ShouldNot(HaveOccurred())
+				g.Expect(mutatingWebhookConfiguration.Webhooks[0].Rules[0].Operations).Should(HaveLen(1))
+				g.Expect(mutatingWebhookConfiguration.Webhooks[0].Rules[0].Operations[0]).Should(BeEquivalentTo("*"))
+			}, timeout, pollInterval).Should(Succeed())
 		})
 	})
 })
