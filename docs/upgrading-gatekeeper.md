@@ -20,6 +20,7 @@ and skipping `v3.4.Z`.
 GATEKEEPER_PREV_VERSION=$(awk '/^GATEKEEPER_VERSION \?= .*/ {print $3}' Makefile)
 GATEKEEPER_VERSION=<DESIRED_VERSION>
 sed -i "s/GATEKEEPER_VERSION ?= .*/GATEKEEPER_VERSION ?= ${GATEKEEPER_VERSION}/" Makefile
+sed -i "s/CHANNELS ?= .*/CHANNELS ?= stable,$(echo $GATEKEEPER_VERSION | cut -c2- | cut -d '.' -f 1-2)/" Makefile
 git commit -m "Set Gatekeeper version to ${GATEKEEPER_VERSION}" Makefile
 ```
 
