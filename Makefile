@@ -64,7 +64,7 @@ IMG ?= $(IMAGE_TAG_BASE):v$(VERSION)
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true,preserveUnknownFields=false"
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
-ENVTEST_K8S_VERSION = 1.21
+ENVTEST_K8S_VERSION = $(KUBERNETES_VERSION:v%=%)
 
 # Get the currently used golang install path (in GOPATH/bin, unless GOBIN is set)
 ifeq (,$(shell go env GOBIN))
@@ -107,12 +107,17 @@ CONTROLLER_GEN = $(LOCAL_BIN)/controller-gen
 KUSTOMIZE = $(LOCAL_BIN)/kustomize
 ENVTEST = $(LOCAL_BIN)/setup-envtest
 GO_BINDATA = $(LOCAL_BIN)/go-bindata
+GINKGO = $(LOCAL_BIN)/ginkgo
 KUSTOMIZE_VERSION ?= v5.0.1
 OPM_VERSION ?= v1.27.0
 GO_BINDATA_VERSION ?= v3.1.2+incompatible
 BATS_VERSION ?= 1.2.1
-OLM_VERSION ?= v0.18.2
-KUBERNETES_VERSION ?= v1.26.4
+OLM_VERSION ?= v0.25.0
+KUBERNETES_VERSION ?= v1.28.0
+
+.PHONY: e2e-dependencies
+e2e-dependencies:
+	$(call go-get-tool,github.com/onsi/ginkgo/v2/ginkgo@$(shell awk '/github.com\/onsi\/ginkgo\/v2/ {print $$2}' go.mod))
 
 .PHONY: manifests
 manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
@@ -139,8 +144,8 @@ test: manifests generate fmt vet envtest ## Run tests.
 	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" GOFLAGS=$(GOFLAGS) go test ./... -coverprofile cover.out
 
 .PHONY: test-e2e
-test-e2e: generate fmt vet ## Run e2e tests, using the configured Kubernetes cluster in ~/.kube/config
-	GOFLAGS=$(GOFLAGS) USE_EXISTING_CLUSTER=true go test -v ./test/e2e -coverprofile cover.out -race -args -ginkgo.v -ginkgo.progress -ginkgo.trace -namespace $(NAMESPACE) -timeout 5m -delete-timeout 10m
+test-e2e: e2e-dependencies generate fmt vet ## Run e2e tests, using the configured Kubernetes cluster in ~/.kube/config
+	GOFLAGS=$(GOFLAGS) USE_EXISTING_CLUSTER=true $(GINKGO) --trace --fail-fast --label-filter="$(LABEL_FILTER)" ./test/e2e -- --namespace="$(NAMESPACE)" --timeout="5m" --delete-timeout="10m"
 
 .PHONY: test-cluster
 test-cluster: ## Create a local kind cluster with a registry for testing
@@ -383,7 +388,7 @@ catalog-push: ## Push a catalog image.
 
 # operator-sdk variables
 # ======================
-OPERATOR_SDK_VERSION ?= v1.28.1
+OPERATOR_SDK_VERSION ?= v1.31.0
 OPERATOR_SDK = $(LOCAL_BIN)/operator-sdk
 OPERATOR_SDK_URL := https://github.com/operator-framework/operator-sdk/releases/download/$(OPERATOR_SDK_VERSION)/operator-sdk_$(GOOS)_$(GOARCH)
 
