@@ -72,7 +72,6 @@ jobs:
 
     - name: Create K8s KinD Cluster
       run: |
-        kind version
         make test-cluster
 
     - name: Build and Push Test Container Image to KIND node
@@ -123,7 +122,6 @@ jobs:
 
     - name: Create K8s KinD Cluster
       run: |
-        kind version
         make test-cluster
 
     - name: Build and Push Test Container Image to KIND node
