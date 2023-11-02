@@ -233,17 +233,28 @@ uninstall: manifests kustomize ## Uninstall CRDs from the K8s cluster specified 
 	$(KUSTOMIZE) build config/crd | kubectl delete -f -
 
 .PHONY: deploy
-deploy: manifests kustomize ## Deploy controller to the K8s cluster specified in ~/.kube/config.
+deploy: manifests kustomize patch-deployment apply-manifests unpatch-deployment ## Deploy controller to the K8s cluster specified in ~/.kube/config.
+
+.PHONY: apply-manifests
+apply-manifests:
+	$(KUSTOMIZE) build config/default | kubectl apply -f -
+
+.PHONY: patch-deployment
+patch-deployment:
 	cd config/default && $(KUSTOMIZE) edit set namespace $(NAMESPACE)
 	cd config/manager && $(KUSTOMIZE) edit set image controller=${IMG}
-	$(KUSTOMIZE) build config/default | kubectl apply -f -
+
+.PHONY: unpatch-deployment
+unpatch-deployment: 
+	cd config/default && $(KUSTOMIZE) edit set namespace gatekeeper-system
+	cd config/manager && $(KUSTOMIZE) edit set image controller=quay.io/gatekeeper/gatekeeper-operator:v$(VERSION)
 
 .PHONY: undeploy
 undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/config.
 	$(KUSTOMIZE) build config/default | kubectl delete -f -
 
 .PHONY: deploy-ci
-deploy-ci: install patch-image deploy ## Deploys the controller with a patched pull policy.
+deploy-ci: install patch-image deploy unpatch-image ## Deploys the controller with a patched pull policy.
 
 .PHONY: deploy-olm
 deploy-olm:
@@ -259,6 +270,10 @@ deploy-using-olm:
 .PHONY: patch-image
 patch-image: ## Patches the manager's image pull policy to be IfNotPresent.
 	$(SED) -i 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' config/manager/manager.yaml
+
+.PHONY: unpatch-image
+unpatch-image: ## Patches the manager's image pull policy to be Always.
+	$(SED) -i 's/imagePullPolicy: IfNotPresent/imagePullPolicy: Always/g' config/manager/manager.yaml
 
 .PHONY: controller-gen
 controller-gen: ## Download controller-gen locally if necessary.
