@@ -3,13 +3,19 @@ set -o errexit
 
 # desired cluster name; default is "kind"
 KIND_CLUSTER_NAME="${KIND_CLUSTER_NAME:-kind}"
-KIND_IMG_TAG="${KIND_IMG_TAG:-}"
 
-# create registry container unless it already exists
+# create registry container unless it's already running
 reg_name='kind-registry'
-reg_port='5000'
-running="$(docker inspect -f '{{.State.Running}}' "${reg_name}" 2>/dev/null || true)"
+reg_port="${REGISTRY_PORT:-5000}"
+echo "Checking for running ${reg_name} container..."
+running="$(docker inspect -f '{{.State.Running}}' "${reg_name}" || true)"
 if [ "${running}" != 'true' ]; then
+  REG_CONTAINER_ID="$(docker inspect -f '{{.Id}}' "${reg_name}" || true)"
+  if [[ -n "${REG_CONTAINER_ID}" ]]; then
+    echo "Removing existing container:"
+    docker rm ${REG_CONTAINER_ID}
+  fi
+  echo "Starting new ${reg_name} container:"
   docker run \
     -d --restart=always -p "${reg_port}:5000" --name "${reg_name}" \
     registry:2
