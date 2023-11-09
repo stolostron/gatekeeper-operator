@@ -6,7 +6,7 @@
 VERSION ?= 3.11.1
 # Replaces Operator version
 # Set this when when there is a new patch release in the channel.
-REPLACES_VERSION ?= none
+REPLACES_VERSION ?= 0.2.6
 
 LOCAL_BIN ?= $(PWD)/ci-tools/bin
 export PATH := $(LOCAL_BIN):$(PATH)
@@ -307,11 +307,11 @@ bundle: operator-sdk manifests kustomize ## Generate bundle manifests and metada
 	$(SED) -i 's/^  version:.*/  version: "$(VERSION)"/' bundle/manifests/gatekeeper-operator.clusterserviceversion.yaml
 	$(SED) -i '/^    createdAt:.*/d' bundle/manifests/gatekeeper-operator.clusterserviceversion.yaml
 	$(SED) -i 's/$(CHANNELS)/"$(CHANNELS)"/g' bundle/metadata/annotations.yaml
+	$(SED) -i 's/^    olm.skipRange:.*/    olm.skipRange: "<$(shell echo $(VERSION) | cut -d '.' -f 1-2).0"/' bundle/manifests/gatekeeper-operator.clusterserviceversion.yaml
   ifneq ($(REPLACES_VERSION), none)
 	  $(SED) -i 's/^  replaces:.*/  replaces: gatekeeper-operator.v$(REPLACES_VERSION)/' bundle/manifests/gatekeeper-operator.clusterserviceversion.yaml
   else
 	  $(SED) -i 's/^  replaces:.*/  # replaces: none/' bundle/manifests/gatekeeper-operator.clusterserviceversion.yaml
-	  $(SED) -i 's/^    olm.skipRange:.*/    olm.skipRange: "<$(VERSION)"/' bundle/manifests/gatekeeper-operator.clusterserviceversion.yaml
   endif
 	$(OPERATOR_SDK) bundle validate ./bundle
 
