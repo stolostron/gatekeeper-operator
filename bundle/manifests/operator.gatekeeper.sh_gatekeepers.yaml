@@ -951,6 +951,33 @@ spec:
                         type: object
                     type: object
                 type: object
+              config:
+                properties:
+                  disableDefaultMatches:
+                    description: Default is false. Setting this to true disables appending
+                      the default exempt namespaces to spec.config.matches.
+                    type: boolean
+                  matches:
+                    description: This field is the same type as the config spec.match.
+                      These will be appended to config.spec.match
+                    items:
+                      properties:
+                        excludedNamespaces:
+                          items:
+                            description: 'A string that supports globbing at its front
+                              or end. Ex: "kube-*" will match "kube-system" or "kube-public",
+                              "*-system" will match "kube-system" or "gatekeeper-system".  The
+                              asterisk is required for wildcard matching.'
+                            pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
+                            type: string
+                          type: array
+                        processes:
+                          items:
+                            type: string
+                          type: array
+                      type: object
+                    type: array
+                type: object
               image:
                 properties:
                   image:

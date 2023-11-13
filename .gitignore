@@ -22,3 +22,5 @@ ci-tools/
 
 .vscode/
 gatekeeper/
+
+__debug_*

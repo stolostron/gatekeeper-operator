@@ -169,6 +169,11 @@ jobs:
         path: gatekeeper
         fetch-depth: 0 # Fetch all history for all tags and branches
 
+    - name: Change test command for exempt Namespace 
+      run: |
+        replace='num_namespaces=$(($(kubectl get ns -o json | jq '\''.items | length'\'')-$(kubectl get ns | grep excluded | wc  -l)))'
+        sed -i "s/num_namespaces=.*/$replace/" /home/runner/work/gatekeeper-operator/gatekeeper-operator/gatekeeper/test/bats/test.bats
+
     - name: Gatekeeper E2E Tests
       run: |
         make download-binaries
