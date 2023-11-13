@@ -13,5 +13,5 @@ apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 images:
 - name: controller
-  newName: quay.io/gatekeeper/gatekeeper-operator
+  newName: localhost:5000/gatekeeper-operator
   newTag: v3.11.1

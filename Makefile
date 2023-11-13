@@ -21,6 +21,8 @@ ifeq ($(GOOS), darwin)
   SED="gsed"
 endif
 
+OPERATOR_NAME=gatekeeper-operator
+
 get-replaces-version:
 	@echo $(REPLACES_VERSION)
 
@@ -52,7 +54,7 @@ DOCKER ?= docker
 #
 # For example, running 'make bundle-build bundle-push catalog-build catalog-push' will build and push both
 # gatekeeper.sh/gatekeeper-operator-bundle:$VERSION and gatekeeper.sh/gatekeeper-operator-catalog:$VERSION.
-REPO ?= quay.io/gatekeeper
+REPO ?= localhost:5000
 IMAGE_TAG_BASE ?= $(REPO)/gatekeeper-operator
 
 # BUNDLE_IMG defines the image:tag used for the bundle.
@@ -109,7 +111,7 @@ ENVTEST = $(LOCAL_BIN)/setup-envtest
 GO_BINDATA = $(LOCAL_BIN)/go-bindata
 GINKGO = $(LOCAL_BIN)/ginkgo
 KUSTOMIZE_VERSION ?= v5.0.1
-OPM_VERSION ?= v1.27.0
+OPM_VERSION ?= v1.31.0
 GO_BINDATA_VERSION ?= v3.1.2+incompatible
 BATS_VERSION ?= 1.2.1
 OLM_VERSION ?= v0.25.0
@@ -362,7 +364,11 @@ import-manifests: kustomize
 .PHONY: bundle-index-build
 bundle-index-build: opm
 ifneq ($(REPLACES_VERSION), none)
-	$(OPM) index add --bundles $(BUNDLE_IMG) --from-index $(PREV_BUNDLE_INDEX_IMG) --tag $(BUNDLE_INDEX_IMG) -c $(DOCKER)
+	-rm catalog_dir.dockerfile
+	-$(OPM) generate dockerfile catalog_dir
+	$(OPM) init $(OPERATOR_NAME) --default-channel=stable --description=./README.md --output --icon=./gatekeeper_logo.svg  --output yaml > catalog_dir/index.yaml
+	$(OPM) render $(BUNDLE_IMG)  --output=yaml >> catalog_dir/index.yaml --use-http
+	$(DOCKER) build . -f catalog_dir.Dockerfile -t $(BUNDLE_INDEX_IMG)
 else
 	$(OPM) index add --bundles $(BUNDLE_IMG) --tag $(BUNDLE_INDEX_IMG) -c $(DOCKER)
 endif
@@ -370,7 +376,7 @@ endif
 # Generate and push bundle image and bundle index image
 # Note: OPERATOR_VERSION is an arbitrary number and does not need to match any official versions
 .PHONY: build-and-push-bundle-images
-build-and-push-bundle-images: docker-build docker-push
+build-and-push-bundle-images: # docker-build docker-push
 	$(MAKE) bundle VERSION=$(OPERATOR_VERSION)
 	$(MAKE) bundle-build
 	$(MAKE) docker-push IMG=$(BUNDLE_IMG)
