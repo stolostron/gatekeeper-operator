@@ -366,7 +366,7 @@ tt:
 .PHONY: bundle-index-build
 bundle-index-build: opm
 	$(OPM) index add  --use-http --bundles $(BUNDLE_IMG) --tag $(BUNDLE_INDEX_IMG) -c $(DOCKER)   
-	$(OPM) migrate --use-http  $(BUNDLE_INDEX_IMG) catalog_dir    
+	$(OPM) migrate $(BUNDLE_INDEX_IMG) catalog_dir --use-http --skip-tls-verify
 	#-rm catalog_dir.dockerfile 
 	$(OPM) generate dockerfile catalog_dir --binary-image registry.redhat.io/openshift4/ose-operator-registry:v4.14
 	#$(OPM) init $(OPERATOR_NAME) --default-channel=stable --description=./README.md --output --icon=./gatekeeper_logo.svg  --output yaml > catalog_dir/index.yaml
