@@ -388,7 +388,7 @@ bundle-index-build: opm
 # Note: OPERATOR_VERSION is an arbitrary number and does not need to match any official versions
 .PHONY: build-and-push-bundle-images
 build-and-push-bundle-images: #docker-build docker-push
-	$(MAKE) bundle #VERSION=$(OPERATOR_VERSION)
+	$(MAKE) bundle VERSION=$(OPERATOR_VERSION)
 	$(MAKE) bundle-build
 	$(MAKE) docker-push IMG=$(BUNDLE_IMG)
 	$(MAKE) bundle-index-build
