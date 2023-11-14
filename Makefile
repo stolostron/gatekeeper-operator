@@ -6,7 +6,7 @@
 VERSION ?= 3.11.1
 # Replaces Operator version
 # Set this when when there is a new patch release in the channel.
-REPLACES_VERSION ?= 0.2.6
+REPLACES_VERSION ?="none"
 
 LOCAL_BIN ?= $(PWD)/ci-tools/bin
 export PATH := $(LOCAL_BIN):$(PATH)
@@ -310,12 +310,13 @@ bundle: operator-sdk manifests kustomize ## Generate bundle manifests and metada
 	$(SED) -i '/^    createdAt:.*/d' bundle/manifests/gatekeeper-operator.clusterserviceversion.yaml
 	$(SED) -i 's/$(CHANNELS)/"$(CHANNELS)"/g' bundle/metadata/annotations.yaml
 	$(SED) -i 's/^    olm.skipRange:.*/    olm.skipRange: "<$(shell echo $(VERSION) | cut -d '.' -f 1-2).0"/' bundle/manifests/gatekeeper-operator.clusterserviceversion.yaml
-#   ifneq ($(REPLACES_VERSION), none)
-# 	 # $(SED) -i 's/^  replaces:.*/  replaces: gatekeeper-operator.v$(REPLACES_VERSION)/' bundle/manifests/gatekeeper-operator.clusterserviceversion.yaml
-#   else
-# 	 # $(SED) -i 's/^  replaces:.*/  # replaces: none/' bundle/manifests/gatekeeper-operator.clusterserviceversion.yaml
-#   endif
-# 	$(OPERATOR_SDK) bundle validate ./bundle
+	# ifneq ($(REPLACES_VERSION), none)
+	# 	$(SED) -i 's/^  replaces:.*/  replaces: gatekeeper-operator.v$(REPLACES_VERSION)/' bundle/manifests/gatekeeper-operator.clusterserviceversion.yaml
+	# else
+	# 	$(SED) -i 's/^  replaces:.*/  # replaces: none/' bundle/manifests/gatekeeper-operator.clusterserviceversion.yaml
+	# endif
+	$(SED) -i 's/^  replaces:.*/  # replaces: none/' bundle/manifests/gatekeeper-operator.clusterserviceversion.yaml
+		$(OPERATOR_SDK) bundle validate ./bundle
 
 # Requires running cluster (for example through 'make test-cluster')
 .PHONY: scorecard
@@ -387,7 +388,7 @@ bundle-index-build: opm
 # Note: OPERATOR_VERSION is an arbitrary number and does not need to match any official versions
 .PHONY: build-and-push-bundle-images
 build-and-push-bundle-images: #docker-build docker-push
-	$(MAKE) bundle VERSION=$(OPERATOR_VERSION)
+	$(MAKE) bundle #VERSION=$(OPERATOR_VERSION)
 	$(MAKE) bundle-build
 	$(MAKE) docker-push IMG=$(BUNDLE_IMG)
 	$(MAKE) bundle-index-build
