@@ -1,6 +1,0 @@
----
-schema: olm.channel
-package: gatekeeper-operator
-name: stable
-entries:
-- name: gatekeeper-operator.v3.11.1

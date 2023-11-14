@@ -363,10 +363,10 @@ import-manifests: kustomize
 # Build the bundle index image.
 .PHONY: bundle-index-build
 bundle-index-build: opm
-	$(OPM) index add --bundles $(BUNDLE_IMG) --from-index $(PREV_BUNDLE_INDEX_IMG) --tag $(BUNDLE_INDEX_IMG) -c $(DOCKER)
+	$(OPM) index add --bundles $(BUNDLE_IMG) --tag $(BUNDLE_INDEX_IMG) -c $(DOCKER)
 	$(OPM) migrate $(BUNDLE_INDEX_IMG) catalog_dir
 	#-rm catalog_dir.dockerfile 
-	#-$(OPM) generate dockerfile catalog_dir --binary-image registry.redhat.io/openshift4/ose-operator-registry:v4.14
+	$(OPM) generate dockerfile catalog_dir --binary-image registry.redhat.io/openshift4/ose-operator-registry:v4.14
 	#$(OPM) init $(OPERATOR_NAME) --default-channel=stable --description=./README.md --output --icon=./gatekeeper_logo.svg  --output yaml > catalog_dir/index.yaml
 	#$(OPM) render $(BUNDLE_IMG)  --output=yaml >> catalog_dir/index.yaml --use-http
 	$(DOCKER) build . -f catalog_dir.Dockerfile -t $(BUNDLE_INDEX_IMG)
