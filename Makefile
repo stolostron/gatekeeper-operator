@@ -363,15 +363,24 @@ import-manifests: kustomize
 # Build the bundle index image.
 .PHONY: bundle-index-build
 bundle-index-build: opm
-ifneq ($(REPLACES_VERSION), none)
-	-rm catalog_dir.dockerfile
-	-$(OPM) generate dockerfile catalog_dir
-	$(OPM) init $(OPERATOR_NAME) --default-channel=stable --description=./README.md --output --icon=./gatekeeper_logo.svg  --output yaml > catalog_dir/index.yaml
-	$(OPM) render $(BUNDLE_IMG)  --output=yaml >> catalog_dir/index.yaml --use-http
+	$(OPM) index add --bundles $(BUNDLE_IMG) --from-index $(PREV_BUNDLE_INDEX_IMG) --tag $(BUNDLE_INDEX_IMG) -c $(DOCKER)
+	$(OPM) migrate $(BUNDLE_INDEX_IMG) catalog_dir
+	#-rm catalog_dir.dockerfile 
+	#-$(OPM) generate dockerfile catalog_dir --binary-image registry.redhat.io/openshift4/ose-operator-registry:v4.14
+	#$(OPM) init $(OPERATOR_NAME) --default-channel=stable --description=./README.md --output --icon=./gatekeeper_logo.svg  --output yaml > catalog_dir/index.yaml
+	#$(OPM) render $(BUNDLE_IMG)  --output=yaml >> catalog_dir/index.yaml --use-http
 	$(DOCKER) build . -f catalog_dir.Dockerfile -t $(BUNDLE_INDEX_IMG)
-else
-	$(OPM) index add --bundles $(BUNDLE_IMG) --tag $(BUNDLE_INDEX_IMG) -c $(DOCKER)
-endif
+# ifneq ($(REPLACES_VERSION), none)
+#     $(OPM) index add --bundles $(BUNDLE_IMG) --from-index $(PREV_BUNDLE_INDEX_IMG) --tag $(BUNDLE_INDEX_IMG) -c $(DOCKER)
+# 	$(OPM) migrate $(BUNDLE_INDEX_IMG) catalog_dir
+# 	#-rm catalog_dir.dockerfile 
+# 	-$(OPM) generate dockerfile catalog_dir --binary-image registry.redhat.io/openshift4/ose-operator-registry:v4.14
+# 	#$(OPM) init $(OPERATOR_NAME) --default-channel=stable --description=./README.md --output --icon=./gatekeeper_logo.svg  --output yaml > catalog_dir/index.yaml
+# 	#$(OPM) render $(BUNDLE_IMG)  --output=yaml >> catalog_dir/index.yaml --use-http
+# 	$(DOCKER) build . -f catalog_dir.Dockerfile -t $(BUNDLE_INDEX_IMG)
+# else
+# 	$(OPM) index add --bundles $(BUNDLE_IMG) --tag $(BUNDLE_INDEX_IMG) -c $(DOCKER)
+# endif
 
 # Generate and push bundle image and bundle index image
 # Note: OPERATOR_VERSION is an arbitrary number and does not need to match any official versions
