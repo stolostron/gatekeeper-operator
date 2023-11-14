@@ -516,5 +516,5 @@ spec:
   relatedImages:
   - image: openpolicyagent/gatekeeper:v3.11.1
     name: gatekeeper
-  replaces: gatekeeper-operator.0.0.0
+  # replaces: none
   version: "3.11.1"
