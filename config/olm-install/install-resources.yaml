@@ -2,16 +2,22 @@
 apiVersion: v1
 kind: Namespace
 metadata:
-  name: mygatekeeper
+  name: gatekeeper-system
+  labels:
+    pod-security.kubernetes.io/audit: baseline
+    pod-security.kubernetes.io/audit-version: latest
+    pod-security.kubernetes.io/enforce: baseline
+    pod-security.kubernetes.io/warn: baseline
+    pod-security.kubernetes.io/warn-version: latest
 ---
 apiVersion: operators.coreos.com/v1alpha1
 kind: CatalogSource
 metadata:
   name: gatekeeper-operator
-  namespace: mygatekeeper
+  namespace: gatekeeper-system
 spec:
   displayName: Gatekeeper Operator Upstream
-  image: 'quay.io/gatekeeper/gatekeeper-operator-bundle-index:latest'
+  image: 'quay.io/yikim/gatekeeper-operator-bundle-index:v3.11.1'
   publisher: github.com/gatekeeper/gatekeeper-operator
   sourceType: grpc
 ---
@@ -19,15 +25,15 @@ apiVersion: operators.coreos.com/v1
 kind: OperatorGroup
 metadata:
   name: gatekeeper-operator
-  namespace: mygatekeeper
+  namespace: gatekeeper-system
 ---
 apiVersion: operators.coreos.com/v1alpha1
 kind: Subscription
 metadata:
   name: gatekeeper-operator-sub
-  namespace: mygatekeeper
+  namespace: gatekeeper-system
 spec:
   name: gatekeeper-operator
-  channel: "3.11"
+  channel: stable
   source: gatekeeper-operator
-  sourceNamespace: mygatekeeper
+  sourceNamespace: gatekeeper-system

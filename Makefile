@@ -54,7 +54,7 @@ DOCKER ?= docker
 #
 # For example, running 'make bundle-build bundle-push catalog-build catalog-push' will build and push both
 # gatekeeper.sh/gatekeeper-operator-bundle:$VERSION and gatekeeper.sh/gatekeeper-operator-catalog:$VERSION.
-REPO ?= localhost:5000
+REPO ?= quay.io/gatekeeper
 IMAGE_TAG_BASE ?= $(REPO)/gatekeeper-operator
 
 # BUNDLE_IMG defines the image:tag used for the bundle.
@@ -376,7 +376,7 @@ endif
 # Generate and push bundle image and bundle index image
 # Note: OPERATOR_VERSION is an arbitrary number and does not need to match any official versions
 .PHONY: build-and-push-bundle-images
-build-and-push-bundle-images: # docker-build docker-push
+build-and-push-bundle-images: #docker-build docker-push
 	$(MAKE) bundle VERSION=$(OPERATOR_VERSION)
 	$(MAKE) bundle-build
 	$(MAKE) docker-push IMG=$(BUNDLE_IMG)
