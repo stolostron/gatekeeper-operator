@@ -54,7 +54,7 @@ DOCKER ?= docker
 #
 # For example, running 'make bundle-build bundle-push catalog-build catalog-push' will build and push both
 # gatekeeper.sh/gatekeeper-operator-bundle:$VERSION and gatekeeper.sh/gatekeeper-operator-catalog:$VERSION.
-REPO ?= quay.io/gatekeeper
+REPO ?= quay.io/yikim
 IMAGE_TAG_BASE ?= $(REPO)/gatekeeper-operator
 
 # BUNDLE_IMG defines the image:tag used for the bundle.
@@ -310,12 +310,12 @@ bundle: operator-sdk manifests kustomize ## Generate bundle manifests and metada
 	$(SED) -i '/^    createdAt:.*/d' bundle/manifests/gatekeeper-operator.clusterserviceversion.yaml
 	$(SED) -i 's/$(CHANNELS)/"$(CHANNELS)"/g' bundle/metadata/annotations.yaml
 	$(SED) -i 's/^    olm.skipRange:.*/    olm.skipRange: "<$(shell echo $(VERSION) | cut -d '.' -f 1-2).0"/' bundle/manifests/gatekeeper-operator.clusterserviceversion.yaml
-  ifneq ($(REPLACES_VERSION), none)
-	  $(SED) -i 's/^  replaces:.*/  replaces: gatekeeper-operator.v$(REPLACES_VERSION)/' bundle/manifests/gatekeeper-operator.clusterserviceversion.yaml
-  else
-	  $(SED) -i 's/^  replaces:.*/  # replaces: none/' bundle/manifests/gatekeeper-operator.clusterserviceversion.yaml
-  endif
-	$(OPERATOR_SDK) bundle validate ./bundle
+#   ifneq ($(REPLACES_VERSION), none)
+# 	 # $(SED) -i 's/^  replaces:.*/  replaces: gatekeeper-operator.v$(REPLACES_VERSION)/' bundle/manifests/gatekeeper-operator.clusterserviceversion.yaml
+#   else
+# 	 # $(SED) -i 's/^  replaces:.*/  # replaces: none/' bundle/manifests/gatekeeper-operator.clusterserviceversion.yaml
+#   endif
+# 	$(OPERATOR_SDK) bundle validate ./bundle
 
 # Requires running cluster (for example through 'make test-cluster')
 .PHONY: scorecard
@@ -359,11 +359,12 @@ import-manifests: kustomize
 	fi
 
 	cd $(GATEKEEPER_MANIFEST_DIR) && $(KUSTOMIZE) edit add resource *.yaml
-
+tt:
+	$(OPM) index add --bundles $(BUNDLE_IMG) --tag $(BUNDLE_INDEX_IMG) -c $(DOCKER)
 # Build the bundle index image.
 .PHONY: bundle-index-build
 bundle-index-build: opm
-	$(OPM) index add --bundles $(BUNDLE_IMG) --tag $(BUNDLE_INDEX_IMG) # -c $(DOCKER)
+	$(OPM) index add --bundles $(BUNDLE_IMG) --tag $(BUNDLE_INDEX_IMG) -c $(DOCKER) --use-http    
 	$(OPM) migrate $(BUNDLE_INDEX_IMG) catalog_dir
 	#-rm catalog_dir.dockerfile 
 	$(OPM) generate dockerfile catalog_dir --binary-image registry.redhat.io/openshift4/ose-operator-registry:v4.14
