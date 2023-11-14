@@ -54,7 +54,7 @@ DOCKER ?= docker
 #
 # For example, running 'make bundle-build bundle-push catalog-build catalog-push' will build and push both
 # gatekeeper.sh/gatekeeper-operator-bundle:$VERSION and gatekeeper.sh/gatekeeper-operator-catalog:$VERSION.
-REPO ?= quay.io/yikim
+REPO ?= quay.io/gatekeeper
 IMAGE_TAG_BASE ?= $(REPO)/gatekeeper-operator
 
 # BUNDLE_IMG defines the image:tag used for the bundle.
@@ -364,8 +364,8 @@ tt:
 # Build the bundle index image.
 .PHONY: bundle-index-build
 bundle-index-build: opm
-	$(OPM) index add --bundles $(BUNDLE_IMG) --tag $(BUNDLE_INDEX_IMG) -c $(DOCKER) --use-http    
-	$(OPM) migrate $(BUNDLE_INDEX_IMG) catalog_dir
+	$(OPM) index add  --use-http --bundles $(BUNDLE_IMG) --tag $(BUNDLE_INDEX_IMG) -c $(DOCKER)   
+	$(OPM) migrate $(BUNDLE_INDEX_IMG) catalog_dir --use-http    
 	#-rm catalog_dir.dockerfile 
 	$(OPM) generate dockerfile catalog_dir --binary-image registry.redhat.io/openshift4/ose-operator-registry:v4.14
 	#$(OPM) init $(OPERATOR_NAME) --default-channel=stable --description=./README.md --output --icon=./gatekeeper_logo.svg  --output yaml > catalog_dir/index.yaml
