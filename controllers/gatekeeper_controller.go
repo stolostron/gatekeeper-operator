@@ -50,42 +50,44 @@ import (
 )
 
 const (
-	defaultGatekeeperCrName           = "gatekeeper"
-	GatekeeperImageEnvVar             = "RELATED_IMAGE_GATEKEEPER"
-	NamespaceFile                     = "v1_namespace_gatekeeper-system.yaml"
-	AssignCRDFile                     = "apiextensions.k8s.io_v1_customresourcedefinition_assign.mutations.gatekeeper.sh.yaml"
-	AssignMetadataCRDFile             = "apiextensions.k8s.io_v1_customresourcedefinition_assignmetadata.mutations.gatekeeper.sh.yaml"
-	MutatorPodStatusCRDFile           = "apiextensions.k8s.io_v1_customresourcedefinition_mutatorpodstatuses.status.gatekeeper.sh.yaml"
-	ModifySetCRDFile                  = "apiextensions.k8s.io_v1_customresourcedefinition_modifyset.mutations.gatekeeper.sh.yaml"
-	ProviderCRDFile                   = "apiextensions.k8s.io_v1_customresourcedefinition_providers.externaldata.gatekeeper.sh.yaml"
-	AuditFile                         = "apps_v1_deployment_gatekeeper-audit.yaml"
-	WebhookFile                       = "apps_v1_deployment_gatekeeper-controller-manager.yaml"
-	ClusterRoleFile                   = "rbac.authorization.k8s.io_v1_clusterrole_gatekeeper-manager-role.yaml"
-	ClusterRoleBindingFile            = "rbac.authorization.k8s.io_v1_clusterrolebinding_gatekeeper-manager-rolebinding.yaml"
-	RoleFile                          = "rbac.authorization.k8s.io_v1_role_gatekeeper-manager-role.yaml"
-	RoleBindingFile                   = "rbac.authorization.k8s.io_v1_rolebinding_gatekeeper-manager-rolebinding.yaml"
-	ServerCertFile                    = "v1_secret_gatekeeper-webhook-server-cert.yaml"
-	ValidatingWebhookConfiguration    = "admissionregistration.k8s.io_v1_validatingwebhookconfiguration_gatekeeper-validating-webhook-configuration.yaml"
-	MutatingWebhookConfiguration      = "admissionregistration.k8s.io_v1_mutatingwebhookconfiguration_gatekeeper-mutating-webhook-configuration.yaml"
-	ValidationGatekeeperWebhook       = "validation.gatekeeper.sh"
-	CheckIgnoreLabelGatekeeperWebhook = "check-ignore-label.gatekeeper.sh"
-	MutationGatekeeperWebhook         = "mutation.gatekeeper.sh"
-	AuditDeploymentName               = "gatekeeper-audit"
-	WebhookDeploymentName             = "gatekeeper-controller-manager"
-	managerContainer                  = "manager"
-	LogLevelArg                       = "--log-level"
-	AuditIntervalArg                  = "--audit-interval"
-	ConstraintViolationLimitArg       = "--constraint-violations-limit"
-	AuditFromCacheArg                 = "--audit-from-cache"
-	AuditChunkSizeArg                 = "--audit-chunk-size"
-	EmitAuditEventsArg                = "--emit-audit-events"
-	EmitAdmissionEventsArg            = "--emit-admission-events"
-	ExemptNamespaceArg                = "--exempt-namespace"
-	EnableMutationArg                 = "--enable-mutation"
-	OperationArg                      = "--operation"
-	OperationMutationStatus           = "mutation-status"
-	OperationMutationWebhook          = "mutation-webhook"
-	DisabledBuiltinArg                = "--disable-opa-builtin"
+	defaultGatekeeperCrName             = "gatekeeper"
+	GatekeeperImageEnvVar               = "RELATED_IMAGE_GATEKEEPER"
+	NamespaceFile                       = "v1_namespace_gatekeeper-system.yaml"
+	AssignCRDFile                       = "apiextensions.k8s.io_v1_customresourcedefinition_assign.mutations.gatekeeper.sh.yaml"
+	AssignMetadataCRDFile               = "apiextensions.k8s.io_v1_customresourcedefinition_assignmetadata.mutations.gatekeeper.sh.yaml"
+	MutatorPodStatusCRDFile             = "apiextensions.k8s.io_v1_customresourcedefinition_mutatorpodstatuses.status.gatekeeper.sh.yaml"
+	ModifySetCRDFile                    = "apiextensions.k8s.io_v1_customresourcedefinition_modifyset.mutations.gatekeeper.sh.yaml"
+	ProviderCRDFile                     = "apiextensions.k8s.io_v1_customresourcedefinition_providers.externaldata.gatekeeper.sh.yaml"
+	AuditFile                           = "apps_v1_deployment_gatekeeper-audit.yaml"
+	WebhookFile                         = "apps_v1_deployment_gatekeeper-controller-manager.yaml"
+	ClusterRoleFile                     = "rbac.authorization.k8s.io_v1_clusterrole_gatekeeper-manager-role.yaml"
+	ClusterRoleBindingFile              = "rbac.authorization.k8s.io_v1_clusterrolebinding_gatekeeper-manager-rolebinding.yaml"
+	RoleFile                            = "rbac.authorization.k8s.io_v1_role_gatekeeper-manager-role.yaml"
+	RoleBindingFile                     = "rbac.authorization.k8s.io_v1_rolebinding_gatekeeper-manager-rolebinding.yaml"
+	ServerCertFile                      = "v1_secret_gatekeeper-webhook-server-cert.yaml"
+	ValidatingWebhookConfiguration      = "admissionregistration.k8s.io_v1_validatingwebhookconfiguration_gatekeeper-validating-webhook-configuration.yaml"
+	MutatingWebhookConfiguration        = "admissionregistration.k8s.io_v1_mutatingwebhookconfiguration_gatekeeper-mutating-webhook-configuration.yaml"
+	ValidationGatekeeperWebhook         = "validation.gatekeeper.sh"
+	CheckIgnoreLabelGatekeeperWebhook   = "check-ignore-label.gatekeeper.sh"
+	MutationGatekeeperWebhook           = "mutation.gatekeeper.sh"
+	AuditDeploymentName                 = "gatekeeper-audit"
+	WebhookDeploymentName               = "gatekeeper-controller-manager"
+	managerContainer                    = "manager"
+	LogLevelArg                         = "--log-level"
+	AuditIntervalArg                    = "--audit-interval"
+	ConstraintViolationLimitArg         = "--constraint-violations-limit"
+	AuditFromCacheArg                   = "--audit-from-cache"
+	AuditChunkSizeArg                   = "--audit-chunk-size"
+	EmitAuditEventsArg                  = "--emit-audit-events"
+	EmitAdmissionEventsArg              = "--emit-admission-events"
+	AdmissionEventsInvolvedNamespaceArg = "--admission-events-involved-namespace"
+	AuditEventsInvolvedNamespaceArg     = "--audit-events-involved-namespace"
+	ExemptNamespaceArg                  = "--exempt-namespace"
+	EnableMutationArg                   = "--enable-mutation"
+	OperationArg                        = "--operation"
+	OperationMutationStatus             = "mutation-status"
+	OperationMutationWebhook            = "mutation-webhook"
+	DisabledBuiltinArg                  = "--disable-opa-builtin"
 )
 
 var (
@@ -97,6 +99,8 @@ var (
 		"apiextensions.k8s.io_v1_customresourcedefinition_constrainttemplatepodstatuses.status.gatekeeper.sh.yaml",
 		"apiextensions.k8s.io_v1_customresourcedefinition_constraintpodstatuses.status.gatekeeper.sh.yaml",
 		"apiextensions.k8s.io_v1_customresourcedefinition_expansiontemplate.expansion.gatekeeper.sh.yaml",
+		"apiextensions.k8s.io_v1_customresourcedefinition_expansiontemplatepodstatuses.status.gatekeeper.sh.yaml",
+		"apiextensions.k8s.io_v1_customresourcedefinition_assignimage.mutations.gatekeeper.sh.yaml",
 		ModifySetCRDFile,
 		ProviderCRDFile,
 		AssignCRDFile,
@@ -159,7 +163,7 @@ const (
 
 // Cluster Scoped
 // +kubebuilder:rbac:groups=*,resources=*,verbs=get;list;watch
-// +kubebuilder:rbac:groups=core,resources=namespaces,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=core,resources=namespaces;events,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=apiextensions.k8s.io,resources=customresourcedefinitions,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=config.gatekeeper.sh,resources=configs,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=config.gatekeeper.sh,resources=configs/status,verbs=get;update;patch
@@ -174,6 +178,7 @@ const (
 // +kubebuilder:rbac:groups=admissionregistration.k8s.io,resources=validatingwebhookconfigurations,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=admissionregistration.k8s.io,resources=mutatingwebhookconfigurations,verbs=create;delete;get;list;patch;update;watch
 // +kubebuilder:rbac:groups=externaldata.gatekeeper.sh,resources=providers,verbs=create;delete;get;list;patch;update;watch
+// +kubebuilder:rbac:groups=expansion.gatekeeper.sh,resources=*,verbs=create;delete;get;list;patch;update;watch
 
 // Namespace Scoped
 // +kubebuilder:rbac:groups=core,namespace="system",resources=secrets;serviceaccounts;services;resourcequotas,verbs=get;list;watch;create;update;patch;delete
@@ -617,6 +622,9 @@ func auditOverrides(obj *unstructured.Unstructured, audit *operatorv1alpha1.Audi
 		if err := setEmitEvents(obj, EmitAuditEventsArg, audit.EmitAuditEvents); err != nil {
 			return err
 		}
+		if err := setEventsInvolvedNamespace(obj, AuditEventsInvolvedNamespaceArg, audit.AuditEventsInvolvedNamespace); err != nil {
+			return err
+		}
 		if err := setResources(obj, audit.Resources); err != nil {
 			return err
 		}
@@ -629,19 +637,29 @@ func webhookOverrides(obj *unstructured.Unstructured, webhook *operatorv1alpha1.
 		if err := setReplicas(obj, webhook.Replicas); err != nil {
 			return err
 		}
+
 		if err := setLogLevel(obj, webhook.LogLevel); err != nil {
 			return err
 		}
+
 		if err := setEmitEvents(obj, EmitAdmissionEventsArg, webhook.EmitAdmissionEvents); err != nil {
 			return err
 		}
+
+		if err := setEventsInvolvedNamespace(obj, AdmissionEventsInvolvedNamespaceArg,
+			webhook.AdmissionEventsInvolvedNamespace); err != nil {
+			return err
+		}
+
 		if err := setResources(obj, webhook.Resources); err != nil {
 			return err
 		}
+
 		if err := setDisabledBuiltins(obj, webhook.DisabledBuiltins); err != nil {
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -855,6 +873,21 @@ func setEmitEvents(obj *unstructured.Unstructured, argName string, emitEvents *o
 		}
 		return setContainerArg(obj, managerContainer, argName, emitArgValue, false)
 	}
+	return nil
+}
+
+func setEventsInvolvedNamespace(obj *unstructured.Unstructured,
+	argName string, eventsInvolvedNs *operatorv1alpha1.EventsInvolvedNsMode,
+) error {
+	if eventsInvolvedNs != nil {
+		emitEventsInvolvedNsArgValue := "false"
+		if *eventsInvolvedNs == operatorv1alpha1.EventsInvolvedNsModeEnabled {
+			emitEventsInvolvedNsArgValue = "true"
+		}
+
+		return setContainerArg(obj, managerContainer, argName, emitEventsInvolvedNsArgValue, false)
+	}
+
 	return nil
 }
 

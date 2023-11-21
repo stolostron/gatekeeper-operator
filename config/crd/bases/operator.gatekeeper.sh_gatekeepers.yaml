@@ -863,6 +863,11 @@ spec:
                     format: int64
                     minimum: 0
                     type: integer
+                  auditEventsInvolvedNamespace:
+                    enum:
+                    - Enabled
+                    - Disabled
+                    type: string
                   auditFromCache:
                     description: Setting Automatic lets the Gatekeeper operator manage
                       syncOnly in the config resource. It is not recommended to use
@@ -1021,6 +1026,11 @@ spec:
                 type: string
               webhook:
                 properties:
+                  admissionEventsInvolvedNamespace:
+                    enum:
+                    - Enabled
+                    - Disabled
+                    type: string
                   disabledBuiltins:
                     items:
                       type: string

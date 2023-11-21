@@ -146,7 +146,7 @@ tidy: ## Run go mod tidy
 
 .PHONY: test
 test: manifests generate fmt vet envtest ## Run tests.
-	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" GOFLAGS=$(GOFLAGS) go test $(go list ./... | grep -v /test/) -coverprofile cover.out
+	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" GOFLAGS=$(GOFLAGS) go test $$(go list ./... | grep -v /test/) -coverprofile cover.out
 
 .PHONY: test-e2e
 test-e2e: e2e-dependencies generate fmt vet ## Run e2e tests, using the configured Kubernetes cluster in ~/.kube/config
@@ -375,7 +375,7 @@ TMP_IMPORT_MANIFESTS_PATH := $(shell mktemp -d)
 .PHONY: import-manifests
 import-manifests: kustomize
 	if [[ $(IMPORT_MANIFESTS_PATH) =~ https://* ]]; then \
-		git clone --branch $(GATEKEEPER_VERSION) $(IMPORT_MANIFESTS_PATH) $(TMP_IMPORT_MANIFESTS_PATH) ; \
+		git clone --branch v$(shell cut -d '-' -f 1 VERSION)  $(IMPORT_MANIFESTS_PATH) $(TMP_IMPORT_MANIFESTS_PATH) ; \
 		cd $(TMP_IMPORT_MANIFESTS_PATH) && make patch-image ; \
 		$(KUSTOMIZE) build --load-restrictor LoadRestrictionsNone $(TMP_IMPORT_MANIFESTS_PATH)/config/default -o $(MAKEFILE_DIR)/$(GATEKEEPER_MANIFEST_DIR); \
 		rm -rf "$${TMP_IMPORT_MANIFESTS_PATH}" ; \
@@ -442,9 +442,6 @@ $(OPERATOR_SDK):
 	mkdir -p $(@D)
 	curl -L $(OPERATOR_SDK_URL) -o $(OPERATOR_SDK) || (echo "curl returned $$? trying to fetch operator-sdk"; exit 1)
 	chmod +x $(OPERATOR_SDK)
-
-# Current Gatekeeper version
-GATEKEEPER_VERSION ?= v3.11.1
 
 # Default bundle index image tag
 BUNDLE_INDEX_IMG ?= $(IMAGE_TAG_BASE)-bundle-index:v$(VERSION)

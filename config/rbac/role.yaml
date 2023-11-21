@@ -85,7 +85,20 @@ rules:
 - apiGroups:
   - ""
   resources:
+  - events
   - namespaces
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - expansion.gatekeeper.sh
+  resources:
+  - '*'
   verbs:
   - create
   - delete
