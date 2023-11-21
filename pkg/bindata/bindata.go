@@ -3,12 +3,14 @@
 // config/gatekeeper-rendered/admissionregistration.k8s.io_v1_mutatingwebhookconfiguration_gatekeeper-mutating-webhook-configuration.yaml
 // config/gatekeeper-rendered/admissionregistration.k8s.io_v1_validatingwebhookconfiguration_gatekeeper-validating-webhook-configuration.yaml
 // config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_assign.mutations.gatekeeper.sh.yaml
+// config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_assignimage.mutations.gatekeeper.sh.yaml
 // config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_assignmetadata.mutations.gatekeeper.sh.yaml
 // config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_configs.config.gatekeeper.sh.yaml
 // config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_constraintpodstatuses.status.gatekeeper.sh.yaml
 // config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_constrainttemplatepodstatuses.status.gatekeeper.sh.yaml
 // config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_constrainttemplates.templates.gatekeeper.sh.yaml
 // config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_expansiontemplate.expansion.gatekeeper.sh.yaml
+// config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_expansiontemplatepodstatuses.status.gatekeeper.sh.yaml
 // config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_modifyset.mutations.gatekeeper.sh.yaml
 // config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_mutatorpodstatuses.status.gatekeeper.sh.yaml
 // config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_providers.externaldata.gatekeeper.sh.yaml
@@ -320,7 +322,7 @@ spec:
                         end. Ex: "kube-*" will match "kube-system" or "kube-public",
                         "*-system" will match "kube-system" or "gatekeeper-system".  The
                         asterisk is required for wildcard matching.'
-                      pattern: ^(\*|\*-)?[a-z0-9]([-a-z0-9]*[a-z0-9])?(\*|-\*)?$
+                      pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                       type: string
                     type: array
                   kinds:
@@ -399,7 +401,7 @@ spec:
                       a prefix or suffix glob.  For example, ` + "`" + `name: pod-*` + "`" + ` would match
                       both ` + "`" + `pod-a` + "`" + ` and ` + "`" + `pod-b` + "`" + `, and ` + "`" + `name: *-pod` + "`" + ` would match both
                       ` + "`" + `a-pod` + "`" + ` and ` + "`" + `b-pod` + "`" + `.'
-                    pattern: ^(\*|\*-)?[a-z0-9]([-a-z0-9]*[a-z0-9])?(\*|-\*)?$
+                    pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                     type: string
                   namespaceSelector:
                     description: NamespaceSelector is a label selector against an
@@ -458,7 +460,7 @@ spec:
                         end. Ex: "kube-*" will match "kube-system" or "kube-public",
                         "*-system" will match "kube-system" or "gatekeeper-system".  The
                         asterisk is required for wildcard matching.'
-                      pattern: ^(\*|\*-)?[a-z0-9]([-a-z0-9]*[a-z0-9])?(\*|-\*)?$
+                      pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                       type: string
                     type: array
                   scope:
@@ -667,7 +669,7 @@ spec:
                         end. Ex: "kube-*" will match "kube-system" or "kube-public",
                         "*-system" will match "kube-system" or "gatekeeper-system".  The
                         asterisk is required for wildcard matching.'
-                      pattern: ^(\*|\*-)?[a-z0-9]([-a-z0-9]*[a-z0-9])?(\*|-\*)?$
+                      pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                       type: string
                     type: array
                   kinds:
@@ -746,7 +748,7 @@ spec:
                       a prefix or suffix glob.  For example, ` + "`" + `name: pod-*` + "`" + ` would match
                       both ` + "`" + `pod-a` + "`" + ` and ` + "`" + `pod-b` + "`" + `, and ` + "`" + `name: *-pod` + "`" + ` would match both
                       ` + "`" + `a-pod` + "`" + ` and ` + "`" + `b-pod` + "`" + `.'
-                    pattern: ^(\*|\*-)?[a-z0-9]([-a-z0-9]*[a-z0-9])?(\*|-\*)?$
+                    pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                     type: string
                   namespaceSelector:
                     description: NamespaceSelector is a label selector against an
@@ -805,7 +807,7 @@ spec:
                         end. Ex: "kube-*" will match "kube-system" or "kube-public",
                         "*-system" will match "kube-system" or "gatekeeper-system".  The
                         asterisk is required for wildcard matching.'
-                      pattern: ^(\*|\*-)?[a-z0-9]([-a-z0-9]*[a-z0-9])?(\*|-\*)?$
+                      pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                       type: string
                     type: array
                   scope:
@@ -1014,7 +1016,7 @@ spec:
                         end. Ex: "kube-*" will match "kube-system" or "kube-public",
                         "*-system" will match "kube-system" or "gatekeeper-system".  The
                         asterisk is required for wildcard matching.'
-                      pattern: ^(\*|\*-)?[a-z0-9]([-a-z0-9]*[a-z0-9])?(\*|-\*)?$
+                      pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                       type: string
                     type: array
                   kinds:
@@ -1093,7 +1095,7 @@ spec:
                       a prefix or suffix glob.  For example, ` + "`" + `name: pod-*` + "`" + ` would match
                       both ` + "`" + `pod-a` + "`" + ` and ` + "`" + `pod-b` + "`" + `, and ` + "`" + `name: *-pod` + "`" + ` would match both
                       ` + "`" + `a-pod` + "`" + ` and ` + "`" + `b-pod` + "`" + `.'
-                    pattern: ^(\*|\*-)?[a-z0-9]([-a-z0-9]*[a-z0-9])?(\*|-\*)?$
+                    pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                     type: string
                   namespaceSelector:
                     description: NamespaceSelector is a label selector against an
@@ -1152,7 +1154,7 @@ spec:
                         end. Ex: "kube-*" will match "kube-system" or "kube-public",
                         "*-system" will match "kube-system" or "gatekeeper-system".  The
                         asterisk is required for wildcard matching.'
-                      pattern: ^(\*|\*-)?[a-z0-9]([-a-z0-9]*[a-z0-9])?(\*|-\*)?$
+                      pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                       type: string
                     type: array
                   scope:
@@ -1314,7 +1316,7 @@ func configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_assi
 	return a, nil
 }
 
-var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_assignmetadataMutationsGatekeeperShYaml = []byte(`apiVersion: apiextensions.k8s.io/v1
+var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_assignimageMutationsGatekeeperShYaml = []byte(`apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
@@ -1322,21 +1324,21 @@ metadata:
   creationTimestamp: null
   labels:
     gatekeeper.sh/system: "yes"
-  name: assignmetadata.mutations.gatekeeper.sh
+  name: assignimage.mutations.gatekeeper.sh
 spec:
   group: mutations.gatekeeper.sh
   names:
-    kind: AssignMetadata
-    listKind: AssignMetadataList
-    plural: assignmetadata
-    singular: assignmetadata
+    kind: AssignImage
+    listKind: AssignImageList
+    plural: assignimage
+    singular: assignimage
   preserveUnknownFields: false
   scope: Cluster
   versions:
-  - name: v1
+  - name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: AssignMetadata is the Schema for the assignmetadata API.
+        description: AssignImage is the Schema for the assignimage API.
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -1355,12 +1357,39 @@ spec:
                 type: string
             type: object
           spec:
-            description: AssignMetadataSpec defines the desired state of AssignMetadata.
+            description: AssignImageSpec defines the desired state of AssignImage.
             properties:
+              applyTo:
+                description: ApplyTo lists the specific groups, versions and kinds
+                  a mutation will be applied to. This is necessary because every mutation
+                  implies part of an object schema and object schemas are associated
+                  with specific GVKs.
+                items:
+                  description: ApplyTo determines what GVKs items the mutation should
+                    apply to. Globs are not allowed.
+                  properties:
+                    groups:
+                      items:
+                        type: string
+                      type: array
+                    kinds:
+                      items:
+                        type: string
+                      type: array
+                    versions:
+                      items:
+                        type: string
+                      type: array
+                  type: object
+                type: array
               location:
+                description: 'Location describes the path to be mutated, for example:
+                  ` + "`" + `spec.containers[name: main].image` + "`" + `.'
                 type: string
               match:
-                description: Match selects objects to apply mutations to.
+                description: Match allows the user to limit which resources get mutated.
+                  Individual match criteria are AND-ed together. An undefined match
+                  criteria matches everything.
                 properties:
                   excludedNamespaces:
                     description: 'ExcludedNamespaces is a list of namespace names.
@@ -1374,7 +1403,7 @@ spec:
                         end. Ex: "kube-*" will match "kube-system" or "kube-public",
                         "*-system" will match "kube-system" or "gatekeeper-system".  The
                         asterisk is required for wildcard matching.'
-                      pattern: ^(\*|\*-)?[a-z0-9]([-a-z0-9]*[a-z0-9])?(\*|-\*)?$
+                      pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                       type: string
                     type: array
                   kinds:
@@ -1453,7 +1482,7 @@ spec:
                       a prefix or suffix glob.  For example, ` + "`" + `name: pod-*` + "`" + ` would match
                       both ` + "`" + `pod-a` + "`" + ` and ` + "`" + `pod-b` + "`" + `, and ` + "`" + `name: *-pod` + "`" + ` would match both
                       ` + "`" + `a-pod` + "`" + ` and ` + "`" + `b-pod` + "`" + `.'
-                    pattern: ^(\*|\*-)?[a-z0-9]([-a-z0-9]*[a-z0-9])?(\*|-\*)?$
+                    pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                     type: string
                   namespaceSelector:
                     description: NamespaceSelector is a label selector against an
@@ -1512,7 +1541,329 @@ spec:
                         end. Ex: "kube-*" will match "kube-system" or "kube-public",
                         "*-system" will match "kube-system" or "gatekeeper-system".  The
                         asterisk is required for wildcard matching.'
-                      pattern: ^(\*|\*-)?[a-z0-9]([-a-z0-9]*[a-z0-9])?(\*|-\*)?$
+                      pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
+                      type: string
+                    type: array
+                  scope:
+                    description: Scope determines if cluster-scoped and/or namespaced-scoped
+                      resources are matched.  Accepts ` + "`" + `*` + "`" + `, ` + "`" + `Cluster` + "`" + `, or ` + "`" + `Namespaced` + "`" + `.
+                      (defaults to ` + "`" + `*` + "`" + `)
+                    type: string
+                  source:
+                    description: Source determines whether generated or original resources
+                      are matched. Accepts ` + "`" + `Generated` + "`" + `|` + "`" + `Original` + "`" + `|` + "`" + `All` + "`" + ` (defaults
+                      to ` + "`" + `All` + "`" + `). A value of ` + "`" + `Generated` + "`" + ` will only match generated
+                      resources, while ` + "`" + `Original` + "`" + ` will only match regular resources.
+                    enum:
+                    - All
+                    - Generated
+                    - Original
+                    type: string
+                type: object
+              parameters:
+                description: Parameters define the behavior of the mutator.
+                properties:
+                  assignDomain:
+                    description: AssignDomain sets the domain component on an image
+                      string. The trailing slash should not be included.
+                    type: string
+                  assignPath:
+                    description: AssignPath sets the domain component on an image
+                      string.
+                    type: string
+                  assignTag:
+                    description: AssignImage sets the image component on an image
+                      string. It must start with a ` + "`" + `:` + "`" + ` or ` + "`" + `@` + "`" + `.
+                    type: string
+                  pathTests:
+                    items:
+                      description: "PathTest allows the user to customize how the
+                        mutation works if parent paths are missing. It traverses the
+                        list in order. All sub paths are tested against the provided
+                        condition, if the test fails, the mutation is not applied.
+                        All ` + "`" + `subPath` + "`" + ` entries must be a prefix of ` + "`" + `location` + "`" + `. Any
+                        glob characters will take on the same value as was used to
+                        expand the matching glob in ` + "`" + `location` + "`" + `. \n Available Tests:
+                        * MustExist    - the path must exist or do not mutate * MustNotExist
+                        - the path must not exist or do not mutate."
+                      properties:
+                        condition:
+                          description: Condition describes whether the path either
+                            MustExist or MustNotExist in the original object
+                          enum:
+                          - MustExist
+                          - MustNotExist
+                          type: string
+                        subPath:
+                          type: string
+                      type: object
+                    type: array
+                type: object
+            type: object
+          status:
+            description: AssignImageStatus defines the observed state of AssignImage.
+            properties:
+              byPod:
+                items:
+                  description: MutatorPodStatusStatus defines the observed state of
+                    MutatorPodStatus.
+                  properties:
+                    enforced:
+                      type: boolean
+                    errors:
+                      items:
+                        description: MutatorError represents a single error caught
+                          while adding a mutator to a system.
+                        properties:
+                          message:
+                            type: string
+                          type:
+                            description: Type indicates a specific class of error
+                              for use by controller code. If not present, the error
+                              should be treated as not matching any known type.
+                            type: string
+                        required:
+                        - message
+                        type: object
+                      type: array
+                    id:
+                      type: string
+                    mutatorUID:
+                      description: Storing the mutator UID allows us to detect drift,
+                        such as when a mutator has been recreated after its CRD was
+                        deleted out from under it, interrupting the watch
+                      type: string
+                    observedGeneration:
+                      format: int64
+                      type: integer
+                    operations:
+                      items:
+                        type: string
+                      type: array
+                  type: object
+                type: array
+            type: object
+        type: object
+    served: true
+    storage: true
+    subresources:
+      status: {}
+`)
+
+func configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_assignimageMutationsGatekeeperShYamlBytes() ([]byte, error) {
+	return _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_assignimageMutationsGatekeeperShYaml, nil
+}
+
+func configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_assignimageMutationsGatekeeperShYaml() (*asset, error) {
+	bytes, err := configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_assignimageMutationsGatekeeperShYamlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_assignimage.mutations.gatekeeper.sh.yaml", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info}
+	return a, nil
+}
+
+var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_assignmetadataMutationsGatekeeperShYaml = []byte(`apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.10.0
+  creationTimestamp: null
+  labels:
+    gatekeeper.sh/system: "yes"
+  name: assignmetadata.mutations.gatekeeper.sh
+spec:
+  group: mutations.gatekeeper.sh
+  names:
+    kind: AssignMetadata
+    listKind: AssignMetadataList
+    plural: assignmetadata
+    singular: assignmetadata
+  preserveUnknownFields: false
+  scope: Cluster
+  versions:
+  - name: v1
+    schema:
+      openAPIV3Schema:
+        description: AssignMetadata is the Schema for the assignmetadata API.
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            properties:
+              name:
+                maxLength: 63
+                type: string
+            type: object
+          spec:
+            description: AssignMetadataSpec defines the desired state of AssignMetadata.
+            properties:
+              location:
+                type: string
+              match:
+                description: Match selects which objects are in scope.
+                properties:
+                  excludedNamespaces:
+                    description: 'ExcludedNamespaces is a list of namespace names.
+                      If defined, a constraint only applies to resources not in a
+                      listed namespace. ExcludedNamespaces also supports a prefix
+                      or suffix based glob.  For example, ` + "`" + `excludedNamespaces: [kube-*]` + "`" + `
+                      matches both ` + "`" + `kube-system` + "`" + ` and ` + "`" + `kube-public` + "`" + `, and ` + "`" + `excludedNamespaces:
+                      [*-system]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and ` + "`" + `gatekeeper-system` + "`" + `.'
+                    items:
+                      description: 'A string that supports globbing at its front or
+                        end. Ex: "kube-*" will match "kube-system" or "kube-public",
+                        "*-system" will match "kube-system" or "gatekeeper-system".  The
+                        asterisk is required for wildcard matching.'
+                      pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
+                      type: string
+                    type: array
+                  kinds:
+                    items:
+                      description: Kinds accepts a list of objects with apiGroups
+                        and kinds fields that list the groups/kinds of objects to
+                        which the mutation will apply. If multiple groups/kinds objects
+                        are specified, only one match is needed for the resource to
+                        be in scope.
+                      properties:
+                        apiGroups:
+                          description: APIGroups is the API groups the resources belong
+                            to. '*' is all groups. If '*' is present, the length of
+                            the slice must be one. Required.
+                          items:
+                            type: string
+                          type: array
+                        kinds:
+                          items:
+                            type: string
+                          type: array
+                      type: object
+                    type: array
+                  labelSelector:
+                    description: 'LabelSelector is the combination of two optional
+                      fields: ` + "`" + `matchLabels` + "`" + ` and ` + "`" + `matchExpressions` + "`" + `.  These two fields
+                      provide different methods of selecting or excluding k8s objects
+                      based on the label keys and values included in object metadata.  All
+                      selection expressions from both sections are ANDed to determine
+                      if an object meets the cumulative requirements of the selector.'
+                    properties:
+                      matchExpressions:
+                        description: matchExpressions is a list of label selector
+                          requirements. The requirements are ANDed.
+                        items:
+                          description: A label selector requirement is a selector
+                            that contains values, a key, and an operator that relates
+                            the key and values.
+                          properties:
+                            key:
+                              description: key is the label key that the selector
+                                applies to.
+                              type: string
+                            operator:
+                              description: operator represents a key's relationship
+                                to a set of values. Valid operators are In, NotIn,
+                                Exists and DoesNotExist.
+                              type: string
+                            values:
+                              description: values is an array of string values. If
+                                the operator is In or NotIn, the values array must
+                                be non-empty. If the operator is Exists or DoesNotExist,
+                                the values array must be empty. This array is replaced
+                                during a strategic merge patch.
+                              items:
+                                type: string
+                              type: array
+                          required:
+                          - key
+                          - operator
+                          type: object
+                        type: array
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: matchLabels is a map of {key,value} pairs. A
+                          single {key,value} in the matchLabels map is equivalent
+                          to an element of matchExpressions, whose key field is "key",
+                          the operator is "In", and the values array contains only
+                          "value". The requirements are ANDed.
+                        type: object
+                    type: object
+                  name:
+                    description: 'Name is the name of an object.  If defined, it will
+                      match against objects with the specified name.  Name also supports
+                      a prefix or suffix glob.  For example, ` + "`" + `name: pod-*` + "`" + ` would match
+                      both ` + "`" + `pod-a` + "`" + ` and ` + "`" + `pod-b` + "`" + `, and ` + "`" + `name: *-pod` + "`" + ` would match both
+                      ` + "`" + `a-pod` + "`" + ` and ` + "`" + `b-pod` + "`" + `.'
+                    pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
+                    type: string
+                  namespaceSelector:
+                    description: NamespaceSelector is a label selector against an
+                      object's containing namespace or the object itself, if the object
+                      is a namespace.
+                    properties:
+                      matchExpressions:
+                        description: matchExpressions is a list of label selector
+                          requirements. The requirements are ANDed.
+                        items:
+                          description: A label selector requirement is a selector
+                            that contains values, a key, and an operator that relates
+                            the key and values.
+                          properties:
+                            key:
+                              description: key is the label key that the selector
+                                applies to.
+                              type: string
+                            operator:
+                              description: operator represents a key's relationship
+                                to a set of values. Valid operators are In, NotIn,
+                                Exists and DoesNotExist.
+                              type: string
+                            values:
+                              description: values is an array of string values. If
+                                the operator is In or NotIn, the values array must
+                                be non-empty. If the operator is Exists or DoesNotExist,
+                                the values array must be empty. This array is replaced
+                                during a strategic merge patch.
+                              items:
+                                type: string
+                              type: array
+                          required:
+                          - key
+                          - operator
+                          type: object
+                        type: array
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: matchLabels is a map of {key,value} pairs. A
+                          single {key,value} in the matchLabels map is equivalent
+                          to an element of matchExpressions, whose key field is "key",
+                          the operator is "In", and the values array contains only
+                          "value". The requirements are ANDed.
+                        type: object
+                    type: object
+                  namespaces:
+                    description: 'Namespaces is a list of namespace names. If defined,
+                      a constraint only applies to resources in a listed namespace.  Namespaces
+                      also supports a prefix or suffix based glob.  For example, ` + "`" + `namespaces:
+                      [kube-*]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and ` + "`" + `kube-public` + "`" + `, and
+                      ` + "`" + `namespaces: [*-system]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and ` + "`" + `gatekeeper-system` + "`" + `.'
+                    items:
+                      description: 'A string that supports globbing at its front or
+                        end. Ex: "kube-*" will match "kube-system" or "kube-public",
+                        "*-system" will match "kube-system" or "gatekeeper-system".  The
+                        asterisk is required for wildcard matching.'
+                      pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                       type: string
                     type: array
                   scope:
@@ -1659,7 +2010,7 @@ spec:
               location:
                 type: string
               match:
-                description: Match selects objects to apply mutations to.
+                description: Match selects which objects are in scope.
                 properties:
                   excludedNamespaces:
                     description: 'ExcludedNamespaces is a list of namespace names.
@@ -1673,7 +2024,7 @@ spec:
                         end. Ex: "kube-*" will match "kube-system" or "kube-public",
                         "*-system" will match "kube-system" or "gatekeeper-system".  The
                         asterisk is required for wildcard matching.'
-                      pattern: ^(\*|\*-)?[a-z0-9]([-a-z0-9]*[a-z0-9])?(\*|-\*)?$
+                      pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                       type: string
                     type: array
                   kinds:
@@ -1752,7 +2103,7 @@ spec:
                       a prefix or suffix glob.  For example, ` + "`" + `name: pod-*` + "`" + ` would match
                       both ` + "`" + `pod-a` + "`" + ` and ` + "`" + `pod-b` + "`" + `, and ` + "`" + `name: *-pod` + "`" + ` would match both
                       ` + "`" + `a-pod` + "`" + ` and ` + "`" + `b-pod` + "`" + `.'
-                    pattern: ^(\*|\*-)?[a-z0-9]([-a-z0-9]*[a-z0-9])?(\*|-\*)?$
+                    pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                     type: string
                   namespaceSelector:
                     description: NamespaceSelector is a label selector against an
@@ -1811,7 +2162,7 @@ spec:
                         end. Ex: "kube-*" will match "kube-system" or "kube-public",
                         "*-system" will match "kube-system" or "gatekeeper-system".  The
                         asterisk is required for wildcard matching.'
-                      pattern: ^(\*|\*-)?[a-z0-9]([-a-z0-9]*[a-z0-9])?(\*|-\*)?$
+                      pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                       type: string
                     type: array
                   scope:
@@ -1958,7 +2309,7 @@ spec:
               location:
                 type: string
               match:
-                description: Match selects objects to apply mutations to.
+                description: Match selects which objects are in scope.
                 properties:
                   excludedNamespaces:
                     description: 'ExcludedNamespaces is a list of namespace names.
@@ -1972,7 +2323,7 @@ spec:
                         end. Ex: "kube-*" will match "kube-system" or "kube-public",
                         "*-system" will match "kube-system" or "gatekeeper-system".  The
                         asterisk is required for wildcard matching.'
-                      pattern: ^(\*|\*-)?[a-z0-9]([-a-z0-9]*[a-z0-9])?(\*|-\*)?$
+                      pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                       type: string
                     type: array
                   kinds:
@@ -2051,7 +2402,7 @@ spec:
                       a prefix or suffix glob.  For example, ` + "`" + `name: pod-*` + "`" + ` would match
                       both ` + "`" + `pod-a` + "`" + ` and ` + "`" + `pod-b` + "`" + `, and ` + "`" + `name: *-pod` + "`" + ` would match both
                       ` + "`" + `a-pod` + "`" + ` and ` + "`" + `b-pod` + "`" + `.'
-                    pattern: ^(\*|\*-)?[a-z0-9]([-a-z0-9]*[a-z0-9])?(\*|-\*)?$
+                    pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                     type: string
                   namespaceSelector:
                     description: NamespaceSelector is a label selector against an
@@ -2110,7 +2461,7 @@ spec:
                         end. Ex: "kube-*" will match "kube-system" or "kube-public",
                         "*-system" will match "kube-system" or "gatekeeper-system".  The
                         asterisk is required for wildcard matching.'
-                      pattern: ^(\*|\*-)?[a-z0-9]([-a-z0-9]*[a-z0-9])?(\*|-\*)?$
+                      pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                       type: string
                     type: array
                   scope:
@@ -2300,7 +2651,7 @@ spec:
                           or end. Ex: "kube-*" will match "kube-system" or "kube-public",
                           "*-system" will match "kube-system" or "gatekeeper-system".  The
                           asterisk is required for wildcard matching.'
-                        pattern: ^(\*|\*-)?[a-z0-9]([-a-z0-9]*[a-z0-9])?(\*|-\*)?$
+                        pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                         type: string
                       type: array
                     processes:
@@ -2576,7 +2927,8 @@ var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_cons
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.10.0
+    controller-gen.kubebuilder.io/version: v0.11.3
+  creationTimestamp: null
   labels:
     gatekeeper.sh/system: "yes"
   name: constrainttemplates.templates.gatekeeper.sh
@@ -2640,6 +2992,27 @@ spec:
               targets:
                 items:
                   properties:
+                    code:
+                      description: The source code options for the constraint template.
+                        "Rego" can only be specified in one place (either here or
+                        in the "rego" field)
+                      items:
+                        properties:
+                          engine:
+                            description: 'The engine used to evaluate the code. Example:
+                              "Rego". Required.'
+                            type: string
+                          source:
+                            description: The source code for the template. Required.
+                            x-kubernetes-preserve-unknown-fields: true
+                        required:
+                        - engine
+                        - source
+                        type: object
+                      type: array
+                      x-kubernetes-list-map-keys:
+                      - engine
+                      x-kubernetes-list-type: map
                     libs:
                       items:
                         type: string
@@ -2743,6 +3116,27 @@ spec:
               targets:
                 items:
                   properties:
+                    code:
+                      description: The source code options for the constraint template.
+                        "Rego" can only be specified in one place (either here or
+                        in the "rego" field)
+                      items:
+                        properties:
+                          engine:
+                            description: 'The engine used to evaluate the code. Example:
+                              "Rego". Required.'
+                            type: string
+                          source:
+                            description: The source code for the template. Required.
+                            x-kubernetes-preserve-unknown-fields: true
+                        required:
+                        - engine
+                        - source
+                        type: object
+                      type: array
+                      x-kubernetes-list-map-keys:
+                      - engine
+                      x-kubernetes-list-type: map
                     libs:
                       items:
                         type: string
@@ -2846,6 +3240,27 @@ spec:
               targets:
                 items:
                   properties:
+                    code:
+                      description: The source code options for the constraint template.
+                        "Rego" can only be specified in one place (either here or
+                        in the "rego" field)
+                      items:
+                        properties:
+                          engine:
+                            description: 'The engine used to evaluate the code. Example:
+                              "Rego". Required.'
+                            type: string
+                          source:
+                            description: The source code for the template. Required.
+                            x-kubernetes-preserve-unknown-fields: true
+                        required:
+                        - engine
+                        - source
+                        type: object
+                      type: array
+                      x-kubernetes-list-map-keys:
+                      - engine
+                      x-kubernetes-list-type: map
                     libs:
                       items:
                         type: string
@@ -2999,9 +3414,158 @@ spec:
                   generators, this is usually spec.template
                 type: string
             type: object
+          status:
+            description: ExpansionTemplateStatus defines the observed state of ExpansionTemplate.
+            properties:
+              byPod:
+                items:
+                  description: ExpansionTemplatePodStatusStatus defines the observed
+                    state of ExpansionTemplatePodStatus.
+                  properties:
+                    errors:
+                      items:
+                        properties:
+                          message:
+                            type: string
+                          type:
+                            type: string
+                        required:
+                        - message
+                        type: object
+                      type: array
+                    id:
+                      description: 'Important: Run "make" to regenerate code after
+                        modifying this file'
+                      type: string
+                    observedGeneration:
+                      format: int64
+                      type: integer
+                    operations:
+                      items:
+                        type: string
+                      type: array
+                    templateUID:
+                      description: UID is a type that holds unique ID values, including
+                        UUIDs.  Because we don't ONLY use UUIDs, this is an alias
+                        to string.  Being a type captures intent and helps make sure
+                        that UIDs and names do not get conflated.
+                      type: string
+                  type: object
+                type: array
+            type: object
         type: object
     served: true
     storage: true
+    subresources:
+      status: {}
+  - name: v1beta1
+    schema:
+      openAPIV3Schema:
+        description: ExpansionTemplate is the Schema for the ExpansionTemplate API.
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          spec:
+            description: ExpansionTemplateSpec defines the desired state of ExpansionTemplate.
+            properties:
+              applyTo:
+                description: ApplyTo lists the specific groups, versions and kinds
+                  of generator resources which will be expanded.
+                items:
+                  description: ApplyTo determines what GVKs items the mutation should
+                    apply to. Globs are not allowed.
+                  properties:
+                    groups:
+                      items:
+                        type: string
+                      type: array
+                    kinds:
+                      items:
+                        type: string
+                      type: array
+                    versions:
+                      items:
+                        type: string
+                      type: array
+                  type: object
+                type: array
+              enforcementAction:
+                description: EnforcementAction specifies the enforcement action to
+                  be used for resources matching the ExpansionTemplate. Specifying
+                  an empty value will use the enforcement action specified by the
+                  Constraint in violation.
+                type: string
+              generatedGVK:
+                description: GeneratedGVK specifies the GVK of the resources which
+                  the generator resource creates.
+                properties:
+                  group:
+                    type: string
+                  kind:
+                    type: string
+                  version:
+                    type: string
+                type: object
+              templateSource:
+                description: TemplateSource specifies the source field on the generator
+                  resource to use as the base for expanded resource. For Pod-creating
+                  generators, this is usually spec.template
+                type: string
+            type: object
+          status:
+            description: ExpansionTemplateStatus defines the observed state of ExpansionTemplate.
+            properties:
+              byPod:
+                items:
+                  description: ExpansionTemplatePodStatusStatus defines the observed
+                    state of ExpansionTemplatePodStatus.
+                  properties:
+                    errors:
+                      items:
+                        properties:
+                          message:
+                            type: string
+                          type:
+                            type: string
+                        required:
+                        - message
+                        type: object
+                      type: array
+                    id:
+                      description: 'Important: Run "make" to regenerate code after
+                        modifying this file'
+                      type: string
+                    observedGeneration:
+                      format: int64
+                      type: integer
+                    operations:
+                      items:
+                        type: string
+                      type: array
+                    templateUID:
+                      description: UID is a type that holds unique ID values, including
+                        UUIDs.  Because we don't ONLY use UUIDs, this is an alias
+                        to string.  Being a type captures intent and helps make sure
+                        that UIDs and names do not get conflated.
+                      type: string
+                  type: object
+                type: array
+            type: object
+        type: object
+    served: true
+    storage: false
+    subresources:
+      status: {}
 `)
 
 func configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_expansiontemplateExpansionGatekeeperShYamlBytes() ([]byte, error) {
@@ -3015,6 +3579,96 @@ func configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_expa
 	}
 
 	info := bindataFileInfo{name: "config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_expansiontemplate.expansion.gatekeeper.sh.yaml", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info}
+	return a, nil
+}
+
+var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_expansiontemplatepodstatusesStatusGatekeeperShYaml = []byte(`apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.10.0
+  creationTimestamp: null
+  labels:
+    gatekeeper.sh/system: "yes"
+  name: expansiontemplatepodstatuses.status.gatekeeper.sh
+spec:
+  group: status.gatekeeper.sh
+  names:
+    kind: ExpansionTemplatePodStatus
+    listKind: ExpansionTemplatePodStatusList
+    plural: expansiontemplatepodstatuses
+    singular: expansiontemplatepodstatus
+  preserveUnknownFields: false
+  scope: Namespaced
+  versions:
+  - name: v1beta1
+    schema:
+      openAPIV3Schema:
+        description: ExpansionTemplatePodStatus is the Schema for the expansiontemplatepodstatuses
+          API.
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            type: object
+          status:
+            description: ExpansionTemplatePodStatusStatus defines the observed state
+              of ExpansionTemplatePodStatus.
+            properties:
+              errors:
+                items:
+                  properties:
+                    message:
+                      type: string
+                    type:
+                      type: string
+                  required:
+                  - message
+                  type: object
+                type: array
+              id:
+                description: 'Important: Run "make" to regenerate code after modifying
+                  this file'
+                type: string
+              observedGeneration:
+                format: int64
+                type: integer
+              operations:
+                items:
+                  type: string
+                type: array
+              templateUID:
+                description: UID is a type that holds unique ID values, including
+                  UUIDs.  Because we don't ONLY use UUIDs, this is an alias to string.  Being
+                  a type captures intent and helps make sure that UIDs and names do
+                  not get conflated.
+                type: string
+            type: object
+        type: object
+    served: true
+    storage: true
+`)
+
+func configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_expansiontemplatepodstatusesStatusGatekeeperShYamlBytes() ([]byte, error) {
+	return _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_expansiontemplatepodstatusesStatusGatekeeperShYaml, nil
+}
+
+func configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_expansiontemplatepodstatusesStatusGatekeeperShYaml() (*asset, error) {
+	bytes, err := configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_expansiontemplatepodstatusesStatusGatekeeperShYamlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_expansiontemplatepodstatuses.status.gatekeeper.sh.yaml", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
 	a := &asset{bytes: bytes, info: info}
 	return a, nil
 }
@@ -3107,7 +3761,7 @@ spec:
                         end. Ex: "kube-*" will match "kube-system" or "kube-public",
                         "*-system" will match "kube-system" or "gatekeeper-system".  The
                         asterisk is required for wildcard matching.'
-                      pattern: ^(\*|\*-)?[a-z0-9]([-a-z0-9]*[a-z0-9])?(\*|-\*)?$
+                      pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                       type: string
                     type: array
                   kinds:
@@ -3186,7 +3840,7 @@ spec:
                       a prefix or suffix glob.  For example, ` + "`" + `name: pod-*` + "`" + ` would match
                       both ` + "`" + `pod-a` + "`" + ` and ` + "`" + `pod-b` + "`" + `, and ` + "`" + `name: *-pod` + "`" + ` would match both
                       ` + "`" + `a-pod` + "`" + ` and ` + "`" + `b-pod` + "`" + `.'
-                    pattern: ^(\*|\*-)?[a-z0-9]([-a-z0-9]*[a-z0-9])?(\*|-\*)?$
+                    pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                     type: string
                   namespaceSelector:
                     description: NamespaceSelector is a label selector against an
@@ -3245,7 +3899,7 @@ spec:
                         end. Ex: "kube-*" will match "kube-system" or "kube-public",
                         "*-system" will match "kube-system" or "gatekeeper-system".  The
                         asterisk is required for wildcard matching.'
-                      pattern: ^(\*|\*-)?[a-z0-9]([-a-z0-9]*[a-z0-9])?(\*|-\*)?$
+                      pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                       type: string
                     type: array
                   scope:
@@ -3420,7 +4074,7 @@ spec:
                         end. Ex: "kube-*" will match "kube-system" or "kube-public",
                         "*-system" will match "kube-system" or "gatekeeper-system".  The
                         asterisk is required for wildcard matching.'
-                      pattern: ^(\*|\*-)?[a-z0-9]([-a-z0-9]*[a-z0-9])?(\*|-\*)?$
+                      pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                       type: string
                     type: array
                   kinds:
@@ -3499,7 +4153,7 @@ spec:
                       a prefix or suffix glob.  For example, ` + "`" + `name: pod-*` + "`" + ` would match
                       both ` + "`" + `pod-a` + "`" + ` and ` + "`" + `pod-b` + "`" + `, and ` + "`" + `name: *-pod` + "`" + ` would match both
                       ` + "`" + `a-pod` + "`" + ` and ` + "`" + `b-pod` + "`" + `.'
-                    pattern: ^(\*|\*-)?[a-z0-9]([-a-z0-9]*[a-z0-9])?(\*|-\*)?$
+                    pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                     type: string
                   namespaceSelector:
                     description: NamespaceSelector is a label selector against an
@@ -3558,7 +4212,7 @@ spec:
                         end. Ex: "kube-*" will match "kube-system" or "kube-public",
                         "*-system" will match "kube-system" or "gatekeeper-system".  The
                         asterisk is required for wildcard matching.'
-                      pattern: ^(\*|\*-)?[a-z0-9]([-a-z0-9]*[a-z0-9])?(\*|-\*)?$
+                      pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                       type: string
                     type: array
                   scope:
@@ -3733,7 +4387,7 @@ spec:
                         end. Ex: "kube-*" will match "kube-system" or "kube-public",
                         "*-system" will match "kube-system" or "gatekeeper-system".  The
                         asterisk is required for wildcard matching.'
-                      pattern: ^(\*|\*-)?[a-z0-9]([-a-z0-9]*[a-z0-9])?(\*|-\*)?$
+                      pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                       type: string
                     type: array
                   kinds:
@@ -3812,7 +4466,7 @@ spec:
                       a prefix or suffix glob.  For example, ` + "`" + `name: pod-*` + "`" + ` would match
                       both ` + "`" + `pod-a` + "`" + ` and ` + "`" + `pod-b` + "`" + `, and ` + "`" + `name: *-pod` + "`" + ` would match both
                       ` + "`" + `a-pod` + "`" + ` and ` + "`" + `b-pod` + "`" + `.'
-                    pattern: ^(\*|\*-)?[a-z0-9]([-a-z0-9]*[a-z0-9])?(\*|-\*)?$
+                    pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                     type: string
                   namespaceSelector:
                     description: NamespaceSelector is a label selector against an
@@ -3871,7 +4525,7 @@ spec:
                         end. Ex: "kube-*" will match "kube-system" or "kube-public",
                         "*-system" will match "kube-system" or "gatekeeper-system".  The
                         asterisk is required for wildcard matching.'
-                      pattern: ^(\*|\*-)?[a-z0-9]([-a-z0-9]*[a-z0-9])?(\*|-\*)?$
+                      pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                       type: string
                     type: array
                   scope:
@@ -4094,7 +4748,7 @@ var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_prov
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.10.0
+    controller-gen.kubebuilder.io/version: v0.11.3
   creationTimestamp: null
   labels:
     gatekeeper.sh/system: "yes"
@@ -4142,12 +4796,12 @@ spec:
                 type: integer
               url:
                 description: URL is the url for the provider. URL is prefixed with
-                  http:// or https://.
+                  https://.
                 type: string
             type: object
         type: object
     served: true
-    storage: true
+    storage: false
   - name: v1beta1
     schema:
       openAPIV3Schema:
@@ -4178,12 +4832,12 @@ spec:
                 type: integer
               url:
                 description: URL is the url for the provider. URL is prefixed with
-                  http:// or https://.
+                  https://.
                 type: string
             type: object
         type: object
     served: true
-    storage: false
+    storage: true
 `)
 
 func configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_providersExternaldataGatekeeperShYamlBytes() ([]byte, error) {
@@ -4251,7 +4905,7 @@ spec:
               fieldPath: metadata.namespace
         - name: CONTAINER_NAME
           value: manager
-        image: openpolicyagent/gatekeeper:v3.11.1
+        image: openpolicyagent/gatekeeper:v3.14.0
         imagePullPolicy: Always
         livenessProbe:
           httpGet:
@@ -4385,7 +5039,7 @@ spec:
               fieldPath: metadata.namespace
         - name: CONTAINER_NAME
           value: manager
-        image: openpolicyagent/gatekeeper:v3.11.1
+        image: openpolicyagent/gatekeeper:v3.14.0
         imagePullPolicy: Always
         livenessProbe:
           httpGet:
@@ -4495,6 +5149,13 @@ metadata:
   name: gatekeeper-manager-role
 rules:
 - apiGroups:
+  - ""
+  resources:
+  - events
+  verbs:
+  - create
+  - patch
+- apiGroups:
   - '*'
   resources:
   - '*'
@@ -4548,6 +5209,18 @@ rules:
   - update
 - apiGroups:
   - constraints.gatekeeper.sh
+  resources:
+  - '*'
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - expansion.gatekeeper.sh
   resources:
   - '*'
   verbs:
@@ -4970,12 +5643,14 @@ var _bindata = map[string]func() (*asset, error){
 	"config/gatekeeper-rendered/admissionregistration.k8s.io_v1_mutatingwebhookconfiguration_gatekeeper-mutating-webhook-configuration.yaml":     configGatekeeperRenderedAdmissionregistrationK8sIo_v1_mutatingwebhookconfiguration_gatekeeperMutatingWebhookConfigurationYaml,
 	"config/gatekeeper-rendered/admissionregistration.k8s.io_v1_validatingwebhookconfiguration_gatekeeper-validating-webhook-configuration.yaml": configGatekeeperRenderedAdmissionregistrationK8sIo_v1_validatingwebhookconfiguration_gatekeeperValidatingWebhookConfigurationYaml,
 	"config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_assign.mutations.gatekeeper.sh.yaml":                            configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_assignMutationsGatekeeperShYaml,
+	"config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_assignimage.mutations.gatekeeper.sh.yaml":                       configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_assignimageMutationsGatekeeperShYaml,
 	"config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_assignmetadata.mutations.gatekeeper.sh.yaml":                    configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_assignmetadataMutationsGatekeeperShYaml,
 	"config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_configs.config.gatekeeper.sh.yaml":                              configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_configsConfigGatekeeperShYaml,
 	"config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_constraintpodstatuses.status.gatekeeper.sh.yaml":                configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_constraintpodstatusesStatusGatekeeperShYaml,
 	"config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_constrainttemplatepodstatuses.status.gatekeeper.sh.yaml":        configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_constrainttemplatepodstatusesStatusGatekeeperShYaml,
 	"config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_constrainttemplates.templates.gatekeeper.sh.yaml":               configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_constrainttemplatesTemplatesGatekeeperShYaml,
 	"config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_expansiontemplate.expansion.gatekeeper.sh.yaml":                 configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_expansiontemplateExpansionGatekeeperShYaml,
+	"config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_expansiontemplatepodstatuses.status.gatekeeper.sh.yaml":         configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_expansiontemplatepodstatusesStatusGatekeeperShYaml,
 	"config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_modifyset.mutations.gatekeeper.sh.yaml":                         configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_modifysetMutationsGatekeeperShYaml,
 	"config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_mutatorpodstatuses.status.gatekeeper.sh.yaml":                   configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_mutatorpodstatusesStatusGatekeeperShYaml,
 	"config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_providers.externaldata.gatekeeper.sh.yaml":                      configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_providersExternaldataGatekeeperShYaml,
@@ -5041,12 +5716,14 @@ var _bintree = &bintree{nil, map[string]*bintree{
 			"admissionregistration.k8s.io_v1_mutatingwebhookconfiguration_gatekeeper-mutating-webhook-configuration.yaml":     {configGatekeeperRenderedAdmissionregistrationK8sIo_v1_mutatingwebhookconfiguration_gatekeeperMutatingWebhookConfigurationYaml, map[string]*bintree{}},
 			"admissionregistration.k8s.io_v1_validatingwebhookconfiguration_gatekeeper-validating-webhook-configuration.yaml": {configGatekeeperRenderedAdmissionregistrationK8sIo_v1_validatingwebhookconfiguration_gatekeeperValidatingWebhookConfigurationYaml, map[string]*bintree{}},
 			"apiextensions.k8s.io_v1_customresourcedefinition_assign.mutations.gatekeeper.sh.yaml":                            {configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_assignMutationsGatekeeperShYaml, map[string]*bintree{}},
+			"apiextensions.k8s.io_v1_customresourcedefinition_assignimage.mutations.gatekeeper.sh.yaml":                       {configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_assignimageMutationsGatekeeperShYaml, map[string]*bintree{}},
 			"apiextensions.k8s.io_v1_customresourcedefinition_assignmetadata.mutations.gatekeeper.sh.yaml":                    {configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_assignmetadataMutationsGatekeeperShYaml, map[string]*bintree{}},
 			"apiextensions.k8s.io_v1_customresourcedefinition_configs.config.gatekeeper.sh.yaml":                              {configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_configsConfigGatekeeperShYaml, map[string]*bintree{}},
 			"apiextensions.k8s.io_v1_customresourcedefinition_constraintpodstatuses.status.gatekeeper.sh.yaml":                {configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_constraintpodstatusesStatusGatekeeperShYaml, map[string]*bintree{}},
 			"apiextensions.k8s.io_v1_customresourcedefinition_constrainttemplatepodstatuses.status.gatekeeper.sh.yaml":        {configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_constrainttemplatepodstatusesStatusGatekeeperShYaml, map[string]*bintree{}},
 			"apiextensions.k8s.io_v1_customresourcedefinition_constrainttemplates.templates.gatekeeper.sh.yaml":               {configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_constrainttemplatesTemplatesGatekeeperShYaml, map[string]*bintree{}},
 			"apiextensions.k8s.io_v1_customresourcedefinition_expansiontemplate.expansion.gatekeeper.sh.yaml":                 {configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_expansiontemplateExpansionGatekeeperShYaml, map[string]*bintree{}},
+			"apiextensions.k8s.io_v1_customresourcedefinition_expansiontemplatepodstatuses.status.gatekeeper.sh.yaml":         {configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_expansiontemplatepodstatusesStatusGatekeeperShYaml, map[string]*bintree{}},
 			"apiextensions.k8s.io_v1_customresourcedefinition_modifyset.mutations.gatekeeper.sh.yaml":                         {configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_modifysetMutationsGatekeeperShYaml, map[string]*bintree{}},
 			"apiextensions.k8s.io_v1_customresourcedefinition_mutatorpodstatuses.status.gatekeeper.sh.yaml":                   {configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_mutatorpodstatusesStatusGatekeeperShYaml, map[string]*bintree{}},
 			"apiextensions.k8s.io_v1_customresourcedefinition_providers.externaldata.gatekeeper.sh.yaml":                      {configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_providersExternaldataGatekeeperShYaml, map[string]*bintree{}},

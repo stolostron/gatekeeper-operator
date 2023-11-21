@@ -10,6 +10,7 @@ resources:
 - apiextensions.k8s.io_v1_customresourcedefinition_constrainttemplatepodstatuses.status.gatekeeper.sh.yaml
 - apiextensions.k8s.io_v1_customresourcedefinition_constrainttemplates.templates.gatekeeper.sh.yaml
 - apiextensions.k8s.io_v1_customresourcedefinition_expansiontemplate.expansion.gatekeeper.sh.yaml
+- apiextensions.k8s.io_v1_customresourcedefinition_expansiontemplatepodstatuses.status.gatekeeper.sh.yaml
 - apiextensions.k8s.io_v1_customresourcedefinition_modifyset.mutations.gatekeeper.sh.yaml
 - apiextensions.k8s.io_v1_customresourcedefinition_mutatorpodstatuses.status.gatekeeper.sh.yaml
 - apiextensions.k8s.io_v1_customresourcedefinition_providers.externaldata.gatekeeper.sh.yaml
@@ -25,6 +26,7 @@ resources:
 - v1_secret_gatekeeper-webhook-server-cert.yaml
 - v1_serviceaccount_gatekeeper-admin.yaml
 - v1_service_gatekeeper-webhook-service.yaml
+- apiextensions.k8s.io_v1_customresourcedefinition_assignimage.mutations.gatekeeper.sh.yaml
 # Remove --disable-cert-rotation
 # Set a CPU limit
 patches:

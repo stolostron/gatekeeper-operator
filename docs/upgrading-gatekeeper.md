@@ -16,10 +16,17 @@ and skipping `v3.4.Z`.
 
 ## 1. Set desired Gatekeeper version and commit
 
+Update ./REPLACES_VERSION and ./VERSION files.
+
+For example, if you want to upgrade from the current version to 3.15.0:
 ```shell
-GATEKEEPER_PREV_VERSION=$(awk '/^GATEKEEPER_VERSION \?= .*/ {print $3}' Makefile)
-GATEKEEPER_VERSION=<DESIRED_VERSION>
-sed -i "s/GATEKEEPER_VERSION ?= .*/GATEKEEPER_VERSION ?= ${GATEKEEPER_VERSION}/" Makefile
+cat VERSION > REPLACES_VERSION
+printf "3.15.0" > VERSION
+```
+
+```shell
+GATEKEEPER_PREV_VERSION=v$(cut -d '-' -f 1 REPLACES_VERSION)
+GATEKEEPER_VERSION=v$(cut -d '-' -f 1 VERSION)
 sed -i "s/CHANNELS ?= .*/CHANNELS ?= stable,$(echo $GATEKEEPER_VERSION | cut -c2- | cut -d '.' -f 1-2)/" Makefile
 git commit -m "Set Gatekeeper version to ${GATEKEEPER_VERSION}" Makefile
 ```
