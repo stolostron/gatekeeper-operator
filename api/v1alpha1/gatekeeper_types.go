@@ -103,6 +103,8 @@ type AuditConfig struct {
 	// +optional
 	EmitAuditEvents *EmitEventsMode `json:"emitAuditEvents,omitempty"`
 	// +optional
+	AuditEventsInvolvedNamespace *EventsInvolvedNsMode `json:"auditEventsInvolvedNamespace,omitempty"`
+	// +optional
 	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
 }
 
@@ -122,6 +124,8 @@ type WebhookConfig struct {
 	LogLevel *LogLevelMode `json:"logLevel,omitempty"`
 	// +optional
 	EmitAdmissionEvents *EmitEventsMode `json:"emitAdmissionEvents,omitempty"`
+	// +optional
+	AdmissionEventsInvolvedNamespace *EventsInvolvedNsMode `json:"admissionEventsInvolvedNamespace,omitempty"`
 	// +optional
 	FailurePolicy *admregv1.FailurePolicyType `json:"failurePolicy,omitempty"`
 	// +optional
@@ -157,6 +161,14 @@ type EmitEventsMode string
 const (
 	EmitEventsEnabled  EmitEventsMode = "Enabled"
 	EmitEventsDisabled EmitEventsMode = "Disabled"
+)
+
+// +kubebuilder:validation:Enum:=Enabled;Disabled
+type EventsInvolvedNsMode string
+
+const (
+	EventsInvolvedNsModeEnabled  EventsInvolvedNsMode = "Enabled"
+	EventsInvolvedNsModeDisabled EventsInvolvedNsMode = "Disabled"
 )
 
 // GatekeeperStatus defines the observed state of Gatekeeper

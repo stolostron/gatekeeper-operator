@@ -66,6 +66,11 @@ func (in *AuditConfig) DeepCopyInto(out *AuditConfig) {
 		*out = new(EmitEventsMode)
 		**out = **in
 	}
+	if in.AuditEventsInvolvedNamespace != nil {
+		in, out := &in.AuditEventsInvolvedNamespace, &out.AuditEventsInvolvedNamespace
+		*out = new(EventsInvolvedNsMode)
+		**out = **in
+	}
 	if in.Resources != nil {
 		in, out := &in.Resources, &out.Resources
 		*out = new(v1.ResourceRequirements)
@@ -295,6 +300,11 @@ func (in *WebhookConfig) DeepCopyInto(out *WebhookConfig) {
 	if in.EmitAdmissionEvents != nil {
 		in, out := &in.EmitAdmissionEvents, &out.EmitAdmissionEvents
 		*out = new(EmitEventsMode)
+		**out = **in
+	}
+	if in.AdmissionEventsInvolvedNamespace != nil {
+		in, out := &in.AdmissionEventsInvolvedNamespace, &out.AdmissionEventsInvolvedNamespace
+		*out = new(EventsInvolvedNsMode)
 		**out = **in
 	}
 	if in.FailurePolicy != nil {

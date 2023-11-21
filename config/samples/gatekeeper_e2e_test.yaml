@@ -5,13 +5,13 @@ metadata:
 spec:
   audit:
     replicas: 1
-    logLevel: INFO
     emitAuditEvents: Enabled
+    auditEventsInvolvedNamespace: Enabled
   validatingWebhook: Enabled
   mutatingWebhook: Enabled
   webhook:
     replicas: 3
-    logLevel: INFO
     emitAdmissionEvents: Enabled
+    admissionEventsInvolvedNamespace: Enabled
     disabledBuiltins:
       - http.send
