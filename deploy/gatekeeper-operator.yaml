@@ -1715,8 +1715,8 @@ spec:
         - /manager
         env:
         - name: RELATED_IMAGE_GATEKEEPER
-          value: openpolicyagent/gatekeeper:v3.11.1
-        image: quay.io/gatekeeper/gatekeeper-operator:v3.11.1
+          value: openpolicyagent/gatekeeper:v3.14.0
+        image: quay.io/gatekeeper/gatekeeper-operator:v3.14.0
         imagePullPolicy: Always
         livenessProbe:
           httpGet:

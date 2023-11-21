@@ -20,4 +20,5 @@ testbin/*
 
 ci-tools/
 
-.vscode/*
+.vscode/
+gatekeeper/
