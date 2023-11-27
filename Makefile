@@ -3,10 +3,10 @@
 # To re-generate a bundle for another specific version without changing the standard setup, you can:
 # - use the VERSION as arg of the bundle target (e.g make bundle VERSION=0.0.2)
 # - use environment variables to overwrite this value (e.g export VERSION=0.0.2)
-VERSION ?= 3.11.1
+VERSION ?= $(shell cat VERSION)
 # Replaces Operator version
 # Set this when when there is a new patch release in the channel.
-REPLACES_VERSION ?= 0.2.6
+REPLACES_VERSION ?= $(shell cat REPLACES_VERSION)
 
 LOCAL_BIN ?= $(PWD)/ci-tools/bin
 export PATH := $(LOCAL_BIN):$(PATH)
@@ -21,15 +21,12 @@ ifeq ($(GOOS), darwin)
   SED="gsed"
 endif
 
-get-replaces-version:
-	@echo $(REPLACES_VERSION)
-
 # CHANNELS define the bundle channels used in the bundle.
 # Add a new line here if you would like to change its default config. (E.g CHANNELS = "candidate,fast,stable")
 # To re-generate a bundle for other specific channels without changing the standard setup, you can:
 # - use the CHANNELS as arg of the bundle target (e.g make bundle CHANNELS=candidate,fast,stable)
 # - use environment variables to overwrite this value (e.g export CHANNELS="candidate,fast,stable")
-CHANNELS ?= stable,3.11
+CHANNELS ?= stable,$(shell echo $(VERSION) | cut -d '.' -f 1-2)
 ifneq ($(origin CHANNELS), undefined)
   BUNDLE_CHANNELS := --channels=$(CHANNELS)
 endif
