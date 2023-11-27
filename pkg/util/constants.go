@@ -19,5 +19,6 @@ const (
 	ServiceKind                        = "Service"
 	ValidatingWebhookConfigurationKind = "ValidatingWebhookConfiguration"
 	MutatingWebhookConfigurationKind   = "MutatingWebhookConfiguration"
+	ServiceAccountKind                 = "ServiceAccount"
 	SecretKind                         = "Secret"
 )

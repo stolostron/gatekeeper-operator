@@ -39,6 +39,8 @@ func RetainClusterObjectFields(desiredObj, clusterObj *unstructured.Unstructured
 		fallthrough
 	case util.MutatingWebhookConfigurationKind:
 		return retainWebhookConfigurationFields(desiredObj, clusterObj)
+	case util.ServiceAccountKind:
+		return retainServiceAccountFields(desiredObj, clusterObj)
 	case util.SecretKind:
 		return retainSecretFields(desiredObj, clusterObj)
 	default:
@@ -59,6 +61,19 @@ func retainServiceFields(desiredObj, clusterObj *unstructured.Unstructured) erro
 		}
 	} // !ok could indicate that a clusterIP was not assigned
 
+	return nil
+}
+
+func retainServiceAccountFields(desiredObj, clusterObj *unstructured.Unstructured) error {
+	secrets, ok, err := unstructured.NestedSlice(clusterObj.Object, "secrets")
+	if err != nil {
+		return errors.Wrap(err, "Error retrieving secrets list from service account")
+	} else if ok && len(secrets) != 0 {
+		err := unstructured.SetNestedSlice(desiredObj.Object, secrets, "secrets")
+		if err != nil {
+			return errors.Wrap(err, "Error setting secrets list for service account")
+		}
+	}
 	return nil
 }
 
