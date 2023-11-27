@@ -4,20 +4,32 @@ set -o errexit
 # desired cluster name; default is "kind"
 KIND_CLUSTER_NAME="${KIND_CLUSTER_NAME:-kind}"
 
-# create registry container unless it's already running
 reg_name='kind-registry'
-reg_port="${REGISTRY_PORT:-5000}"
+reg_port_default='5000'
+reg_port="${REGISTRY_PORT:-${reg_port_default}}"
+
 echo "Checking for running ${reg_name} container..."
+
+# Collect metadata on the registry container
 running="$(docker inspect -f '{{.State.Running}}' "${reg_name}" || true)"
-if [ "${running}" != 'true' ]; then
-  REG_CONTAINER_ID="$(docker inspect -f '{{.Id}}' "${reg_name}" || true)"
-  if [[ -n "${REG_CONTAINER_ID}" ]]; then
-    echo "Removing existing container:"
-    docker rm ${REG_CONTAINER_ID}
+reg_current_port="$(docker inspect -f "{{ index .HostConfig.PortBindings \"${reg_port_default}/tcp\" 0 \"HostPort\"}}" ${reg_name} 2>/dev/null || true)"
+reg_container_id="$(docker inspect -f '{{.Id}}' "${reg_name}" 2>/dev/null || true)"
+
+# Stop the container if the ports on the running registry are unexpected
+if [ "${running}" == 'true' ] && [[ "${reg_current_port}" != "${reg_port}" ]] && [[ -n "${reg_container_id}" ]]; then
+  echo "Stopping misconfigured ${reg_name} container ..."
+  docker stop ${reg_container_id}
+fi
+
+# If the registry isn't running or was misconfigured, start a new registry container
+if [ "${running}" != 'true' ] || [[ "${reg_current_port}" != "${reg_port}" ]]; then
+  if [[ -n "${reg_container_id}" ]]; then
+    echo "Removing existing container"
+    docker rm ${reg_container_id}
   fi
   echo "Starting new ${reg_name} container:"
   docker run \
-    -d --restart=always -p "${reg_port}:5000" --name "${reg_name}" \
+    -d --restart=always -p "127.0.0.1:${reg_port}:${reg_port_default}" --network bridge --name "${reg_name}" \
     registry:2
 fi
 
@@ -37,11 +49,13 @@ apiVersion: kind.x-k8s.io/v1alpha4
 containerdConfigPatches:
 - |-
   [plugins."io.containerd.grpc.v1.cri".registry.mirrors."localhost:${reg_port}"]
-    endpoint = ["http://${reg_name}:${reg_port}"]
+    endpoint = ["http://${reg_name}:${reg_port_default}"]
 EOF
 
 # connect the registry to the cluster network
-docker network connect "kind" "${reg_name}" || true
+if [ "$(docker inspect -f='{{json .NetworkSettings.Networks.kind}}' "${reg_name}")" = 'null' ]; then
+  docker network connect "${KIND_CLUSTER_NAME}" "${reg_name}"
+fi
 
 # Document the local registry
 # https://github.com/kubernetes/enhancements/tree/master/keps/sig-cluster-lifecycle/generic/1755-communicating-a-local-registry
