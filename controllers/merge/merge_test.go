@@ -23,7 +23,7 @@ import (
 	"github.com/gatekeeper/gatekeeper-operator/pkg/util"
 )
 
-func TestRetainClusterObjectFields(t *testing.T) {
+func TestRetainWebhookConfigurationFields(t *testing.T) {
 	g := NewWithT(t)
 
 	testCases := map[string]struct {
@@ -86,5 +86,50 @@ func TestRetainClusterObjectFields(t *testing.T) {
 				g.Expect(desiredCABundle).To(Equal(testCase.clusterCABundle))
 			})
 		}
+	}
+}
+
+func TestRetainServiceAccountFields(t *testing.T) {
+	g := NewWithT(t)
+
+	testCases := map[string]struct {
+		clusterSecretsList []interface{}
+		desiredSecretsList []interface{}
+	}{
+		"ServiceAccount has no secrets": {
+			clusterSecretsList: nil,
+			desiredSecretsList: nil,
+		},
+		"ServiceAccount has empty secrets": {
+			clusterSecretsList: []interface{}{},
+			desiredSecretsList: nil,
+		},
+		"ServiceAccount has secrets": {
+			clusterSecretsList: []interface{}{"secret1", "secret2"},
+			desiredSecretsList: []interface{}{"secret1", "secret2"},
+		},
+	}
+
+	for testName, testCase := range testCases {
+		t.Run(testName, func(t *testing.T) {
+			desiredObj := &unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"kind": "ServiceAccount",
+				},
+			}
+			clusterObj := &unstructured.Unstructured{
+				Object: map[string]interface{}{
+					"kind":    "ServiceAccount",
+					"secrets": testCase.clusterSecretsList,
+				},
+			}
+
+			err := RetainClusterObjectFields(desiredObj, clusterObj)
+			g.Expect(err).ToNot(HaveOccurred())
+
+			actualSecretsList, _, err := unstructured.NestedSlice(desiredObj.Object, "secrets")
+			g.Expect(err).ToNot(HaveOccurred())
+			g.Expect(actualSecretsList).To(Equal(testCase.desiredSecretsList))
+		})
 	}
 }
