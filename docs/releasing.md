@@ -12,30 +12,30 @@ release of the Gatekeeper Operator using the GitHub Actions release workflow.
     ```
 1. Store the current version for use later. If this is the first release in a channel, set this value to `none`.
     ```shell
-    RELEASE_PREV_VERSION=$(awk '/^VERSION \?= .*/ {print $3}' Makefile)
+    RELEASE_PREV_VERSION=$(cat VERSION)
     ```
 1. Set the desired version being released:
     ```shell
-    RELEASE_VERSION=v0.0.1
+    RELEASE_VERSION=0.0.1
     ```
 1. Checkout a new branch based on `upstream/main`:
     ```shell
-    git checkout -b release-$(echo $RELEASE_VERSION | cut -c2- | cut -d '.' -f 1-2) --no-track upstream/main
+    git checkout -b release-$(echo ${RELEASE_VERSION} | cut -d '.' -f 1-2) --no-track upstream/main
     ```
-1. Update the version of the operator in the Makefile:
+1. Update the version of the operator in the VERSION file:
     ```shell
-    sed -i "s/^VERSION ?= .*/VERSION ?= ${RELEASE_VERSION:1}/" Makefile
+    printf "${RELEASE_VERSION}" > VERSION
     ```
 1. Update the release manifest:
     ```shell
-    make release VERSION=${RELEASE_VERSION}
+    make release
     ```
 1. Update the base CSV `replaces` field. This is **only** needed if the
    previous released version `${RELEASE_PREV_VERSION}` was an official release
    i.e. no release candidate, such that users would have the previous released
    version installed in their cluster via OLM:
     ```shell
-    sed -Ei "s/REPLACES_VERSION \?= .+/REPLACES_VERSION ?= $RELEASE_PREV_VERSION/" Makefile
+    printf "${RELEASE_PREV_VERSION}" > REPLACE_VERSION
     ```
 1. Update bundle:
     ```shell
