@@ -1,2 +1,27 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+
 resources:
 - install-resources.yaml
+
+namespace: mygatekeeper
+
+patches:
+- patch: |-
+    kind: CatalogSource
+    metadata:
+      name: gatekeeper-operator
+    spec:
+      image: quay.io/gatekeeper/gatekeeper-operator-bundle-index:latest
+  target:
+    kind: CatalogSource
+    name: gatekeeper-operator
+- patch: |-
+    kind: Subscription
+    metadata:
+      name: gatekeeper-operator-sub
+    spec:
+      channel: stable
+  target:
+    kind: Subscription
+    name: gatekeeper-operator-sub

@@ -11,7 +11,7 @@ metadata:
   namespace: mygatekeeper
 spec:
   displayName: Gatekeeper Operator Upstream
-  image: 'quay.io/gatekeeper/gatekeeper-operator-bundle-index:latest'
+  image: quay.io/gatekeeper/gatekeeper-operator-bundle-index:latest
   publisher: github.com/gatekeeper/gatekeeper-operator
   sourceType: grpc
 ---
@@ -28,6 +28,6 @@ metadata:
   namespace: mygatekeeper
 spec:
   name: gatekeeper-operator
-  channel: "3.11"
+  channel: stable
   source: gatekeeper-operator
   sourceNamespace: mygatekeeper
