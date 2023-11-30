@@ -1,5 +1,5 @@
 # Build the manager binary
-FROM golang:1.18 as builder
+FROM registry.ci.openshift.org/stolostron/builder:go1.18-linux as builder
 
 ARG GOOS
 ARG GOARCH
@@ -25,7 +25,7 @@ RUN CGO_ENABLED=1 GOOS=${GOOS} GOARCH=${GOARCH} go build -mod=vendor -a -ldflags
 
 # Use distroless as minimal base image to package the manager binary
 # Refer to https://github.com/GoogleContainerTools/distroless for more details
-FROM gcr.io/distroless/static:nonroot
+FROM registry.access.redhat.com/ubi8/ubi-minimal:latest
 WORKDIR /
 COPY --from=builder /workspace/manager .
 USER 65532:65532

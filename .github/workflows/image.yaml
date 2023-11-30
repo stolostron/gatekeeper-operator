@@ -7,7 +7,7 @@ on:
 jobs:
   build:
     name: Image build and push
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     steps:
     - name: Set Up Environment Variables
@@ -21,7 +21,7 @@ jobs:
         echo "WORKFLOW_BUNDLE_IMG=${WORKFLOW_IMG}-bundle" >> ${GITHUB_ENV}
         echo "WORKFLOW_BUNDLE_INDEX_IMG=${WORKFLOW_IMG}-bundle-index" >> ${GITHUB_ENV}
 
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         fetch-depth: 0 # Fetch all history for all tags and branches
     - uses: docker/setup-qemu-action@v1
@@ -35,9 +35,9 @@ jobs:
         password: ${{ secrets.QUAY_TOKEN }}
 
     - name: Set Up Go to Install OPM
-      uses: actions/setup-go@v2
+      uses: actions/setup-go@v4
       with:
-        go-version: '1.16'
+        go-version-file: go.mod
 
     - name: Build and Push Operator Image
       run: |
