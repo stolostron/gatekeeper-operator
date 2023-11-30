@@ -73,10 +73,10 @@ spec:
   - name: Gatekeeper Operator
     url: https://github.com/gatekeeper/gatekeeper-operator
   maintainers:
-  - email: ifont@redhat.com
-    name: Ivan Font
+  - email: acm-contact@redhat.com
+    name: acm-contact
   maturity: alpha
   provider:
     name: Red Hat
-  replaces: gatekeeper-operator.v0.2.5
+  replaces: gatekeeper-operator.v0.2.6
   version: 0.0.1

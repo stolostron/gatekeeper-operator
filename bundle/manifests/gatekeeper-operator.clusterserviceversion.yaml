@@ -18,7 +18,7 @@ metadata:
     capabilities: Basic Install
     operators.operatorframework.io/builder: operator-sdk-v1.13.0+git
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
-  name: gatekeeper-operator.v0.2.6
+  name: gatekeeper-operator.v0.2.7
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -309,7 +309,7 @@ spec:
                 env:
                 - name: RELATED_IMAGE_GATEKEEPER
                   value: openpolicyagent/gatekeeper:v3.5.2
-                image: quay.io/gatekeeper/gatekeeper-operator:v0.2.6
+                image: quay.io/gatekeeper/gatekeeper-operator:v0.2.7
                 imagePullPolicy: Always
                 livenessProbe:
                   httpGet:
@@ -427,10 +427,10 @@ spec:
   - name: Gatekeeper Operator
     url: https://github.com/gatekeeper/gatekeeper-operator
   maintainers:
-  - email: ifont@redhat.com
-    name: Ivan Font
+  - email: acm-contact@redhat.com
+    name: acm-contact
   maturity: alpha
   provider:
     name: Red Hat
-  replaces: gatekeeper-operator.v0.2.5
-  version: 0.2.6
+  replaces: gatekeeper-operator.v0.2.6
+  version: 0.2.7
