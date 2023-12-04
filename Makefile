@@ -114,6 +114,10 @@ BATS_VERSION ?= 1.2.1
 OLM_VERSION ?= v0.18.2
 KUBERNETES_VERSION ?= v1.26.4
 
+.PHONY: e2e-dependencies
+e2e-dependencies:
+	$(call go-get-tool,github.com/onsi/ginkgo/v2/ginkgo@$(shell awk '/github.com\/onsi\/ginkgo\/v2/ {print $$2}' go.mod))
+
 .PHONY: manifests
 manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
 	$(CONTROLLER_GEN) $(CRD_OPTIONS) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases output:rbac:dir=config/rbac
