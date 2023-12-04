@@ -17,7 +17,7 @@ metadata:
       ]
     capabilities: Basic Install
     olm.skipRange: "<3.11.0"
-    operators.operatorframework.io/builder: operator-sdk-v1.28.1
+    operators.operatorframework.io/builder: operator-sdk-v1.31.0
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
   name: gatekeeper-operator.v3.11.1
   namespace: placeholder
