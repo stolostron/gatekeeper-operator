@@ -28,7 +28,9 @@ import (
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 
 	"sigs.k8s.io/controller-runtime/pkg/event"
+	"sigs.k8s.io/controller-runtime/pkg/metrics/server"
 	"sigs.k8s.io/controller-runtime/pkg/source"
+	"sigs.k8s.io/controller-runtime/pkg/webhook"
 
 	operatorv1alpha1 "github.com/gatekeeper/gatekeeper-operator/api/v1alpha1"
 	"github.com/gatekeeper/gatekeeper-operator/controllers"
@@ -86,10 +88,21 @@ func main() {
 	ctx := ctrl.SetupSignalHandler()
 
 	cfg := ctrl.GetConfigOrDie()
+
+	metricsOptions := server.Options{
+		BindAddress: metricsAddr,
+	}
+
+	webhookOptions := webhook.NewServer(
+		webhook.Options{
+			Port: 9443,
+		},
+	)
+
 	mgr, err := ctrl.NewManager(cfg, ctrl.Options{
 		Scheme:                 scheme,
-		MetricsBindAddress:     metricsAddr,
-		Port:                   9443,
+		Metrics:                metricsOptions,
+		WebhookServer:          webhookOptions,
 		HealthProbeBindAddress: probeAddr,
 		LeaderElection:         enableLeaderElection,
 		LeaderElectionID:       "5ff985cc.gatekeeper.sh",
