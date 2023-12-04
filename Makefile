@@ -113,6 +113,7 @@ GO_BINDATA_VERSION ?= v3.1.2+incompatible
 BATS_VERSION ?= 1.2.1
 OLM_VERSION ?= v0.18.2
 KUBERNETES_VERSION ?= v1.26.4
+GINKGO = $(LOCAL_BIN)/ginkgo
 
 .PHONY: e2e-dependencies
 e2e-dependencies:
