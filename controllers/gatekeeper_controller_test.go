@@ -16,6 +16,7 @@ package controllers
 
 import (
 	"os"
+	"reflect"
 	"testing"
 	"time"
 
@@ -1350,6 +1351,51 @@ func TestAllWebhookArgs(t *testing.T) {
 func expectObjContainerArgument(g *WithT, containerName string, obj *unstructured.Unstructured) Assertion {
 	args := getContainerArgumentsMap(g, containerName, obj)
 	return g.Expect(args)
+}
+
+func TestWebhookOperations(t *testing.T) {
+	g := NewWithT(t)
+
+	operations := []operatorv1alpha1.OperationType{"CREATE", "UPDATE", "DELETE"}
+
+	gatekeeper := &operatorv1alpha1.Gatekeeper{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "test",
+		},
+		Spec: operatorv1alpha1.GatekeeperSpec{
+			Webhook: &operatorv1alpha1.WebhookConfig{
+				Operations: operations,
+			},
+		},
+	}
+
+	// test WebhookOperations override
+	valObj, err := util.GetManifestObject(ValidatingWebhookConfiguration)
+	g.Expect(err).ToNot(HaveOccurred())
+	mutObj, err := util.GetManifestObject(MutatingWebhookConfiguration)
+	g.Expect(err).ToNot(HaveOccurred())
+
+	err = crOverrides(gatekeeper, ValidatingWebhookConfiguration, valObj, namespace, false, false)
+	g.Expect(err).ToNot(HaveOccurred())
+	overrideWebhookOperations(g, valObj, ValidatingWebhookConfiguration, operations)
+	err = crOverrides(gatekeeper, MutatingWebhookConfiguration, mutObj, namespace, false, false)
+	g.Expect(err).ToNot(HaveOccurred())
+	overrideWebhookOperations(g, mutObj, MutatingWebhookConfiguration, operations)
+}
+
+func overrideWebhookOperations(g *WithT, obj *unstructured.Unstructured, webhookName string, expected []operatorv1alpha1.OperationType) {
+	assertWebhooksWithFn(g, obj, func(webhook map[string]interface{}) {
+		if webhook["name"] == webhookName {
+			current, found, err := unstructured.NestedSlice(webhook, "rules")
+			g.Expect(err).ToNot(HaveOccurred())
+			g.Expect(found).To(BeTrue())
+
+			for _, rule := range current {
+				operations := rule.(map[string]interface{})["operations"].([]string)
+				g.Expect(reflect.DeepEqual(expected, operations)).To(BeTrue())
+			}
+		}
+	})
 }
 
 func getContainerArgumentsMap(g *WithT, containerName string, obj *unstructured.Unstructured) map[string]string {
