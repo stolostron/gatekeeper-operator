@@ -1114,6 +1114,17 @@ spec:
                           "value". The requirements are ANDed.
                         type: object
                     type: object
+                  operations:
+                    items:
+                      description: OperationType specifies an operation for a request.
+                      enum:
+                      - CONNECT
+                      - CREATE
+                      - UPDATE
+                      - DELETE
+                      - '*'
+                      type: string
+                    type: array
                   replicas:
                     format: int32
                     minimum: 0

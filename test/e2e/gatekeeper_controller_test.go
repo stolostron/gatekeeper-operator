@@ -494,6 +494,64 @@ var _ = Describe("Gatekeeper", func() {
 			auditDeployment, webhookDeployment = gatekeeperDeployments()
 			byCheckingMutationDisabled(auditDeployment, webhookDeployment)
 		})
+
+		It("Override Webhook operations with Create, Update, Delete, Connect", func() {
+			gatekeeper := &v1alpha1.Gatekeeper{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: gatekeeperNamespace,
+					Name:      "gatekeeper",
+				},
+				Spec: v1alpha1.GatekeeperSpec{
+					Webhook: &v1alpha1.WebhookConfig{
+						Operations: []v1alpha1.OperationType{
+							"CREATE", "UPDATE", "CONNECT", "DELETE",
+						},
+					},
+				},
+			}
+			Expect(K8sClient.Create(ctx, gatekeeper)).Should(Succeed())
+
+			By("Wait until new Deployments loaded")
+			gatekeeperDeployments()
+
+			By("ValidatingWebhookConfiguration Rules should have 4 operations")
+			validatingWebhookConfiguration := &admregv1.ValidatingWebhookConfiguration{}
+			Eventually(func(g Gomega) {
+				err := K8sClient.Get(ctx, validatingWebhookName, validatingWebhookConfiguration)
+				g.Expect(err).ShouldNot(HaveOccurred())
+				g.Expect(validatingWebhookConfiguration.Webhooks[0].Rules[0].Operations).Should(HaveLen(4))
+				g.Expect(validatingWebhookConfiguration.Webhooks[1].Rules[0].Operations).Should(HaveLen(4))
+			}, timeout, pollInterval).Should(Succeed())
+
+			By("MutatingWebhookConfiguration Rules should have 4 operations")
+			mutatingWebhookConfiguration := &admregv1.MutatingWebhookConfiguration{}
+			Eventually(func(g Gomega) {
+				err := K8sClient.Get(ctx, mutatingWebhookName, mutatingWebhookConfiguration)
+				g.Expect(err).ShouldNot(HaveOccurred())
+				g.Expect(mutatingWebhookConfiguration.Webhooks[0].Rules[0].Operations).Should(HaveLen(4))
+			}, timeout, pollInterval).Should(Succeed())
+
+			gatekeeper.Spec.Webhook.Operations = []v1alpha1.OperationType{"*"}
+			Expect(K8sClient.Update(ctx, gatekeeper)).Should(Succeed())
+
+			By("ValidatingWebhookConfiguration Rules should have 1 operations")
+			Eventually(func(g Gomega) {
+				err := K8sClient.Get(ctx, validatingWebhookName, validatingWebhookConfiguration)
+				g.Expect(err).ShouldNot(HaveOccurred())
+				g.Expect(validatingWebhookConfiguration.Webhooks[0].Rules[0].Operations).Should(HaveLen(1))
+				g.Expect(validatingWebhookConfiguration.Webhooks[0].Rules[0].Operations[0]).Should(BeEquivalentTo("*"))
+				g.Expect(validatingWebhookConfiguration.Webhooks[1].Rules[0].Operations).Should(HaveLen(1))
+				g.Expect(validatingWebhookConfiguration.Webhooks[1].Rules[0].Operations[0]).Should(BeEquivalentTo("*"))
+			}, timeout*2, pollInterval).Should(Succeed())
+
+			By("MutatingWebhookConfiguration Rules should have 1 operations")
+			Eventually(func(g Gomega) {
+				err := K8sClient.Get(ctx, mutatingWebhookName, mutatingWebhookConfiguration)
+				g.Expect(err).ShouldNot(HaveOccurred())
+				g.Expect(mutatingWebhookConfiguration.Webhooks[0].Rules[0].Operations).Should(HaveLen(1))
+				g.Expect(mutatingWebhookConfiguration.Webhooks[0].Rules[0].Operations[0]).Should(BeEquivalentTo("*"))
+			}, timeout, pollInterval).Should(Succeed())
+		})
 	})
 })
 

@@ -43,6 +43,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
+	"github.com/gatekeeper/gatekeeper-operator/api/v1alpha1"
 	operatorv1alpha1 "github.com/gatekeeper/gatekeeper-operator/api/v1alpha1"
 	"github.com/gatekeeper/gatekeeper-operator/controllers/merge"
 	"github.com/gatekeeper/gatekeeper-operator/pkg/platform"
@@ -670,6 +671,7 @@ func webhookOverrides(obj *unstructured.Unstructured, webhook *operatorv1alpha1.
 	return nil
 }
 
+// override common properties
 func webhookConfigurationOverrides(
 	obj *unstructured.Unstructured,
 	webhook *operatorv1alpha1.WebhookConfig,
@@ -694,9 +696,15 @@ func webhookConfigurationOverrides(
 				return err
 			}
 		}
+
+		if err := setOperations(obj, webhook.Operations, webhookName); err != nil {
+			return err
+		}
+
 		if err := setNamespaceSelector(obj, webhook.NamespaceSelector, gatekeeperNamespace, webhookName); err != nil {
 			return err
 		}
+
 	} else if err := setNamespaceSelector(obj, nil, gatekeeperNamespace, webhookName); err != nil {
 		return err
 	}
@@ -1044,6 +1052,41 @@ func setNamespaceSelector(
 	}
 
 	return setWebhookConfigurationWithFn(obj, webhookName, setNamespaceSelectorFn)
+}
+
+func setOperations(
+	obj *unstructured.Unstructured, operations []v1alpha1.OperationType, webhookName string,
+) error {
+	// If no operations is provided, no override for operations
+	if operations == nil {
+		return nil
+	}
+
+	setOperationsFn := func(webhook map[string]interface{}) error {
+		rules := webhook["rules"].([]interface{})
+		if len(rules) == 0 {
+			return nil
+		}
+
+		converted := make([]interface{}, 0, len(operations))
+		for _, op := range operations {
+			converted = append(converted, string(op))
+		}
+
+		for i, r := range rules {
+			firstRuleObj := r.(map[string]interface{})
+			firstRuleObj["operations"] = converted
+			rules[i] = firstRuleObj
+		}
+
+		if err := unstructured.SetNestedSlice(webhook, rules, "rules"); err != nil {
+			return errors.Wrapf(err, "Failed to set webhook operations")
+		}
+
+		return nil
+	}
+
+	return setWebhookConfigurationWithFn(obj, webhookName, setOperationsFn)
 }
 
 // Generic setters
