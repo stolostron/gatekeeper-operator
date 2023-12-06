@@ -380,8 +380,9 @@ func (r *GatekeeperReconciler) validateWebhookDeployment() (error, bool) {
 }
 
 func getStaticAssets(gatekeeper *operatorv1alpha1.Gatekeeper) (deleteWebhookAssets, applyOrderedAssets, applyWebhookAssets, deleteCRDAssets []string) {
-	validatingWebhookEnabled := gatekeeper.Spec.ValidatingWebhook == nil || *gatekeeper.Spec.ValidatingWebhook == operatorv1alpha1.WebhookEnabled
+	validatingWebhookEnabled := gatekeeper.Spec.ValidatingWebhook == nil || gatekeeper.Spec.ValidatingWebhook.ToBool()
 	mutatingWebhookEnabled := mutatingWebhookEnabled(gatekeeper.Spec.MutatingWebhook)
+
 	deleteWebhookAssets = make([]string, 0)
 	applyOrderedAssets = make([]string, 0)
 	applyWebhookAssets = make([]string, 0)
@@ -407,8 +408,8 @@ func getStaticAssets(gatekeeper *operatorv1alpha1.Gatekeeper) (deleteWebhookAsse
 	return
 }
 
-func mutatingWebhookEnabled(mode *operatorv1alpha1.WebhookMode) bool {
-	return mode == nil || *mode == operatorv1alpha1.WebhookEnabled
+func mutatingWebhookEnabled(mode *operatorv1alpha1.Mode) bool {
+	return mode == nil || mode.ToBool()
 }
 
 func getSubsetOfAssets(inputAssets []string, assetsToRemove ...string) []string {
@@ -865,25 +866,20 @@ func setAuditChunkSize(obj *unstructured.Unstructured, auditChunkSize *uint64) e
 	return nil
 }
 
-func setEmitEvents(obj *unstructured.Unstructured, argName string, emitEvents *operatorv1alpha1.EmitEventsMode) error {
+func setEmitEvents(obj *unstructured.Unstructured, argName string, emitEvents *operatorv1alpha1.Mode) error {
 	if emitEvents != nil {
-		emitArgValue := "false"
-		if *emitEvents == operatorv1alpha1.EmitEventsEnabled {
-			emitArgValue = "true"
-		}
+		emitArgValue := emitEvents.ToBoolString()
+
 		return setContainerArg(obj, managerContainer, argName, emitArgValue, false)
 	}
 	return nil
 }
 
 func setEventsInvolvedNamespace(obj *unstructured.Unstructured,
-	argName string, eventsInvolvedNs *operatorv1alpha1.EventsInvolvedNsMode,
+	argName string, eventsInvolvedNs *operatorv1alpha1.Mode,
 ) error {
 	if eventsInvolvedNs != nil {
-		emitEventsInvolvedNsArgValue := "false"
-		if *eventsInvolvedNs == operatorv1alpha1.EventsInvolvedNsModeEnabled {
-			emitEventsInvolvedNsArgValue = "true"
-		}
+		emitEventsInvolvedNsArgValue := eventsInvolvedNs.ToBoolString()
 
 		return setContainerArg(obj, managerContainer, argName, emitEventsInvolvedNsArgValue, false)
 	}

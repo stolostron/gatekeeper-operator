@@ -25,6 +25,26 @@ import (
 // EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
+// +kubebuilder:validation:Enum:=Enabled;Disabled
+type Mode string
+
+const (
+	Enabled  Mode = "Enabled"
+	Disabled Mode = "Disabled"
+)
+
+func (m Mode) ToBool() bool {
+	return m == Enabled
+}
+
+func (m Mode) ToBoolString() string {
+	if m.ToBool() {
+		return "true"
+	}
+
+	return "false"
+}
+
 // GatekeeperSpec defines the desired state of Gatekeeper
 type GatekeeperSpec struct {
 	// INSERT ADDITIONAL SPEC FIELDS - desired state of cluster
@@ -41,11 +61,11 @@ type GatekeeperSpec struct {
 
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Validating Webhook"
 	// +optional
-	ValidatingWebhook *WebhookMode `json:"validatingWebhook,omitempty"`
+	ValidatingWebhook *Mode `json:"validatingWebhook,omitempty"`
 
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Mutating Webhook"
 	// +optional
-	MutatingWebhook *WebhookMode `json:"mutatingWebhook,omitempty"`
+	MutatingWebhook *Mode `json:"mutatingWebhook,omitempty"`
 
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Webhook Config"
 	// +optional
@@ -101,20 +121,12 @@ type AuditConfig struct {
 	// +optional
 	LogLevel *LogLevelMode `json:"logLevel,omitempty"`
 	// +optional
-	EmitAuditEvents *EmitEventsMode `json:"emitAuditEvents,omitempty"`
+	EmitAuditEvents *Mode `json:"emitAuditEvents,omitempty"`
 	// +optional
-	AuditEventsInvolvedNamespace *EventsInvolvedNsMode `json:"auditEventsInvolvedNamespace,omitempty"`
+	AuditEventsInvolvedNamespace *Mode `json:"auditEventsInvolvedNamespace,omitempty"`
 	// +optional
 	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
 }
-
-// +kubebuilder:validation:Enum:=Enabled;Disabled
-type WebhookMode string
-
-const (
-	WebhookEnabled  WebhookMode = "Enabled"
-	WebhookDisabled WebhookMode = "Disabled"
-)
 
 type WebhookConfig struct {
 	// +kubebuilder:validation:Minimum:=0
@@ -123,9 +135,9 @@ type WebhookConfig struct {
 	// +optional
 	LogLevel *LogLevelMode `json:"logLevel,omitempty"`
 	// +optional
-	EmitAdmissionEvents *EmitEventsMode `json:"emitAdmissionEvents,omitempty"`
+	EmitAdmissionEvents *Mode `json:"emitAdmissionEvents,omitempty"`
 	// +optional
-	AdmissionEventsInvolvedNamespace *EventsInvolvedNsMode `json:"admissionEventsInvolvedNamespace,omitempty"`
+	AdmissionEventsInvolvedNamespace *Mode `json:"admissionEventsInvolvedNamespace,omitempty"`
 	// +optional
 	FailurePolicy *admregv1.FailurePolicyType `json:"failurePolicy,omitempty"`
 	// +optional
@@ -153,22 +165,6 @@ const (
 	AuditFromCacheEnabled   AuditFromCacheMode = "Enabled"
 	AuditFromCacheDisabled  AuditFromCacheMode = "Disabled"
 	AuditFromCacheAutomatic AuditFromCacheMode = "Automatic"
-)
-
-// +kubebuilder:validation:Enum:=Enabled;Disabled
-type EmitEventsMode string
-
-const (
-	EmitEventsEnabled  EmitEventsMode = "Enabled"
-	EmitEventsDisabled EmitEventsMode = "Disabled"
-)
-
-// +kubebuilder:validation:Enum:=Enabled;Disabled
-type EventsInvolvedNsMode string
-
-const (
-	EventsInvolvedNsModeEnabled  EventsInvolvedNsMode = "Enabled"
-	EventsInvolvedNsModeDisabled EventsInvolvedNsMode = "Disabled"
 )
 
 // GatekeeperStatus defines the observed state of Gatekeeper
