@@ -146,6 +146,13 @@ type WebhookConfig struct {
 	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
 	// +optional
 	DisabledBuiltins []string `json:"disabledBuiltins,omitempty"`
+	// +optional
+	// Sets the --log-mutations flag which enables logging of mutation events and errors. This defaults to Disabled.
+	LogMutations *Mode `json:"logMutations,omitempty"`
+	// +optional
+	// Sets the --mutation-annotations flag which adds the gatekeeper.sh/mutation-id and gatekeeper.sh/mutations
+	// annotations on mutated objects. This defaults to Disabled.
+	MutationAnnotations *Mode `json:"mutationAnnotations,omitempty"`
 }
 
 // +kubebuilder:validation:Enum:=DEBUG;INFO;WARNING;ERROR

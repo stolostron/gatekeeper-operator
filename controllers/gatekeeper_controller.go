@@ -88,6 +88,8 @@ const (
 	OperationMutationStatus             = "mutation-status"
 	OperationMutationWebhook            = "mutation-webhook"
 	DisabledBuiltinArg                  = "--disable-opa-builtin"
+	LogMutationsArg                     = "--log-mutations"
+	MutationAnnotationsArg              = "--mutation-annotations"
 )
 
 var (
@@ -659,6 +661,10 @@ func webhookOverrides(obj *unstructured.Unstructured, webhook *operatorv1alpha1.
 		if err := setDisabledBuiltins(obj, webhook.DisabledBuiltins); err != nil {
 			return err
 		}
+
+		if err := setMutationFlags(obj, webhook); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -830,6 +836,27 @@ func setLogLevel(obj *unstructured.Unstructured, logLevel *operatorv1alpha1.LogL
 	if logLevel != nil {
 		return setContainerArg(obj, managerContainer, LogLevelArg, string(*logLevel), false)
 	}
+	return nil
+}
+
+func setMutationFlags(obj *unstructured.Unstructured, webhookConfig *operatorv1alpha1.WebhookConfig) error {
+	if webhookConfig == nil {
+		return nil
+	}
+
+	if webhookConfig.LogMutations != nil && webhookConfig.LogMutations.ToBool() {
+		err := setContainerArg(obj, managerContainer, LogMutationsArg, webhookConfig.LogMutations.ToBoolString(), false)
+		if err != nil {
+			return err
+		}
+	}
+
+	if webhookConfig.MutationAnnotations != nil && webhookConfig.MutationAnnotations.ToBool() {
+		return setContainerArg(
+			obj, managerContainer, MutationAnnotationsArg, webhookConfig.MutationAnnotations.ToBoolString(), false,
+		)
+	}
+
 	return nil
 }
 
