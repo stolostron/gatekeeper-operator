@@ -145,8 +145,15 @@ tidy: ## Run go mod tidy
 	GO111MODULE=on GOFLAGS=$(GOFLAGS) go mod tidy
 
 .PHONY: test
-test: manifests generate fmt vet envtest ## Run tests.
-	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" GOFLAGS=$(GOFLAGS) go test $$(go list ./... | grep -v /test/) -coverprofile cover.out
+test: manifests generate fmt vet envtest test-unit ## Run tests.
+
+.PHONY: test-unit
+test-unit:
+	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" GOFLAGS=$(GOFLAGS) go test $(TESTARGS) $$(go list ./... | grep -v /test/)
+
+.PHONY: test-coverage
+test-coverage: TESTARGS = -json -cover -covermode=atomic -coverprofile=coverage_unit.out
+test-coverage: test-unit
 
 .PHONY: test-e2e
 test-e2e: e2e-dependencies generate fmt vet ## Run e2e tests, using the configured Kubernetes cluster in ~/.kube/config
