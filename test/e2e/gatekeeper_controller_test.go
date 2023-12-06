@@ -418,7 +418,7 @@ var _ = Describe("Gatekeeper", func() {
 			})
 
 			By("Updating Gatekeeper CR with validation disabled", func() {
-				webhookMode := v1alpha1.WebhookDisabled
+				webhookMode := v1alpha1.Disabled
 				gatekeeper.Spec.ValidatingWebhook = &webhookMode
 				Expect(K8sClient.Update(ctx, gatekeeper)).Should(Succeed())
 			})
@@ -429,7 +429,7 @@ var _ = Describe("Gatekeeper", func() {
 
 		It("Enables Gatekeeper mutation with default values", func() {
 			gatekeeper := emptyGatekeeper()
-			webhookMode := v1alpha1.WebhookEnabled
+			webhookMode := v1alpha1.Enabled
 			gatekeeper.Spec.MutatingWebhook = &webhookMode
 			Expect(K8sClient.Create(ctx, gatekeeper)).Should(Succeed())
 			auditDeployment, webhookDeployment := gatekeeperDeployments()
@@ -451,7 +451,7 @@ var _ = Describe("Gatekeeper", func() {
 			gatekeeper := emptyGatekeeper()
 			err := loadGatekeeperFromFile(gatekeeper, gatekeeperWithAllValuesFile)
 			Expect(err).ToNot(HaveOccurred())
-			webhookMode := v1alpha1.WebhookEnabled
+			webhookMode := v1alpha1.Enabled
 			gatekeeper.Spec.MutatingWebhook = &webhookMode
 			Expect(K8sClient.Create(ctx, gatekeeper)).Should(Succeed())
 			auditDeployment, webhookDeployment := gatekeeperDeployments()
@@ -472,7 +472,7 @@ var _ = Describe("Gatekeeper", func() {
 		It("Enables then disables Gatekeeper mutation", func() {
 			gatekeeper := emptyGatekeeper()
 			By("First creating Gatekeeper CR with mutation enabled", func() {
-				webhookMode := v1alpha1.WebhookEnabled
+				webhookMode := v1alpha1.Enabled
 				gatekeeper.Spec.MutatingWebhook = &webhookMode
 				Expect(K8sClient.Create(ctx, gatekeeper)).Should(Succeed())
 			})
@@ -486,7 +486,7 @@ var _ = Describe("Gatekeeper", func() {
 			})
 
 			By("Updating Gatekeeper CR with mutation disabled", func() {
-				webhookMode := v1alpha1.WebhookDisabled
+				webhookMode := v1alpha1.Disabled
 				gatekeeper.Spec.MutatingWebhook = &webhookMode
 				Expect(K8sClient.Update(ctx, gatekeeper)).Should(Succeed())
 			})
