@@ -1321,6 +1321,8 @@ func TestAllWebhookArgs(t *testing.T) {
 	expectObjContainerArgument(g, managerContainer, webhookObj).NotTo(HaveKey(AdmissionEventsInvolvedNamespaceArg))
 	expectObjContainerArgument(g, managerContainer, webhookObj).NotTo(HaveKey(LogLevelArg))
 	expectObjContainerArgument(g, managerContainer, webhookObj).NotTo(HaveKey(EnableMutationArg))
+	expectObjContainerArgument(g, managerContainer, webhookObj).NotTo(HaveKey(LogMutationsArg))
+	expectObjContainerArgument(g, managerContainer, webhookObj).NotTo(HaveKey(MutationAnnotationsArg))
 	// test nil
 	err = crOverrides(gatekeeper, WebhookFile, webhookObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
@@ -1328,6 +1330,8 @@ func TestAllWebhookArgs(t *testing.T) {
 	expectObjContainerArgument(g, managerContainer, webhookObj).NotTo(HaveKey(AdmissionEventsInvolvedNamespaceArg))
 	expectObjContainerArgument(g, managerContainer, webhookObj).NotTo(HaveKey(LogLevelArg))
 	expectObjContainerArgument(g, managerContainer, webhookObj).NotTo(HaveKey(EnableMutationArg))
+	expectObjContainerArgument(g, managerContainer, webhookObj).NotTo(HaveKey(LogMutationsArg))
+	expectObjContainerArgument(g, managerContainer, webhookObj).NotTo(HaveKey(MutationAnnotationsArg))
 	// test override without mutation
 	gatekeeper.Spec.Webhook = &webhookOverride
 	err = crOverrides(gatekeeper, WebhookFile, webhookObj, namespace, false, false)
@@ -1336,15 +1340,32 @@ func TestAllWebhookArgs(t *testing.T) {
 	expectObjContainerArgument(g, managerContainer, webhookObj).To(HaveKeyWithValue(AdmissionEventsInvolvedNamespaceArg, "true"))
 	expectObjContainerArgument(g, managerContainer, webhookObj).To(HaveKeyWithValue(LogLevelArg, "DEBUG"))
 	expectObjContainerArgument(g, managerContainer, webhookObj).NotTo(HaveKey(EnableMutationArg))
+	expectObjContainerArgument(g, managerContainer, webhookObj).NotTo(HaveKey(LogMutationsArg))
+	expectObjContainerArgument(g, managerContainer, webhookObj).NotTo(HaveKey(MutationAnnotationsArg))
 	// test override with mutation
-	mutatingWebhook := operatorv1alpha1.Enabled
-	gatekeeper.Spec.MutatingWebhook = &mutatingWebhook
+	enabled := operatorv1alpha1.Enabled
+	gatekeeper.Spec.MutatingWebhook = &enabled
 	err = crOverrides(gatekeeper, WebhookFile, webhookObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
 	expectObjContainerArgument(g, managerContainer, webhookObj).To(HaveKeyWithValue(EmitAdmissionEventsArg, "true"))
 	expectObjContainerArgument(g, managerContainer, webhookObj).To(HaveKeyWithValue(AdmissionEventsInvolvedNamespaceArg, "true"))
 	expectObjContainerArgument(g, managerContainer, webhookObj).To(HaveKeyWithValue(LogLevelArg, "DEBUG"))
 	expectObjContainerArgument(g, managerContainer, webhookObj).To(HaveKeyWithValue(OperationArg, OperationMutationWebhook))
+	expectObjContainerArgument(g, managerContainer, webhookObj).NotTo(HaveKey(LogMutationsArg))
+	expectObjContainerArgument(g, managerContainer, webhookObj).NotTo(HaveKey(MutationAnnotationsArg))
+
+	// test override with mutation flags
+	gatekeeper.Spec.MutatingWebhook = &enabled
+	gatekeeper.Spec.Webhook.LogMutations = &enabled
+	gatekeeper.Spec.Webhook.MutationAnnotations = &enabled
+	err = crOverrides(gatekeeper, WebhookFile, webhookObj, namespace, false, false)
+	g.Expect(err).ToNot(HaveOccurred())
+	expectObjContainerArgument(g, managerContainer, webhookObj).To(HaveKeyWithValue(EmitAdmissionEventsArg, "true"))
+	expectObjContainerArgument(g, managerContainer, webhookObj).To(HaveKeyWithValue(AdmissionEventsInvolvedNamespaceArg, "true"))
+	expectObjContainerArgument(g, managerContainer, webhookObj).To(HaveKeyWithValue(LogLevelArg, "DEBUG"))
+	expectObjContainerArgument(g, managerContainer, webhookObj).To(HaveKeyWithValue(OperationArg, OperationMutationWebhook))
+	expectObjContainerArgument(g, managerContainer, webhookObj).To(HaveKeyWithValue(LogMutationsArg, "true"))
+	expectObjContainerArgument(g, managerContainer, webhookObj).To(HaveKeyWithValue(MutationAnnotationsArg, "true"))
 }
 
 func expectObjContainerArgument(g *WithT, containerName string, obj *unstructured.Unstructured) Assertion {
