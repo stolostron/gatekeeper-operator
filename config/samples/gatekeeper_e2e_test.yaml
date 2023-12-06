@@ -15,3 +15,5 @@ spec:
     admissionEventsInvolvedNamespace: Enabled
     disabledBuiltins:
       - http.send
+    logMutations: Enabled
+    mutationAnnotations: Enabled

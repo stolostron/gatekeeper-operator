@@ -1052,6 +1052,21 @@ spec:
                     - WARNING
                     - ERROR
                     type: string
+                  logMutations:
+                    description: Sets the --log-mutations flag which enables logging
+                      of mutation events and errors. This defaults to Disabled.
+                    enum:
+                    - Enabled
+                    - Disabled
+                    type: string
+                  mutationAnnotations:
+                    description: Sets the --mutation-annotations flag which adds the
+                      gatekeeper.sh/mutation-id and gatekeeper.sh/mutations annotations
+                      on mutated objects. This defaults to Disabled.
+                    enum:
+                    - Enabled
+                    - Disabled
+                    type: string
                   namespaceSelector:
                     description: A label selector is a label query over a set of resources.
                       The result of matchLabels and matchExpressions are ANDed. An
