@@ -63,12 +63,12 @@ func (in *AuditConfig) DeepCopyInto(out *AuditConfig) {
 	}
 	if in.EmitAuditEvents != nil {
 		in, out := &in.EmitAuditEvents, &out.EmitAuditEvents
-		*out = new(EmitEventsMode)
+		*out = new(Mode)
 		**out = **in
 	}
 	if in.AuditEventsInvolvedNamespace != nil {
 		in, out := &in.AuditEventsInvolvedNamespace, &out.AuditEventsInvolvedNamespace
-		*out = new(EventsInvolvedNsMode)
+		*out = new(Mode)
 		**out = **in
 	}
 	if in.Resources != nil {
@@ -162,12 +162,12 @@ func (in *GatekeeperSpec) DeepCopyInto(out *GatekeeperSpec) {
 	}
 	if in.ValidatingWebhook != nil {
 		in, out := &in.ValidatingWebhook, &out.ValidatingWebhook
-		*out = new(WebhookMode)
+		*out = new(Mode)
 		**out = **in
 	}
 	if in.MutatingWebhook != nil {
 		in, out := &in.MutatingWebhook, &out.MutatingWebhook
-		*out = new(WebhookMode)
+		*out = new(Mode)
 		**out = **in
 	}
 	if in.Webhook != nil {
@@ -299,12 +299,12 @@ func (in *WebhookConfig) DeepCopyInto(out *WebhookConfig) {
 	}
 	if in.EmitAdmissionEvents != nil {
 		in, out := &in.EmitAdmissionEvents, &out.EmitAdmissionEvents
-		*out = new(EmitEventsMode)
+		*out = new(Mode)
 		**out = **in
 	}
 	if in.AdmissionEventsInvolvedNamespace != nil {
 		in, out := &in.AdmissionEventsInvolvedNamespace, &out.AdmissionEventsInvolvedNamespace
-		*out = new(EventsInvolvedNsMode)
+		*out = new(Mode)
 		**out = **in
 	}
 	if in.FailurePolicy != nil {
