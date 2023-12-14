@@ -870,7 +870,16 @@ spec:
                     format: int64
                     minimum: 0
                     type: integer
+                  auditEventsInvolvedNamespace:
+                    enum:
+                    - Enabled
+                    - Disabled
+                    type: string
                   auditFromCache:
+                    description: Setting Automatic lets the Gatekeeper operator manage
+                      syncOnly in the config resource. It is not recommended to use
+                      Automatic when using referential constraints since those are
+                      not detected.
                     enum:
                     - Enabled
                     - Disabled
@@ -1024,6 +1033,11 @@ spec:
                 type: string
               webhook:
                 properties:
+                  admissionEventsInvolvedNamespace:
+                    enum:
+                    - Enabled
+                    - Disabled
+                    type: string
                   disabledBuiltins:
                     items:
                       type: string
@@ -1044,6 +1058,21 @@ spec:
                     - INFO
                     - WARNING
                     - ERROR
+                    type: string
+                  logMutations:
+                    description: Sets the --log-mutations flag which enables logging
+                      of mutation events and errors. This defaults to Disabled.
+                    enum:
+                    - Enabled
+                    - Disabled
+                    type: string
+                  mutationAnnotations:
+                    description: Sets the --mutation-annotations flag which adds the
+                      gatekeeper.sh/mutation-id and gatekeeper.sh/mutations annotations
+                      on mutated objects. This defaults to Disabled.
+                    enum:
+                    - Enabled
+                    - Disabled
                     type: string
                   namespaceSelector:
                     description: A label selector is a label query over a set of resources.
@@ -1092,6 +1121,17 @@ spec:
                           "value". The requirements are ANDed.
                         type: object
                     type: object
+                  operations:
+                    items:
+                      description: OperationType specifies an operation for a request.
+                      enum:
+                      - CONNECT
+                      - CREATE
+                      - UPDATE
+                      - DELETE
+                      - '*'
+                      type: string
+                    type: array
                   replicas:
                     format: int32
                     minimum: 0
@@ -1435,7 +1475,20 @@ rules:
 - apiGroups:
   - ""
   resources:
+  - events
   - namespaces
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - expansion.gatekeeper.sh
+  resources:
+  - '*'
   verbs:
   - create
   - delete
