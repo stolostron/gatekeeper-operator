@@ -3,10 +3,10 @@
 # To re-generate a bundle for another specific version without changing the standard setup, you can:
 # - use the VERSION as arg of the bundle target (e.g make bundle VERSION=0.0.2)
 # - use environment variables to overwrite this value (e.g export VERSION=0.0.2)
-VERSION ?= 3.11.1-2
+VERSION ?= 3.11.2
 # Replaces Operator version
 # Set this when when there is a new patch release in the channel.
-REPLACES_VERSION ?= 0.2.6
+REPLACES_VERSION ?= 3.11.1
 
 LOCAL_BIN ?= $(PWD)/ci-tools/bin
 export PATH := $(LOCAL_BIN):$(PATH)
