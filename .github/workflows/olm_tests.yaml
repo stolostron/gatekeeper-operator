@@ -41,11 +41,7 @@ jobs:
       run: |
         # TODO: Use operator-sdk run bundle and bundle-upgrade commands for
         # testing with OLM.
-        REGISTRY_PORT=5000
-        REPO=localhost:${REGISTRY_PORT}
-        IMG=${REPO}/gatekeeper-operator:${GITHUB_SHA}
-        PREV_BUNDLE_INDEX_IMG=quay.io/gatekeeper/gatekeeper-operator-bundle-index:v$(cat REPLACES_VERSION)
-        make build-and-push-bundle-images IMG=${IMG} REPO=${REPO} VERSION=${GITHUB_SHA} OPERATOR_VERSION=$(cat VERSION)
+        make build-and-push-bundle-images REPO=localhost:5000 VERSION_TAG=${GITHUB_SHA} OPERATOR_VERSION=$(cat VERSION)
 
     - name: Deploy OLM
       run: |
@@ -53,8 +49,7 @@ jobs:
 
     - name: Deploy resources on KIND cluster to install Gatekeeper
       run: |
-        REGISTRY_PORT=5000
-        make deploy-using-olm REPO=localhost:${REGISTRY_PORT} VERSION=${GITHUB_SHA} NAMESPACE=mygatekeeper
+        make deploy-using-olm REPO=localhost:5000 VERSION_TAG=${GITHUB_SHA} NAMESPACE=mygatekeeper
         while ! kubectl -n mygatekeeper get deployment gatekeeper-operator-controller; do \
           echo "Waiting for operator deployment"; \
           sleep 2; \

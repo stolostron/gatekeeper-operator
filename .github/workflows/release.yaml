@@ -9,7 +9,7 @@ on:
       - 'v*' # tags matching v*, i.e. v0.0.1, v1.0.0-rc.0
 
 env:
-  VERSION: ${{ github.ref_name }}
+  VERSION_TAG: ${{ github.ref_name }}
 
 jobs:
   build:
