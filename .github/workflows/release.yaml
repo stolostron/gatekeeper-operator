@@ -1,30 +1,22 @@
-name: Create Release
+name: Build and release images
 
 on:
   push:
+    branches:
+    - main
+    - release-[0-9]+.[0-9]+
     tags:
       - 'v*' # tags matching v*, i.e. v0.0.1, v1.0.0-rc.0
 
+env:
+  VERSION: ${{ github.ref_name }}
+
 jobs:
   build:
-    name: Create Release
+    name: Image build and push
     runs-on: ubuntu-latest
 
     steps:
-    - name: Set Up Environment Variables
-      env:
-        REPO: quay.io/${{ secrets.QUAY_ACCOUNT_NAME }}
-        IMG: gatekeeper-operator
-      run: |
-        echo "REPO=${REPO}" >> ${GITHUB_ENV}
-        RELEASE_VERSION=${{ github.ref }}
-        # Removes the 'refs/tags/' portion of the string i.e. 'refs/tags/v0.0.1' to 'v0.0.1'
-        echo "RELEASE_VERSION=${RELEASE_VERSION##*/}" >> ${GITHUB_ENV}
-        RELEASE_IMG="${REPO}/${IMG}"
-        echo "RELEASE_IMG=${RELEASE_IMG}" >> ${GITHUB_ENV}
-        echo "RELEASE_BUNDLE_IMG=${RELEASE_IMG}-bundle" >> ${GITHUB_ENV}
-        echo "RELEASE_BUNDLE_INDEX_IMG=${RELEASE_IMG}-bundle-index" >> ${GITHUB_ENV}
-
     - uses: actions/checkout@v3
       with:
         fetch-depth: 0 # Fetch all history for all tags and branches
@@ -34,31 +26,15 @@ jobs:
       with:
         go-version-file: go.mod
 
-    # FIXME: The version tags created in this repo for official releases are
-    # annotated tags. However, this step is necessary to enable matching
-    # lightweight (non-annotated) tags because the GitHub Actions checkout@v3
-    # action (run just prior) will overwrite the annotated tag with a
-    # non-annotated one here
-    # https://github.com/actions/checkout/blob/5a4ac9002d0be2fb38bd78e4b4dbde5606d7042f/src/git-source-provider.ts#L136-L141
-    # as a result of the refspec created at
-    # https://github.com/actions/checkout/blob/5a4ac9002d0be2fb38bd78e4b4dbde5606d7042f/src/ref-helper.ts#L94-L97.
-    # This issue is tracked at https://github.com/actions/checkout/issues/290.
-    # Once the issue is resolved, this step can be removed.
+    # Issue ref: https://github.com/actions/checkout/issues/290.
     - name: Extract Non-Annotated Version Tag
       run: |
-        GIT_VERSION=$(git describe --tags --match='v*' --always --dirty)
-        echo "GIT_VERSION=${GIT_VERSION}" >> ${GITHUB_ENV}
+        echo "GIT_VERSION=$(git describe --tags --match='v*' --always --dirty)" >> ${GITHUB_ENV}
 
     - name: Verify release manifest
       run: |
-        # GitHub Actions obfuscates values of secrets e.g. REPO='quay.io/***',
-        # so pass an unset REPO variable to use the default within the
-        # Makefile.
-        unset REPO
         make release
         git diff --exit-code ./deploy/gatekeeper-operator.yaml
-        # Reset state of git tree modified by kustomize.
-        git reset --hard
 
     - uses: docker/setup-qemu-action@v2
     - uses: docker/setup-buildx-action@v2
@@ -70,24 +46,27 @@ jobs:
         username: ${{ secrets.QUAY_USERNAME }}
         password: ${{ secrets.QUAY_TOKEN }}
 
-    - name: Build and Push Operator Image
+    - name: Build and Push Images
       run: |
+        echo "::group::gatekeeper-operator"
         make docker-build
-        make docker-push IMG=${RELEASE_IMG}:${RELEASE_VERSION}
+        make docker-push
+        echo "::endgroup::"
 
-    - name: Build and Push Bundle Image
-      run: |
+        echo "::group::gatekeeper-operator-bundle"
         make bundle-build
-        make docker-push IMG=${RELEASE_BUNDLE_IMG}:${RELEASE_VERSION}
+        make bundle-push
+        echo "::endgroup::"
 
-    - name: Build and Push Bundle Index Image
-      run: |
+        echo "::group::gatekeeper-operator-bundle-index"
         make bundle-index-build
-        make docker-push IMG=${RELEASE_BUNDLE_INDEX_IMG}:${RELEASE_VERSION}
+        make bundle-index-push
+        echo "::endgroup::"
 
     - name: Create Release
       id: create_release
       uses: actions/create-release@v1
+      if: ${{ github.ref_type == 'tag' }}
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions.
       with:
@@ -96,7 +75,7 @@ jobs:
         body: |
           To install the Gatekeeper Operator:
           ```
-          kubectl apply -f https://raw.githubusercontent.com/${{ github.repository }}/${{ env.RELEASE_VERSION }}/deploy/gatekeeper-operator.yaml
+          kubectl apply -f https://raw.githubusercontent.com/${{ github.repository }}/${{ env.VERSION }}/deploy/gatekeeper-operator.yaml
           ```
         generateReleaseNotes: true
         draft: true
