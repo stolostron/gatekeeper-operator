@@ -4,6 +4,7 @@
 # - use the VERSION as arg of the bundle target (e.g make bundle VERSION=0.0.2)
 # - use environment variables to overwrite this value (e.g export VERSION=0.0.2)
 VERSION ?= $(shell cat VERSION)
+VERSION_TAG ?= v$(VERSION)
 # Replaces Operator version
 # Set this when when there is a new patch release in the channel.
 REPLACES_VERSION ?= $(shell cat REPLACES_VERSION)
@@ -54,10 +55,10 @@ IMAGE_TAG_BASE ?= $(REPO)/gatekeeper-operator
 
 # BUNDLE_IMG defines the image:tag used for the bundle.
 # You can use it as an arg. (E.g make bundle-build BUNDLE_IMG=<some-registry>/<project-name-bundle>:<tag>)
-BUNDLE_IMG ?= $(IMAGE_TAG_BASE)-bundle:v$(VERSION)
+BUNDLE_IMG ?= $(IMAGE_TAG_BASE)-bundle:$(VERSION_TAG)
 
 # Image URL to use all building/pushing image targets
-IMG ?= $(IMAGE_TAG_BASE):v$(VERSION)
+IMG ?= $(IMAGE_TAG_BASE):$(VERSION_TAG)
 # Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
 CRD_OPTIONS ?= "crd:trivialVersions=true,preserveUnknownFields=false"
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
@@ -97,12 +98,12 @@ help: ## Display this help.
 	@awk 'BEGIN {FS = ":.*##"; printf "\nUsage:\n  make \033[36m<target>\033[0m\n"} /^[a-zA-Z_0-9-]+:.*?##/ { printf "  \033[36m%-15s\033[0m %s\n", $$1, $$2 } /^##@/ { printf "\n\033[1m%s\033[0m\n", substr($$0, 5) } ' $(MAKEFILE_LIST)
 
 .PHONY: clean
-clean: IMG = quay.io/gatekeeper/gatekeeper-operator:v$(VERSION)
+clean: IMG = quay.io/gatekeeper/gatekeeper-operator:$(VERSION_TAG)
 clean: delete-test-cluster clean-manifests ## Clean up build artifacts.
 	rm $(LOCAL_BIN)/*
 
 .PHONY: clean-manifests
-clean-manifests: IMG = quay.io/gatekeeper/gatekeeper-operator:v$(VERSION)
+clean-manifests: IMG = quay.io/gatekeeper/gatekeeper-operator:$(VERSION_TAG)
 clean-manifests: kustomize unpatch-deployment bundle
 	# Reset all kustomization.yaml files
 	git restore **/kustomization.yaml
@@ -281,7 +282,7 @@ patch-deployment:
 .PHONY: unpatch-deployment
 unpatch-deployment: 
 	cd config/default && $(KUSTOMIZE) edit set namespace gatekeeper-system
-	cd config/manager && $(KUSTOMIZE) edit set image controller=quay.io/gatekeeper/gatekeeper-operator:v$(VERSION)
+	cd config/manager && $(KUSTOMIZE) edit set image controller=quay.io/gatekeeper/gatekeeper-operator:$(VERSION_TAG)
 
 .PHONY: undeploy
 undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/config.
@@ -451,7 +452,7 @@ $(OPERATOR_SDK):
 	chmod +x $(OPERATOR_SDK)
 
 # Default bundle index image tag
-BUNDLE_INDEX_IMG ?= $(IMAGE_TAG_BASE)-bundle-index:v$(VERSION)
+BUNDLE_INDEX_IMG ?= $(IMAGE_TAG_BASE)-bundle-index:$(VERSION_TAG)
 # Default previous bundle index image tag
 PREV_BUNDLE_INDEX_IMG ?= quay.io/gatekeeper/gatekeeper-operator-bundle-index:v$(REPLACES_VERSION)
 # Default namespace
