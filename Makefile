@@ -393,24 +393,25 @@ import-manifests: kustomize
 
 	cd $(GATEKEEPER_MANIFEST_DIR) && $(KUSTOMIZE) edit add resource *.yaml
 
-# Build the bundle index image.
 .PHONY: bundle-index-build
-bundle-index-build: opm
+bundle-index-build: opm ## Build the bundle index image.
 ifneq ($(REPLACES_VERSION), none)
 	$(OPM) index add --bundles $(BUNDLE_IMG) --from-index $(PREV_BUNDLE_INDEX_IMG) --tag $(BUNDLE_INDEX_IMG) -c $(DOCKER)
 else
 	$(OPM) index add --bundles $(BUNDLE_IMG) --tag $(BUNDLE_INDEX_IMG) -c $(DOCKER)
 endif
 
-# Generate and push bundle image and bundle index image
-# Note: OPERATOR_VERSION is an arbitrary number and does not need to match any official versions
-.PHONY: build-and-push-bundle-images
-build-and-push-bundle-images: docker-build docker-push
-	$(MAKE) bundle VERSION=$(OPERATOR_VERSION)
-	$(MAKE) bundle-build
-	$(MAKE) docker-push IMG=$(BUNDLE_IMG)
-	$(MAKE) bundle-index-build
+.PHONY: bundle-index-push
+bundle-index-push: ## Push the bundle index image.
 	$(MAKE) docker-push IMG=$(BUNDLE_INDEX_IMG)
+
+.PHONY: build-and-push-bundle-images
+build-and-push-bundle-images: docker-build docker-push ## Build and push bundle and bundle index images.
+	$(MAKE) bundle
+	$(MAKE) bundle-build
+	$(MAKE) bundle-push
+	$(MAKE) bundle-index-build
+	$(MAKE) bundle-index-push
 
 # A comma-separated list of bundle images (e.g. make catalog-build BUNDLE_IMGS=example.com/operator-bundle:v0.1.0,example.com/operator-bundle:v0.2.0).
 # These images MUST exist in a registry and be pull-able.
