@@ -1,0 +1,42 @@
+name: Fast forward latest release
+
+on:
+  push:
+    branches:
+    - main
+
+jobs:
+  ff:
+    name: Fast forward from main to latest release branch
+    runs-on: ubuntu-latest
+    steps:
+    - name: Set Up Environment Variables
+      run: |
+        RELEASE_BRANCH="release-$(cut -d '.' -f 1,2 VERSION)"
+        echo "RELEASE_BRANCH=${RELEASE_BRANCH}" >> ${GITHUB_ENV}
+    
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0 # Fetch all history for all tags and branches
+
+    - name: Fast-forward main to {{ env.RELEASE_BRANCH }}
+      run: |
+        git checkout {{ env.RELEASE_BRANCH }} || git checkout -b {{ env.RELEASE_BRANCH }}
+        git merge --ff-only origin/main
+        git push origin/{{ env.RELEASE_BRANCH }}
+
+    - name: Slack failure report
+      uses: slackapi/slack-github-action@v1.23.0
+      if: ${{ failure() }}
+      env:
+        SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+        SLACK_WEBHOOK_URL: ${{ secrets.CODE_HEALTH_SLACK_WEBHOOK }}
+      with:
+        payload: |
+          {"blocks": [{
+            "type": "section",
+            "text": {
+              "type": "mrkdwn",
+              "text": ":failed: Gatekeeper Operator fast-forwarding failed: <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|View workflow run>"
+            }
+          }]}
