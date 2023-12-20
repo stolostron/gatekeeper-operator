@@ -12,6 +12,7 @@ jobs:
     steps:    
     - uses: actions/checkout@v3
       with:
+        token: ${{ secrets.WORKFLOW_TOKEN }}
         fetch-depth: 0 # Fetch all history for all tags and branches
 
     - name: Set Up Environment Variables
