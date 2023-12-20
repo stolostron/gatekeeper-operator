@@ -19,11 +19,11 @@ jobs:
         RELEASE_BRANCH="release-$(cut -d '.' -f 1,2 VERSION)"
         echo "RELEASE_BRANCH=${RELEASE_BRANCH}" >> ${GITHUB_ENV}
 
-    - name: Fast-forward main to {{ env.RELEASE_BRANCH }}
+    - name: Fast-forward main to latest release
       run: |
-        git checkout {{ env.RELEASE_BRANCH }} || git checkout -b {{ env.RELEASE_BRANCH }}
+        git checkout ${RELEASE_BRANCH} || git checkout -b ${RELEASE_BRANCH}
         git merge --ff-only origin/main
-        git push origin/{{ env.RELEASE_BRANCH }}
+        git push origin/${RELEASE_BRANCH}
 
     - name: Slack failure report
       uses: slackapi/slack-github-action@v1.23.0
