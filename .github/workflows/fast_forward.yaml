@@ -9,15 +9,15 @@ jobs:
   ff:
     name: Fast forward from main to latest release branch
     runs-on: ubuntu-latest
-    steps:
+    steps:    
+    - uses: actions/checkout@v3
+      with:
+        fetch-depth: 0 # Fetch all history for all tags and branches
+
     - name: Set Up Environment Variables
       run: |
         RELEASE_BRANCH="release-$(cut -d '.' -f 1,2 VERSION)"
         echo "RELEASE_BRANCH=${RELEASE_BRANCH}" >> ${GITHUB_ENV}
-    
-    - uses: actions/checkout@v3
-      with:
-        fetch-depth: 0 # Fetch all history for all tags and branches
 
     - name: Fast-forward main to {{ env.RELEASE_BRANCH }}
       run: |
