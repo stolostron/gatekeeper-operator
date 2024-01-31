@@ -1,6 +1,6 @@
 module github.com/gatekeeper/gatekeeper-operator
 
-go 1.20
+go 1.21
 
 require (
 	github.com/go-bindata/go-bindata v3.1.2+incompatible
