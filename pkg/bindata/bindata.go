@@ -4272,7 +4272,7 @@ spec:
         resources:
           limits:
             cpu: 1000m
-            memory: 512Mi
+            memory: 1Gi
           requests:
             cpu: 100m
             memory: 512Mi
