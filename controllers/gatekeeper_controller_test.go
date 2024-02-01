@@ -557,18 +557,18 @@ func TestResources(t *testing.T) {
 	// test default resources
 	auditObj, err := util.GetManifestObject(AuditFile)
 	g.Expect(err).ToNot(HaveOccurred())
-	assertResources(g, auditObj, nil)
+	assertResources(g, auditObj, test.DefaultDeployment.AuditResources)
 	webhookObj, err := util.GetManifestObject(WebhookFile)
 	g.Expect(err).ToNot(HaveOccurred())
-	assertResources(g, webhookObj, nil)
+	assertResources(g, webhookObj, test.DefaultDeployment.WebResources)
 
 	// test nil resources
 	err = crOverrides(gatekeeper, AuditFile, auditObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
-	assertResources(g, auditObj, nil)
+	assertResources(g, auditObj, test.DefaultDeployment.AuditResources)
 	err = crOverrides(gatekeeper, WebhookFile, webhookObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
-	assertResources(g, webhookObj, nil)
+	assertResources(g, webhookObj, test.DefaultDeployment.WebResources)
 
 	// test resources override
 	gatekeeper.Spec.Audit = audit
@@ -592,11 +592,8 @@ func assertResources(g *WithT, obj *unstructured.Unstructured, expected *corev1.
 		current, found, err := unstructured.NestedMap(util.ToMap(c), "resources")
 		g.Expect(err).ToNot(HaveOccurred())
 		g.Expect(found).To(BeTrue())
-		if expected == nil {
-			assertResource(g, test.DefaultDeployment.Resources, current)
-		} else {
-			assertResource(g, expected, current)
-		}
+
+		assertResource(g, expected, current)
 	}
 }
 

@@ -199,8 +199,8 @@ var _ = Describe("Gatekeeper", func() {
 			})
 
 			By("Checking default resource limits and requests", func() {
-				assertResources(*test.DefaultDeployment.Resources, auditDeployment.Spec.Template.Spec.Containers[0].Resources)
-				assertResources(*test.DefaultDeployment.Resources, webhookDeployment.Spec.Template.Spec.Containers[0].Resources)
+				assertResources(*test.DefaultDeployment.AuditResources, auditDeployment.Spec.Template.Spec.Containers[0].Resources)
+				assertResources(*test.DefaultDeployment.WebResources, webhookDeployment.Spec.Template.Spec.Containers[0].Resources)
 			})
 
 			By("Checking default image", func() {
