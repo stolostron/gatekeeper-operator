@@ -39,7 +39,8 @@ type defaultConfig struct {
 	Affinity          *corev1.Affinity
 	NodeSelector      map[string]string
 	PodAnnotations    map[string]string
-	Resources         *corev1.ResourceRequirements
+	WebResources      *corev1.ResourceRequirements
+	AuditResources    *corev1.ResourceRequirements
 	FailurePolicy     admregv1.FailurePolicyType
 	NamespaceSelector *metav1.LabelSelector
 }
@@ -74,7 +75,17 @@ var DefaultDeployment = defaultConfig{
 	NodeSelector: map[string]string{
 		"kubernetes.io/os": "linux",
 	},
-	Resources: &corev1.ResourceRequirements{
+	AuditResources: &corev1.ResourceRequirements{
+		Limits: corev1.ResourceList{
+			corev1.ResourceCPU:    resource.MustParse("1000m"),
+			corev1.ResourceMemory: resource.MustParse("1Gi"),
+		},
+		Requests: corev1.ResourceList{
+			corev1.ResourceCPU:    resource.MustParse("100m"),
+			corev1.ResourceMemory: resource.MustParse("512Mi"),
+		},
+	},
+	WebResources: &corev1.ResourceRequirements{
 		Limits: corev1.ResourceList{
 			corev1.ResourceCPU:    resource.MustParse("1000m"),
 			corev1.ResourceMemory: resource.MustParse("512Mi"),

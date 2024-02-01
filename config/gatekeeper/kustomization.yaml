@@ -29,17 +29,17 @@ resources:
 - apiextensions.k8s.io_v1_customresourcedefinition_assignimage.mutations.gatekeeper.sh.yaml
 # Remove --disable-cert-rotation
 # Set a CPU limit
+# Increase default Memory limit
 patches:
-- patch: |-
-    - op: remove
-      path: /spec/template/spec/containers/0/args/5
-  target:
-    kind: Deployment
-    name: gatekeeper-audit
 - patch: |-
     - op: replace
       path: /spec/template/spec/containers/0/resources/limits/cpu
       value: 1000m
+    - op: replace
+      path: /spec/template/spec/containers/0/resources/limits/memory
+      value: 1Gi
+    - op: remove
+      path: /spec/template/spec/containers/0/args/5
   target:
     kind: Deployment
     name: gatekeeper-audit
