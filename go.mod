@@ -1,6 +1,6 @@
 module github.com/gatekeeper/gatekeeper-operator
 
-go 1.20
+go 1.21
 
 replace golang.org/x/crypto => golang.org/x/crypto v0.0.0-20211202192323-5770296d904e // CVE-2021-43565
 
