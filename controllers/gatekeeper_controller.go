@@ -22,6 +22,7 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/go-logr/logr"
@@ -67,6 +68,7 @@ const (
 	RoleFile                            = "rbac.authorization.k8s.io_v1_role_gatekeeper-manager-role.yaml"
 	RoleBindingFile                     = "rbac.authorization.k8s.io_v1_rolebinding_gatekeeper-manager-rolebinding.yaml"
 	ServerCertFile                      = "v1_secret_gatekeeper-webhook-server-cert.yaml"
+	ServiceFile                         = "v1_service_gatekeeper-webhook-service.yaml"
 	ValidatingWebhookConfiguration      = "admissionregistration.k8s.io_v1_validatingwebhookconfiguration_gatekeeper-validating-webhook-configuration.yaml"
 	MutatingWebhookConfiguration        = "admissionregistration.k8s.io_v1_mutatingwebhookconfiguration_gatekeeper-mutating-webhook-configuration.yaml"
 	ValidationGatekeeperWebhook         = "validation.gatekeeper.sh"
@@ -110,7 +112,6 @@ var (
 		AssignCRDFile,
 		AssignMetadataCRDFile,
 		MutatorPodStatusCRDFile,
-		ServerCertFile,
 		"v1_serviceaccount_gatekeeper-admin.yaml",
 		"policy_v1_poddisruptionbudget_gatekeeper-controller-manager.yaml",
 		ClusterRoleFile,
@@ -119,7 +120,8 @@ var (
 		RoleBindingFile,
 		AuditFile,
 		WebhookFile,
-		"v1_service_gatekeeper-webhook-service.yaml",
+		ServiceFile,
+		// ServerCertFile will be added when it is not openshift platform
 	}
 	webhookStaticAssets = []string{
 		ValidatingWebhookConfiguration,
@@ -318,7 +320,7 @@ func (r *GatekeeperReconciler) initConfig(ctx context.Context, gatekeeper *opera
 }
 
 func (r *GatekeeperReconciler) deployGatekeeperResources(gatekeeper *operatorv1alpha1.Gatekeeper) (error, bool) {
-	deleteWebhookAssets, applyOrderedAssets, applyWebhookAssets, deleteCRDAssets := getStaticAssets(gatekeeper)
+	deleteWebhookAssets, applyOrderedAssets, applyWebhookAssets, deleteCRDAssets := getStaticAssets(gatekeeper, r.isOpenShift())
 
 	if err := r.deleteAssets(deleteWebhookAssets, gatekeeper); err != nil {
 		return err, false
@@ -361,13 +363,16 @@ func (r *GatekeeperReconciler) deleteAssets(assets []string, gatekeeper *operato
 	return nil
 }
 
-func (r *GatekeeperReconciler) applyAssets(assets []string, gatekeeper *operatorv1alpha1.Gatekeeper, controllerDeploymentPending bool) error {
+func (r *GatekeeperReconciler) applyAssets(assets []string,
+	gatekeeper *operatorv1alpha1.Gatekeeper, controllerDeploymentPending bool,
+) error {
 	for _, a := range assets {
 		err := r.applyAsset(gatekeeper, a, controllerDeploymentPending)
 		if err != nil {
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -384,6 +389,7 @@ func (r *GatekeeperReconciler) applyAsset(gatekeeper *operatorv1alpha1.Gatekeepe
 	if err = r.crudResource(obj, gatekeeper, applyCrud); err != nil {
 		return err
 	}
+
 	return nil
 }
 
@@ -435,7 +441,7 @@ func (r *GatekeeperReconciler) validateWebhookDeployment() (error, bool) {
 	return nil, true
 }
 
-func getStaticAssets(gatekeeper *operatorv1alpha1.Gatekeeper) (deleteWebhookAssets, applyOrderedAssets, applyWebhookAssets, deleteCRDAssets []string) {
+func getStaticAssets(gatekeeper *operatorv1alpha1.Gatekeeper, isOpenshift bool) (deleteWebhookAssets, applyOrderedAssets, applyWebhookAssets, deleteCRDAssets []string) {
 	validatingWebhookEnabled := gatekeeper.Spec.ValidatingWebhook == nil || gatekeeper.Spec.ValidatingWebhook.ToBool()
 	mutatingWebhookEnabled := mutatingWebhookEnabled(gatekeeper.Spec.MutatingWebhook)
 
@@ -461,6 +467,11 @@ func getStaticAssets(gatekeeper *operatorv1alpha1.Gatekeeper) (deleteWebhookAsse
 		applyWebhookAssets = getSubsetOfAssets(applyWebhookAssets, MutatingWebhookConfiguration)
 		deleteCRDAssets = append(deleteCRDAssets, MutatingCRDs...)
 	}
+
+	if !isOpenshift {
+		applyOrderedAssets = append(applyOrderedAssets, ServerCertFile)
+	}
+
 	return
 }
 
@@ -624,6 +635,10 @@ func crOverrides(gatekeeper *operatorv1alpha1.Gatekeeper, asset string, obj *uns
 		); err != nil {
 			return err
 		}
+
+		if isOpenshift {
+			setOpenshiftCertInjectAnnotation(obj)
+		}
 	// MutatingWebhookConfiguration overrides
 	case MutatingWebhookConfiguration:
 		if err := webhookConfigurationOverrides(
@@ -636,6 +651,10 @@ func crOverrides(gatekeeper *operatorv1alpha1.Gatekeeper, asset string, obj *uns
 		); err != nil {
 			return err
 		}
+
+		if isOpenshift {
+			setOpenshiftCertInjectAnnotation(obj)
+		}
 	// ClusterRole overrides
 	case ClusterRoleFile:
 		if !mutatingWebhookEnabled(gatekeeper.Spec.MutatingWebhook) {
@@ -643,8 +662,35 @@ func crOverrides(gatekeeper *operatorv1alpha1.Gatekeeper, asset string, obj *uns
 				return err
 			}
 		}
+	case ServiceFile:
+		if isOpenshift {
+			setOpenshiftCertAnnotation(obj)
+		}
 	}
+
 	return nil
+}
+
+func setOpenshiftCertAnnotation(obj *unstructured.Unstructured) {
+	annotations := obj.GetAnnotations()
+	if annotations == nil {
+		annotations = make(map[string]string, 1)
+	}
+
+	annotations["service.beta.openshift.io/serving-cert-secret-name"] = "gatekeeper-webhook-server-cert"
+
+	obj.SetAnnotations(annotations)
+}
+
+func setOpenshiftCertInjectAnnotation(obj *unstructured.Unstructured) {
+	annotations := obj.GetAnnotations()
+	if annotations == nil {
+		annotations = make(map[string]string, 1)
+	}
+
+	annotations["service.beta.openshift.io/inject-cabundle"] = "true"
+
+	obj.SetAnnotations(annotations)
 }
 
 func commonOverrides(obj *unstructured.Unstructured, spec operatorv1alpha1.GatekeeperSpec) error {
@@ -866,6 +912,7 @@ func removeAnnotations(obj *unstructured.Unstructured) error {
 // seccompProfile=runtime/default in such versions explicitly disqualified the workload from the restricted SCC.
 // In OpenShift v4.11+, any workload running in a namespace prefixed with "openshift-*" must use the "restricted"
 // profile unless there is a ClusterServiceVersion present, which is not the case for the Gatekeeper operand namespace.
+// Add --disable-cert-rotation arguments
 func openShiftDeploymentOverrides(obj *unstructured.Unstructured) error {
 	containers, _, err := unstructured.NestedSlice(obj.Object, "spec", "template", "spec", "containers")
 	if err != nil {
@@ -881,6 +928,24 @@ func openShiftDeploymentOverrides(obj *unstructured.Unstructured) error {
 		unstructured.RemoveNestedField(container, "securityContext", "runAsUser")
 		unstructured.RemoveNestedField(container, "securityContext", "runAsGroup")
 		unstructured.RemoveNestedField(container, "securityContext", "seccompProfile")
+
+		args, _, err := unstructured.NestedStringSlice(container, "args")
+		if err != nil {
+			return errors.Wrapf(err, "Failed to get container args in OpenShift overrides")
+		}
+
+		hasDisabledCert := false
+
+		for _, arg := range args {
+			if strings.Contains(arg, "--disable-cert-rotation") {
+				hasDisabledCert = true
+			}
+		}
+
+		if !hasDisabledCert {
+			args = append(args, "--disable-cert-rotation")
+			unstructured.SetNestedStringSlice(container, args, "args")
+		}
 
 		containers[i] = container
 	}

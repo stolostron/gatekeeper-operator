@@ -1,0 +1,12 @@
+apiVersion: operator.gatekeeper.sh/v1alpha1
+kind: Gatekeeper
+metadata:
+  name: gatekeeper
+spec:
+  validatingWebhook: Enabled
+  mutatingWebhook: Enabled
+  webhook:
+    operations:
+      - CREATE
+      - UPDATE
+      - DELETE
