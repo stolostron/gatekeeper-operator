@@ -128,7 +128,10 @@ var _ = Describe("Gatekeeper", func() {
 			return apierrors.IsNotFound(err)
 		}, deleteTimeout, pollInterval).Should(BeTrue())
 
-		By("Clean config", func() {
+		By("Clean Config surely")
+		KubectlWithOutput("delete", "config", "config", "-n", gatekeeperNamespace, "--ignore-not-found")
+
+		By("Clean Config", func() {
 			Eventually(func() bool {
 				err := K8sClient.Get(ctx, types.NamespacedName{
 					Name:      "config",
@@ -138,7 +141,7 @@ var _ = Describe("Gatekeeper", func() {
 					return false
 				}
 
-				return apierrors.IsNotFound(err)
+				return apierrors.IsNotFound(err) || strings.Contains(err.Error(), "failed to get API group resources")
 			}, deleteTimeout, pollInterval).Should(BeTrue())
 		})
 	})
@@ -760,6 +763,107 @@ var _ = Describe("Gatekeeper", func() {
 				g.Expect(mutatingWebhookConfiguration.Webhooks[0].Rules[0].Operations).Should(HaveLen(1))
 				g.Expect(mutatingWebhookConfiguration.Webhooks[0].Rules[0].Operations[0]).Should(BeEquivalentTo("*"))
 			}, timeout, pollInterval).Should(Succeed())
+		})
+	})
+
+	Describe("Test in Openshift Env", Label("openshift"), Ordered, Serial, func() {
+		const openshiftRoutePath = "../resources/gatekeeper_test/openshift-route-crd.yaml"
+		const openshiftNamespace = "openshift-gatekeeper-system"
+		Describe("Test Gatekeeper Certification", Label("openshift"), func() {
+			It("Should have Openshift Cert Annotation in the Service Resource"+
+				"and not have Cert Secret in the Gatekeeper Namespace", func(ctx context.Context) {
+				gatekeeper := emptyGatekeeper()
+				By("First creating Gatekeeper CR", func() {
+					Expect(K8sClient.Create(ctx, gatekeeper)).Should(Succeed())
+				})
+
+				By("All Deployment resources should have a --disable-cert-rotation arg")
+				Eventually(func(g Gomega) {
+					audit := &appsv1.Deployment{}
+					err := K8sClient.Get(ctx, types.NamespacedName{
+						Namespace: openshiftNamespace,
+						Name:      "gatekeeper-audit",
+					}, audit)
+					g.Expect(err).ShouldNot(HaveOccurred())
+
+					g.Expect(audit.Spec.Template.Spec.Containers[0].Args).
+						Should(ContainElement("--disable-cert-rotation"), "Audit should have disabled cert arg")
+				}, timeout, pollInterval).Should(Succeed())
+
+				Eventually(func(g Gomega) {
+					webhook := &appsv1.Deployment{}
+					err := K8sClient.Get(ctx, types.NamespacedName{
+						Namespace: openshiftNamespace,
+						Name:      "gatekeeper-controller-manager",
+					}, webhook)
+					g.Expect(err).ShouldNot(HaveOccurred())
+
+					g.Expect(webhook.Spec.Template.Spec.Containers[0].Args).
+						Should(ContainElement("--disable-cert-rotation"), "Webhook should have disabled cert arg")
+				}, timeout, pollInterval).Should(Succeed())
+
+				By("Service resource should have a service.beta.openshift.io/serving-cert-secret-name annotation")
+				Eventually(func(g Gomega) {
+					service := corev1.Service{}
+					err := K8sClient.Get(ctx,
+						types.NamespacedName{
+							Name:      "gatekeeper-webhook-service",
+							Namespace: openshiftNamespace,
+						}, &service)
+					g.Expect(err).Should(Succeed())
+
+					annotations := service.Annotations
+
+					v, ok := annotations["service.beta.openshift.io/serving-cert-secret-name"]
+					g.Expect(ok).Should(BeTrue(),
+						"Should have service.beta.openshift.io/serving-cert-secret-name annotation")
+					g.Expect(v).Should(Equal("gatekeeper-webhook-server-cert"),
+						"Should be gatekeeper-webhook-server-cert")
+				}, timeout, pollInterval).Should(Succeed())
+
+				By("ValidatingWebhookConfiguration should have a service.beta.openshift.io/inject-cabundle annotation")
+				Eventually(func(g Gomega) {
+					validatingWebhookConfiguration := &admregv1.ValidatingWebhookConfiguration{}
+
+					err := K8sClient.Get(ctx, validatingWebhookName, validatingWebhookConfiguration)
+					g.Expect(err).Should(Succeed())
+
+					annotations := validatingWebhookConfiguration.Annotations
+					v, ok := annotations["service.beta.openshift.io/inject-cabundle"]
+					g.Expect(ok).Should(BeTrue(),
+						"Should have service.beta.openshift.io/inject-cabundle annotation")
+					g.Expect(v).Should(Equal("true"),
+						"Should be true")
+				}, timeout, pollInterval).Should(Succeed())
+
+				By("MutatingWebhookConfiguration should have a service.beta.openshift.io/inject-cabundle annotation")
+				Eventually(func(g Gomega) {
+					mutatingWebhookConfiguration := &admregv1.MutatingWebhookConfiguration{}
+					err := K8sClient.Get(ctx, mutatingWebhookName, mutatingWebhookConfiguration)
+					g.Expect(err).Should(Succeed())
+
+					annotations := mutatingWebhookConfiguration.Annotations
+					v, ok := annotations["service.beta.openshift.io/inject-cabundle"]
+					g.Expect(ok).Should(BeTrue(),
+						"Should have service.beta.openshift.io/inject-cabundle annotation")
+					g.Expect(v).Should(Equal("true"),
+						"Should be true")
+				}, timeout, pollInterval).Should(Succeed())
+
+				// In this test, gatekeeper-webhook-server-cert does not exist but
+				// on OpenShift platform, service-ca will create gatekeeper-webhook-server-cert secret
+				By("Cert Secret should not be in the Namespace")
+				Consistently(func(g Gomega) bool {
+					service := corev1.Secret{}
+					err := K8sClient.Get(ctx,
+						types.NamespacedName{
+							Name:      "gatekeeper-webhook-server-cert",
+							Namespace: openshiftNamespace,
+						}, &service)
+
+					return apierrors.IsNotFound(err)
+				}, 5, pollInterval).Should(BeTrue())
+			})
 		})
 	})
 })

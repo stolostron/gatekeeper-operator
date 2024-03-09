@@ -156,9 +156,20 @@ test-unit:
 test-coverage: TESTARGS = -json -cover -covermode=atomic -coverprofile=coverage_unit.out
 test-coverage: test-unit
 
+E2E_LABEL_FILTER = --label-filter="!openshift"
 .PHONY: test-e2e
 test-e2e: e2e-dependencies generate fmt vet ## Run e2e tests, using the configured Kubernetes cluster in ~/.kube/config
-	GOFLAGS=$(GOFLAGS) USE_EXISTING_CLUSTER=true $(GINKGO) -v --trace --fail-fast ./test/e2e -- --namespace="$(NAMESPACE)" --timeout="5m" --delete-timeout="10m"
+	GOFLAGS=$(GOFLAGS) USE_EXISTING_CLUSTER=true $(GINKGO) -v --trace --fail-fast $(E2E_LABEL_FILTER) ./test/e2e -- --namespace="$(NAMESPACE)" --timeout="5m" --delete-timeout="10m"
+
+.PHONY: test-e2e-openshift
+test-e2e-openshift: E2E_LABEL_FILTER = --label-filter="openshift"
+test-e2e-openshift: NAMESPACE = openshift-gatekeeper-system
+test-e2e-openshift: test-e2e 
+
+.PHONY: test-openshift-setup
+test-openshift-setup: 
+	kubectl apply -f https://raw.githubusercontent.com/openshift/api/release-4.15/route/v1/route.crd.yaml
+	kubectl create ns openshift-gatekeeper-system
 
 .PHONY: test-cluster
 test-cluster: ## Create a local kind cluster with a registry for testing
