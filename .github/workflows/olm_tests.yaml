@@ -39,7 +39,6 @@ jobs:
 
     - name: Build and Push Test Container Image and Bundle/Bundle Index Images
       run: |
-        # TODO: Use operator-sdk run bundle and bundle-upgrade commands for testing with OLM.
         make build-and-push-bundle-images REPO=localhost:5000 VERSION_TAG=${GITHUB_SHA}
 
     - name: Deploy OLM
