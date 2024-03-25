@@ -12,6 +12,7 @@ import (
 	"github.com/open-policy-agent/gatekeeper/v3/apis/status/v1beta1"
 	"github.com/pkg/errors"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
@@ -108,9 +109,21 @@ func (r *ConstraintPodStatusReconciler) Reconcile(ctx context.Context,
 
 	if err != nil {
 		if apierrors.IsNotFound(err) {
-			r.Log.Info("The Gatekeeper's Config resource does not exist, wait for creating the config")
+			config = &v1alpha1.Config{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "config",
+					Namespace: r.Namespace,
+				},
+			}
 
-			return reconcile.Result{RequeueAfter: time.Second * 5}, nil
+			createErr := r.Create(ctx, config)
+			if createErr != nil {
+				log.Error(err, "Fail to create the Gatekeeper Config object, will retry.")
+
+				return reconcile.Result{}, createErr
+			}
+
+			log.Info("The Gatekeeper Config object was created")
 		} else {
 			return reconcile.Result{}, err
 		}

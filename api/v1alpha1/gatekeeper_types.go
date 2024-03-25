@@ -17,7 +17,6 @@ limitations under the License.
 package v1alpha1
 
 import (
-	"github.com/open-policy-agent/gatekeeper/v3/apis/config/v1alpha1"
 	admregv1 "k8s.io/api/admissionregistration/v1"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -87,19 +86,6 @@ type GatekeeperSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Pod Annotations"
 	// +optional
 	PodAnnotations map[string]string `json:"podAnnotations,omitempty"`
-
-	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Config Configuration"
-	// +optional
-	Config *ConfigConfig `json:"config,omitempty"`
-}
-
-type ConfigConfig struct {
-	// +optional
-	// This field is the same type as the config spec.match. These will be appended to config.spec.match
-	Matches []v1alpha1.MatchEntry `json:"matches,omitempty"`
-	// +optional
-	// Default is false. Setting this to true disables appending the default exempt namespaces to spec.config.matches.
-	DisableDefaultMatches bool `json:"disableDefaultMatches,omitempty"`
 }
 
 type ImageConfig struct {

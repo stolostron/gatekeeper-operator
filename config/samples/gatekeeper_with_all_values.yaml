@@ -27,10 +27,6 @@ spec:
     replicas: 2
     logLevel: ERROR
     emitAdmissionEvents: Enabled
-    operations:
-      - UPDATE
-      - CREATE
-      - DELETE
     failurePolicy: Ignore
     namespaceSelector:
       matchExpressions:
@@ -61,9 +57,3 @@ spec:
   podAnnotations:
     some-annotation: "this is a test"
     other-annotation: "another test"
-  config:
-    matches:
-     - excludedNamespaces: ["test-*", "my-namespace"]
-       processes: ["*"]
-    disableDefaultMatches: false
-    

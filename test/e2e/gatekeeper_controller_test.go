@@ -24,7 +24,6 @@ import (
 	"os"
 	"strings"
 
-	. "github.com/gatekeeper/gatekeeper-operator/test/e2e/util"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	admregv1 "k8s.io/api/admissionregistration/v1"
@@ -37,13 +36,12 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/yaml"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/gatekeeper/gatekeeper-operator/api/v1alpha1"
 	"github.com/gatekeeper/gatekeeper-operator/controllers"
 	"github.com/gatekeeper/gatekeeper-operator/pkg/util"
 	test "github.com/gatekeeper/gatekeeper-operator/test/e2e/util"
-	gkv1alpha1 "github.com/open-policy-agent/gatekeeper/v3/apis/config/v1alpha1"
-	"github.com/open-policy-agent/gatekeeper/v3/pkg/wildcard"
 )
 
 const (
@@ -96,9 +94,7 @@ var _ = Describe("Gatekeeper", func() {
 	})
 
 	AfterEach(func() {
-		By("Clean gatekeeper")
-		_, err := KubectlWithOutput("delete", "gatekeeper", "gatekeeper", "--ignore-not-found")
-		Expect(err).ShouldNot(HaveOccurred())
+		Expect(K8sClient.Delete(ctx, emptyGatekeeper(), client.PropagationPolicy(v1.DeletePropagationForeground))).Should(Succeed())
 
 		// Once this succeeds, clean up has happened for all owned resources.
 		Eventually(func() bool {
@@ -127,216 +123,8 @@ var _ = Describe("Gatekeeper", func() {
 
 			return apierrors.IsNotFound(err)
 		}, deleteTimeout, pollInterval).Should(BeTrue())
-
-		By("Clean Config surely")
-		KubectlWithOutput("delete", "config", "config", "-n", gatekeeperNamespace, "--ignore-not-found")
-
-		By("Clean Config", func() {
-			Eventually(func() bool {
-				err := K8sClient.Get(ctx, types.NamespacedName{
-					Name:      "config",
-					Namespace: gatekeeperNamespace,
-				}, &gkv1alpha1.Config{})
-				if err == nil {
-					return false
-				}
-
-				return apierrors.IsNotFound(err) || strings.Contains(err.Error(), "failed to get API group resources")
-			}, deleteTimeout, pollInterval).Should(BeTrue())
-		})
 	})
 
-	Describe("Test config resource", Ordered, func() {
-		// The default exempt namespaces
-		defaultNamespaces := []wildcard.Wildcard{
-			"kube-*", "multicluster-engine",
-			"hypershift", "hive", "rhacs-operator", "open-cluster-*", "openshift-*",
-		}
-
-		AfterEach(func() {
-			By("Clean gatekeeper")
-			_, err := KubectlWithOutput("delete", "gatekeeper", "gatekeeper", "--ignore-not-found")
-			Expect(err).ShouldNot(HaveOccurred())
-
-			By("Clean config surely", func() {
-				Eventually(func() bool {
-					err := K8sClient.Get(ctx, types.NamespacedName{
-						Name:      "config",
-						Namespace: gatekeeperNamespace,
-					}, &gkv1alpha1.Config{})
-					if err == nil {
-						return false
-					}
-
-					return apierrors.IsNotFound(err)
-				}, deleteTimeout, pollInterval).Should(BeTrue())
-
-				Consistently(func() bool {
-					err := K8sClient.Get(ctx, types.NamespacedName{
-						Name:      "config",
-						Namespace: gatekeeperNamespace,
-					}, &gkv1alpha1.Config{})
-					if err == nil {
-						return false
-					}
-
-					return apierrors.IsNotFound(err)
-				}, 5, pollInterval).Should(BeTrue())
-			})
-		})
-
-		It("Should update config when the gatekeeper.config.match is not nil", func() {
-			var originalNs wildcard.Wildcard = "mynamespace"
-
-			gatekeeper := &v1alpha1.Gatekeeper{
-				ObjectMeta: v1.ObjectMeta{
-					Name: gkName,
-				},
-				Spec: v1alpha1.GatekeeperSpec{
-					Config: &v1alpha1.ConfigConfig{
-						Matches: []gkv1alpha1.MatchEntry{
-							{
-								ExcludedNamespaces: []wildcard.Wildcard{
-									originalNs,
-								},
-								Processes: []string{
-									"audit", "webhook", "sync",
-								},
-							},
-						},
-					},
-				},
-			}
-
-			By("Creating Gatekeeper resource", func() {
-				Expect(K8sClient.Create(ctx, gatekeeper)).Should(Succeed())
-			})
-
-			config := &gkv1alpha1.Config{}
-
-			By("The config include the default namespaces and matches")
-			Eventually(func(g Gomega) {
-				err := K8sClient.Get(ctx, types.NamespacedName{Namespace: gatekeeperNamespace, Name: "config"},
-					config)
-				g.Expect(err).ShouldNot(HaveOccurred())
-
-				g.Expect(config.Spec.Match).Should(HaveLen(2))
-				Expect(config.Spec.Match[0].ExcludedNamespaces).Should(ContainElements(defaultNamespaces))
-				g.Expect(config.Spec.Match[1].ExcludedNamespaces[0]).Should(Equal(originalNs))
-			}, 60, pollInterval).Should(Succeed())
-		})
-
-		It("Should not attach the default ns when the DisableDefaultMatches is true", func() {
-			disableDefaultMatches := true
-			gatekeeper := &v1alpha1.Gatekeeper{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      gkName,
-					Namespace: gatekeeperNamespace,
-				},
-				Spec: v1alpha1.GatekeeperSpec{
-					Config: &v1alpha1.ConfigConfig{
-						Matches: []gkv1alpha1.MatchEntry{
-							{
-								ExcludedNamespaces: []wildcard.Wildcard{
-									"cat-ns", "dog-ns",
-								},
-								Processes: []string{
-									"audit", "webhook", "sync",
-								},
-							},
-						},
-						DisableDefaultMatches: disableDefaultMatches,
-					},
-				},
-			}
-
-			By("Creating Gatekeeper resource", func() {
-				Expect(K8sClient.Create(ctx, gatekeeper)).Should(Succeed())
-			})
-
-			config := &gkv1alpha1.Config{}
-
-			By("The config has only the gatekeeper.spec.config.matches")
-			Eventually(func(g Gomega) {
-				err := K8sClient.Get(ctx, types.NamespacedName{Namespace: gatekeeperNamespace, Name: "config"},
-					config)
-				g.Expect(err).ShouldNot(HaveOccurred())
-				g.Expect(config.Spec.Match[0]).Should(Equal(gatekeeper.Spec.Config.Matches[0]))
-			}, 120, pollInterval).Should(Succeed())
-		})
-
-		It("Should keep config.spec.match when config is updated", func() {
-			gatekeeper := &v1alpha1.Gatekeeper{
-				ObjectMeta: v1.ObjectMeta{
-					Name:      gkName,
-					Namespace: gatekeeperNamespace,
-				},
-				Spec: v1alpha1.GatekeeperSpec{
-					Config: &v1alpha1.ConfigConfig{
-						Matches: []gkv1alpha1.MatchEntry{
-							{
-								ExcludedNamespaces: []wildcard.Wildcard{
-									"tiger-ns", "lion-ns",
-								},
-								Processes: []string{
-									"audit", "webhook", "sync",
-								},
-							},
-						},
-					},
-				},
-			}
-
-			By("Creating Gatekeeper resource", func() {
-				Expect(K8sClient.Create(ctx, gatekeeper)).Should(Succeed())
-			})
-
-			By("Getting gatekeeper")
-			Eventually(func() error {
-				return K8sClient.Get(ctx, types.NamespacedName{Name: "gatekeeper"},
-					gatekeeper)
-			}, timeout, pollInterval).ShouldNot(HaveOccurred())
-
-			By("Getting Config")
-			config := &gkv1alpha1.Config{}
-			Eventually(func(g Gomega) error {
-				return K8sClient.Get(ctx, types.NamespacedName{Namespace: gatekeeperNamespace, Name: "config"},
-					config)
-			}, 120, 5).ShouldNot(HaveOccurred())
-
-			By("Apply Config has 'shoudnotexist' ns")
-			Eventually(func() error {
-				config.Spec.Match = []gkv1alpha1.MatchEntry{
-					{
-						ExcludedNamespaces: []wildcard.Wildcard{
-							"shoudnotexist",
-						},
-						Processes: []string{
-							"webhook", "sync",
-						},
-					},
-				}
-
-				return K8sClient.Update(ctx, config)
-			}, timeout, pollInterval).ShouldNot(HaveOccurred())
-
-			By("The config has the default exempt namespaces and gatekeeper.config.matches")
-			Eventually(func(g Gomega) []gkv1alpha1.MatchEntry {
-				err := K8sClient.Get(ctx, types.NamespacedName{Namespace: gatekeeperNamespace, Name: "config"},
-					config)
-				g.Expect(err).ShouldNot(HaveOccurred())
-
-				return config.Spec.Match
-			}, 150, 5).Should(HaveLen(2))
-
-			Expect(config.Spec.Match[0].ExcludedNamespaces).Should(ContainElements(defaultNamespaces))
-			Expect(config.Spec.Match[1]).Should(BeComparableTo(gatekeeper.Spec.Config.Matches[0]))
-
-			By("The config should not include 'shoudnotexist' namespace")
-			Expect(config.Spec.Match[0].ExcludedNamespaces).ShouldNot(ContainElement("shoudnotexist"))
-			Expect(config.Spec.Match[1].ExcludedNamespaces).ShouldNot(ContainElement("shoudnotexist"))
-		})
-	})
 	Describe("Overriding CR", Ordered, func() {
 		It("Creating an empty gatekeeper contains default values", func() {
 			gatekeeper := emptyGatekeeper()

@@ -149,29 +149,3 @@ In order to create an instance of gatekeeper in the specified namespace you can 
 ```shell
 kubectl create -f config/samples/operator_v1alpha1_gatekeeper.yaml
 ```
-
-## Add Default Exempt Namespaces 
-
-Go to [controllers/config_helper.go](controllers/config_helper.go). Update `spec.match[].exemptNamespaces` in the `getDefaultConfig` function.
-```
-// Default config data
-	config := &v1alpha1.Config{
-		ObjectMeta: metav1.ObjectMeta{
-			Namespace: namespace,
-			Name:      "config",
-		},
-		Spec: v1alpha1.ConfigSpec{
-			Match: []v1alpha1.MatchEntry{
-				{
-					ExcludedNamespaces: []wildcard.Wildcard{
-						"kube-*", "multicluster-engine",
-						"hypershift", "hive", "rhacs-operator", "open-cluster-*", "openshift-*"
-					},
-					Processes: []string{
-						 "webhook",
-					},
-				},
-			},
-		},
-	}
-```

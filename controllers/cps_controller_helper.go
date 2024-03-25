@@ -10,6 +10,7 @@ import (
 	gkv1alpha1 "github.com/open-policy-agent/gatekeeper/v3/apis/config/v1alpha1"
 	"github.com/open-policy-agent/gatekeeper/v3/apis/status/v1beta1"
 	gkv1beta1 "github.com/open-policy-agent/gatekeeper/v3/apis/status/v1beta1"
+	"github.com/pkg/errors"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -23,13 +24,15 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/metrics/server"
 )
 
-var setupLog = ctrl.Log.WithName("setup")
+var (
+	setupLog       = ctrl.Log.WithName("setup")
+	errCrdNotReady = errors.New("CRD is not ready")
+)
 
-func (r *GatekeeperReconciler) handleCPSController(ctx context.Context,
+func (r *GatekeeperReconciler) handleCPSController(mainCtx context.Context,
 	gatekeeper *operatorv1alpha1.Gatekeeper,
 ) error {
-	isCRDReady, err := checkCrdAvailable(ctx, r.DynamicClient,
-		"ConstraintPodStatus", "constraintpodstatuses.status.gatekeeper.sh")
+	isCRDReady, err := checkCPSCrdAvailable(mainCtx, r.DynamicClient)
 	if err != nil {
 		return err
 	}
@@ -55,7 +58,7 @@ func (r *GatekeeperReconciler) handleCPSController(ctx context.Context,
 
 	var cpsCtrlCtx context.Context
 
-	cpsCtrlCtx, r.cpsCtrlCtxCancel = context.WithCancel(ctx)
+	cpsCtrlCtx, r.cpsCtrlCtxCancel = context.WithCancel(mainCtx)
 
 	cpsMgr, err := ctrl.NewManager(r.KubeConfig, ctrl.Options{
 		Scheme: r.Scheme,
@@ -90,12 +93,12 @@ func (r *GatekeeperReconciler) handleCPSController(ctx context.Context,
 		},
 	})
 	if err != nil {
-		setupLog.Error(err, "Failed to setup NewManager for ConstraintPodStatus controller")
+		setupLog.Error(err, "Failed to setup NewManager for ConstraintPodStatus contoller")
 
 		return err
 	}
 
-	constraintToSyncOnly := r.getConstraintToSyncOnly(ctx)
+	constraintToSyncOnly := r.getConstraintToSyncOnly(mainCtx)
 
 	if err := (&ConstraintPodStatusReconciler{
 		Scheme:               r.Scheme,
@@ -145,13 +148,13 @@ func (r *GatekeeperReconciler) handleCPSController(ctx context.Context,
 	return nil
 }
 
-func (r *GatekeeperReconciler) getConstraintToSyncOnly(ctx context.Context) map[string][]gkv1alpha1.SyncOnlyEntry {
+func (r *GatekeeperReconciler) getConstraintToSyncOnly(mainCtx context.Context) map[string][]gkv1alpha1.SyncOnlyEntry {
 	cpsList := &v1beta1.ConstraintPodStatusList{}
 
 	// key = ConstraintPodStatus Name
 	constraintToSyncOnly := map[string][]gkv1alpha1.SyncOnlyEntry{}
 
-	err := r.Client.List(ctx, cpsList, &client.ListOptions{})
+	err := r.Client.List(mainCtx, cpsList, &client.ListOptions{})
 	if err != nil {
 		return constraintToSyncOnly
 	}
@@ -163,7 +166,7 @@ func (r *GatekeeperReconciler) getConstraintToSyncOnly(ctx context.Context) map[
 			continue
 		}
 
-		constraint, constraintName, err := getConstraint(ctx, cps, r.DynamicClient)
+		constraint, constraintName, err := getConstraint(mainCtx, cps, r.DynamicClient)
 		if err != nil {
 			if apierrors.IsNotFound(err) {
 				r.Log.Info("The Constraint was not found", "constraintName:", constraintName)
@@ -211,6 +214,58 @@ func getConstraint(ctx context.Context, cps gkv1beta1.ConstraintPodStatus,
 	}
 
 	return constraint, constraintName, nil
+}
+
+// Check ConstraintPodStatus Crd status is "True" and type is "NamesAccepted"
+func checkCPSCrdAvailable(mainCtx context.Context, dynamicClient *dynamic.DynamicClient) (bool, error) {
+	crdGVR := schema.GroupVersionResource{
+		Group:    "apiextensions.k8s.io",
+		Version:  "v1",
+		Resource: "customresourcedefinitions",
+	}
+
+	crd, err := dynamicClient.Resource(crdGVR).
+		Get(mainCtx, "constraintpodstatuses.status.gatekeeper.sh", metav1.GetOptions{})
+	if err != nil {
+		setupLog.V(1).Info("Cannot fetch ConstraintPodStatus CRD")
+
+		return false, err
+	}
+
+	conditions, ok, _ := unstructured.NestedSlice(crd.Object, "status", "conditions")
+	if !ok {
+		setupLog.V(1).Info("Cannot parse ConstraintPodStatus status conditions")
+
+		return false, errors.New("Failed to parse status, conditions")
+	}
+
+	for _, condition := range conditions {
+		parsedCondition := condition.(map[string]interface{})
+
+		status, ok := parsedCondition["status"].(string)
+		if !ok {
+			setupLog.V(1).Info("Cannot parse ConstraintPodStatus conditions status")
+
+			return false, errors.New("Failed to parse status string")
+		}
+
+		conditionType, ok := parsedCondition["type"].(string)
+		if !ok {
+			setupLog.V(1).Info("Cannot parse ConstraintPodStatus conditions type")
+
+			return false, errors.New("Failed to parse ConstraintPodStatus conditions type")
+		}
+
+		if conditionType == "NamesAccepted" && status == "True" {
+			setupLog.V(1).Info("ConstraintPodStatus CRD is ready")
+
+			return true, nil
+		}
+	}
+
+	setupLog.V(1).Info("ConstraintPodStatus CRD is not ready yet")
+
+	return false, nil
 }
 
 // Check gatekeeper auditFromCache=Automatic
