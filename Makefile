@@ -9,6 +9,8 @@ VERSION_TAG ?= v$(VERSION)
 # Set this when when there is a new patch release in the channel.
 REPLACES_VERSION ?= $(shell cat REPLACES_VERSION)
 
+GATEKEEPER_VERSION ?= v3.14.0
+
 LOCAL_BIN ?= $(PWD)/ci-tools/bin
 export PATH := $(LOCAL_BIN):$(PATH)
 
@@ -394,7 +396,7 @@ TMP_IMPORT_MANIFESTS_PATH := $(shell mktemp -d)
 .PHONY: import-manifests
 import-manifests: kustomize
 	if [[ $(IMPORT_MANIFESTS_PATH) =~ https://* ]]; then \
-		git clone --branch v$(shell cut -d '-' -f 1 VERSION)  $(IMPORT_MANIFESTS_PATH) $(TMP_IMPORT_MANIFESTS_PATH) ; \
+		git clone --branch $(GATEKEEPER_VERSION)  $(IMPORT_MANIFESTS_PATH) $(TMP_IMPORT_MANIFESTS_PATH) ; \
 		cd $(TMP_IMPORT_MANIFESTS_PATH) && make patch-image ; \
 		$(KUSTOMIZE) build --load-restrictor LoadRestrictionsNone $(TMP_IMPORT_MANIFESTS_PATH)/config/default -o $(MAKEFILE_DIR)/$(GATEKEEPER_MANIFEST_DIR); \
 		rm -rf "$${TMP_IMPORT_MANIFESTS_PATH}" ; \
