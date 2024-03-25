@@ -181,7 +181,7 @@ delete-test-cluster: ## Clean up the local kind cluster and registry
 	# Stopping and removing the registry container
 	-docker stop $(shell docker inspect -f '{{.Id}}' kind-registry 2>/dev/null || printf "-")
 	-docker rm $(shell docker inspect -f '{{.Id}}' kind-registry 2>/dev/null || printf "-")
-	kind delete cluster --name "$(KIND_CLUSTER_NAME)"
+	-kind delete cluster --name "$(KIND_CLUSTER_NAME)"
 
 .PHONY: test-gatekeeper-e2e
 test-gatekeeper-e2e: ## Applies the test yaml and verifies that BATS is installed. For use by GitHub Actions
