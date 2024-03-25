@@ -26,8 +26,6 @@ spec:
         path: affinity
       - displayName: Audit Configuration
         path: audit
-      - displayName: Config Configuration
-        path: config
       - displayName: Image Configuration
         path: image
         x-descriptors:

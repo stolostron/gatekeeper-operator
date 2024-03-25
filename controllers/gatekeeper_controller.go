@@ -26,7 +26,6 @@ import (
 	"time"
 
 	"github.com/go-logr/logr"
-	"github.com/open-policy-agent/gatekeeper/v3/apis/config/v1alpha1"
 	"github.com/pkg/errors"
 	admregv1 "k8s.io/api/admissionregistration/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -43,9 +42,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
-	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
+	"github.com/gatekeeper/gatekeeper-operator/api/v1alpha1"
 	operatorv1alpha1 "github.com/gatekeeper/gatekeeper-operator/api/v1alpha1"
 	"github.com/gatekeeper/gatekeeper-operator/controllers/merge"
 	"github.com/gatekeeper/gatekeeper-operator/pkg/platform"
@@ -145,7 +144,6 @@ type GatekeeperReconciler struct {
 	DiscoveryStorage       *DiscoveryStorage
 	ManualReconcileTrigger chan event.GenericEvent
 	isCPSCtrlRunning       bool
-	isConfigCtrlRunning    bool
 	DynamicClient          *dynamic.DynamicClient
 	KubeConfig             *rest.Config
 	EnableLeaderElection   bool
@@ -202,9 +200,6 @@ func (r *GatekeeperReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	logger := r.Log.WithValues("gatekeeper", req.NamespacedName)
 	logger.Info("Reconciling Gatekeeper")
 
-	var requeueTime time.Duration
-	var resultErr error
-
 	if req.Name != defaultGatekeeperCrName {
 		err := fmt.Errorf("Gatekeeper resource name must be '%s'", defaultGatekeeperCrName)
 		logger.Error(err, "Invalid Gatekeeper resource name")
@@ -213,7 +208,6 @@ func (r *GatekeeperReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	gatekeeper := &operatorv1alpha1.Gatekeeper{}
-
 	err := r.Get(ctx, req.NamespacedName, gatekeeper)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
@@ -242,29 +236,13 @@ func (r *GatekeeperReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	if err := r.handleCPSController(ctx, gatekeeper); err != nil {
 		if errors.Is(err, errCrdNotReady) {
 			// ConstraintPodStatus CRD is not ready, wait for the CRD is ready
-			requeueTime = time.Second * 3
+			return ctrl.Result{RequeueAfter: time.Second * 3}, nil
 		} else {
-			resultErr = err
+			return ctrl.Result{}, err
 		}
 	}
 
-	if err := r.handleConfigController(ctx); err != nil {
-		if errors.Is(err, errCrdNotReady) {
-			// Config CRD is not ready, wait for the CRD is ready
-			requeueTime = time.Second * 3
-		} else {
-			resultErr = err
-		}
-	}
-
-	err = r.initConfig(ctx, gatekeeper)
-	if err != nil {
-		r.Log.Error(err, "Fail to set the default Config")
-
-		return ctrl.Result{}, err
-	}
-
-	return reconcile.Result{RequeueAfter: requeueTime}, resultErr
+	return ctrl.Result{}, nil
 }
 
 // SetupWithManager sets up the controller with the Manager.
@@ -282,41 +260,6 @@ func (r *GatekeeperReconciler) SetupWithManager(mgr ctrl.Manager, fromCPSMgrSour
 		}).
 		WatchesRawSource(fromCPSMgrSource, &handler.EnqueueRequestForObject{}).
 		Complete(r)
-}
-
-func (r *GatekeeperReconciler) initConfig(ctx context.Context, gatekeeper *operatorv1alpha1.Gatekeeper) error {
-	config := &v1alpha1.Config{}
-
-	err := r.Get(ctx, types.NamespacedName{
-		Namespace: r.Namespace,
-		Name:      "config",
-	}, config)
-	if err != nil {
-		if apierrors.IsNotFound(err) {
-			err = createDefaultConfig(ctx, r.Client, r.Namespace, gatekeeper, r.Scheme)
-			if err != nil {
-				return err
-			}
-
-			r.Log.Info("The Gatekeeper's Config resource is just created")
-
-			return nil
-		}
-
-		return err
-	}
-
-	// Add the default exempt namespace list
-	// disableDefaultMatches = true, only set the Gatekeeper CR config.matches values and
-	// the default exempt namespaces will not be appended
-	err = setExemptNamespaces(ctx, r.Client, config, gatekeeper, r.Scheme, r.Log)
-	if err != nil {
-		r.Log.V(1).Error(err, "Adding default exempt namespaces has failed")
-
-		return err
-	}
-
-	return nil
 }
 
 func (r *GatekeeperReconciler) deployGatekeeperResources(gatekeeper *operatorv1alpha1.Gatekeeper) (error, bool) {
@@ -1173,7 +1116,7 @@ func setNamespaceSelector(
 }
 
 func setOperations(
-	obj *unstructured.Unstructured, operations []operatorv1alpha1.OperationType, webhookName string,
+	obj *unstructured.Unstructured, operations []v1alpha1.OperationType, webhookName string,
 ) error {
 	// If no operations is provided, no override for operations
 	if operations == nil {

@@ -17,8 +17,3 @@ spec:
       - http.send
     logMutations: Enabled
     mutationAnnotations: Enabled
-  config:
-    matches:
-     - excludedNamespaces: ["gatekeeper-excluded-prefix-match-*", "gatekeeper-excluded-namespace", "*-excluded-suffix-match-namespace"]
-       processes: ["*"]
-    disableDefaultMatches: false
