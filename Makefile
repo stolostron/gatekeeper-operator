@@ -59,8 +59,6 @@ BUNDLE_IMG ?= $(IMAGE_TAG_BASE)-bundle:$(VERSION_TAG)
 
 # Image URL to use all building/pushing image targets
 IMG ?= $(IMAGE_TAG_BASE):$(VERSION_TAG)
-# Produce CRDs that work back to Kubernetes 1.11 (no version conversion)
-CRD_OPTIONS ?= "crd:trivialVersions=true,preserveUnknownFields=false"
 # ENVTEST_K8S_VERSION refers to the version of kubebuilder assets to be downloaded by envtest binary.
 ENVTEST_K8S_VERSION = $(KUBERNETES_VERSION:v%=%)
 
@@ -71,11 +69,7 @@ else
   GOBIN=$(shell go env GOBIN)
 endif
 
-# Setting SHELL to bash allows bash commands to be executed by recipes.
-# This is a requirement for 'setup-envtest.sh' in the test target.
-# Options are set to exit when a recipe line exits non-zero or a piped command fails.
-SHELL = /usr/bin/env bash -o pipefail
-.SHELLFLAGS = -ec
+include build/common/Makefile.common.mk
 
 .PHONY: all
 all: build
@@ -110,24 +104,15 @@ clean-manifests: kustomize unpatch-deployment bundle
 
 ##@ Development
 
-CONTROLLER_GEN = $(LOCAL_BIN)/controller-gen
-KUSTOMIZE = $(LOCAL_BIN)/kustomize
-ENVTEST = $(LOCAL_BIN)/setup-envtest
 GO_BINDATA = $(LOCAL_BIN)/go-bindata
-GINKGO = $(LOCAL_BIN)/ginkgo
-KUSTOMIZE_VERSION ?= v5.0.1
 OPM_VERSION ?= v1.27.0
 GO_BINDATA_VERSION ?= v3.1.2+incompatible
 OLM_VERSION ?= v0.25.0
 KUBERNETES_VERSION ?= v1.28.0
 
-.PHONY: e2e-dependencies
-e2e-dependencies:
-	$(call go-get-tool,github.com/onsi/ginkgo/v2/ginkgo@$(shell awk '/github.com\/onsi\/ginkgo\/v2/ {print $$2}' go.mod))
-
 .PHONY: manifests
 manifests: controller-gen ## Generate WebhookConfiguration, ClusterRole and CustomResourceDefinition objects.
-	$(CONTROLLER_GEN) $(CRD_OPTIONS) rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases output:rbac:dir=config/rbac
+	$(CONTROLLER_GEN) crd rbac:roleName=manager-role webhook paths="./..." output:crd:artifacts:config=config/crd/bases output:rbac:dir=config/rbac
 
 .PHONY: generate
 generate: controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and DeepCopyObject method implementations.
@@ -135,7 +120,6 @@ generate: controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and
 
 .PHONY: fmt
 fmt: ## Run go fmt against code.
-	GOFLAGS=$(GOFLAGS) go fmt ./...
 
 .PHONY: vet
 vet: ## Run go vet against code.
@@ -194,7 +178,7 @@ BATS_VERSION ?= 1.8.2
 .PHONY: download-binaries
 download-binaries: kustomize go-bindata envtest controller-gen
 	# Checking installation of bats v$(BATS_VERSION)
-	@if [[ ! -f $(BATS) ]] || [[ "$(shell $(BATS) --version)" != "Bats $(BATS_VERSION)" ]]; then \
+	@if [ ! -f $(BATS) ] || [ "$(shell $(BATS) --version)" != "Bats $(BATS_VERSION)" ]; then \
 		echo "Downloading and installing bats"; \
 		curl -sSLO https://github.com/bats-core/bats-core/archive/v${BATS_VERSION}.tar.gz; \
 		tar -zxf v${BATS_VERSION}.tar.gz; \
@@ -324,15 +308,12 @@ unpatch-image: ## Patches the manager's image pull policy to be Always.
 
 .PHONY: controller-gen
 controller-gen: ## Download controller-gen locally if necessary.
-	$(call go-get-tool,sigs.k8s.io/controller-tools/cmd/controller-gen@v0.6.1)
 
 .PHONY: kustomize
 kustomize: ## Download kustomize locally if necessary.
-	$(call go-get-tool,sigs.k8s.io/kustomize/kustomize/v5@${KUSTOMIZE_VERSION})
 
 .PHONY: envtest
 envtest: ## Download envtest-setup locally if necessary.
-	$(call go-get-tool,sigs.k8s.io/controller-runtime/tools/setup-envtest@latest)
 
 # go-get-tool will 'go install' any package $1 and install it to LOCAL_BIN.
 define go-get-tool
@@ -394,8 +375,8 @@ TMP_IMPORT_MANIFESTS_PATH := $(shell mktemp -d)
 # Import Gatekeeper manifests
 .PHONY: import-manifests
 import-manifests: kustomize
-	if [[ $(IMPORT_MANIFESTS_PATH) =~ https://* ]]; then \
-		git clone --branch v$(shell cut -d '-' -f 1 VERSION)  $(IMPORT_MANIFESTS_PATH) $(TMP_IMPORT_MANIFESTS_PATH) ; \
+	if [ "$${IMPORT_MANIFESTS_PATH#https://}" != "$(IMPORT_MANIFESTS_PATH)" ]; then \
+		git clone --branch v$(GATEKEEPER_VERSION)  $(IMPORT_MANIFESTS_PATH) $(TMP_IMPORT_MANIFESTS_PATH) ; \
 		cd $(TMP_IMPORT_MANIFESTS_PATH) && make patch-image ; \
 		$(KUSTOMIZE) build --load-restrictor LoadRestrictionsNone $(TMP_IMPORT_MANIFESTS_PATH)/config/default -o $(MAKEFILE_DIR)/$(GATEKEEPER_MANIFEST_DIR); \
 		rm -rf "$${TMP_IMPORT_MANIFESTS_PATH}" ; \
@@ -475,7 +456,6 @@ NAMESPACE ?= gatekeeper-system
 # Default Kubernetes distribution
 KUBE_DISTRIBUTION ?= vanilla
 
-MAKEFILE_DIR := $(strip $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST)))))
 GATEKEEPER_MANIFEST_DIR ?= config/gatekeeper
 
 # Set version variables for LDFLAGS

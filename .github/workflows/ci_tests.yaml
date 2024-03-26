@@ -37,20 +37,22 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-      with:
-        fetch-depth: 0 # Fetch all history for all tags and branches
 
     - uses: actions/setup-go@v3
       with:
         go-version-file: go.mod
 
     - name: Verify modules
-      run: go mod verify
+      run: |
+        go mod tidy
+        go mod verify
+        git diff --exit-code
 
     - name: Verify format
       run: |
         make fmt
         git diff --exit-code
+        make lint
 
     - name: Verify manifests
       run: |
