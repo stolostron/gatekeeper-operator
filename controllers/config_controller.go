@@ -4,7 +4,6 @@ import (
 	"context"
 	"reflect"
 
-	operatorv1alpha1 "github.com/gatekeeper/gatekeeper-operator/api/v1alpha1"
 	"github.com/go-logr/logr"
 	"github.com/open-policy-agent/gatekeeper/v3/apis/config/v1alpha1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -17,6 +16,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+
+	operatorv1alpha1 "github.com/gatekeeper/gatekeeper-operator/api/v1alpha1"
 )
 
 type ConfigReconciler struct {

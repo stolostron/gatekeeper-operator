@@ -4,7 +4,6 @@ import (
 	"context"
 	"reflect"
 
-	operatorv1alpha1 "github.com/gatekeeper/gatekeeper-operator/api/v1alpha1"
 	"github.com/go-logr/logr"
 	"github.com/open-policy-agent/gatekeeper/v3/apis/config/v1alpha1"
 	"github.com/open-policy-agent/gatekeeper/v3/pkg/wildcard"
@@ -18,6 +17,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/metrics/server"
+
+	operatorv1alpha1 "github.com/gatekeeper/gatekeeper-operator/api/v1alpha1"
 )
 
 // Default config data

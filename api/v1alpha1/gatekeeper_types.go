@@ -23,9 +23,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
-// NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
-
 // +kubebuilder:validation:Enum:=Enabled;Disabled
 type Mode string
 
@@ -103,7 +100,7 @@ type ConfigConfig struct {
 }
 
 type ImageConfig struct {
-	// DEPRECATED: Image is deprecated. Its continued use will be honored by
+	// Deprecated: Image is deprecated. Its continued use will be honored by
 	// the operator with a warning and removed in a future release. Instead,
 	// the operator will rely on the environment variable set in its manifest
 	// at deployment time and will be the default behavior after this field is
@@ -237,11 +234,10 @@ const (
 	StatusNotReady StatusConditionType = "Not Ready"
 )
 
+//nolint:lll
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 // +kubebuilder:resource:path=gatekeepers,scope=Cluster
-//// +kubebuilder:printcolumn:name="Audit Status",type=string,JSONPath=`.status.auditConditions[0].type`,description="The status of the Gatekeeper Audit"
-//// +kubebuilder:printcolumn:name="Webhook Status",type=string,JSONPath=`.status.webhookConditions[0].type`,description="The status of the Gatekeeper Webhook"
 // +kubebuilder:printcolumn:name="Age",type=date,JSONPath=`.metadata.creationTimestamp`
 // +operator-sdk:csv:customresourcedefinitions:displayName="Gatekeeper",resources={{Deployment,v1,gatekeeper-deployment}}
 

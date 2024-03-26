@@ -80,7 +80,8 @@ func TestRetainWebhookConfigurationFields(t *testing.T) {
 				g.Expect(found).To(BeTrue())
 				g.Expect(desiredWebhooks).ToNot(BeNil())
 
-				desiredCABundle, found, err := unstructured.NestedString(desiredWebhooks[0].(map[string]interface{}), "clientConfig", "caBundle")
+				desiredCABundle, found, err := unstructured.NestedString(
+					desiredWebhooks[0].(map[string]interface{}), "clientConfig", "caBundle")
 				g.Expect(err).ToNot(HaveOccurred())
 				g.Expect(found).To(BeTrue())
 				g.Expect(desiredCABundle).To(Equal(testCase.clusterCABundle))
