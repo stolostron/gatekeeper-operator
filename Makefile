@@ -9,6 +9,8 @@ VERSION_TAG ?= v$(VERSION)
 # Set this when when there is a new patch release in the channel.
 REPLACES_VERSION ?= $(shell cat REPLACES_VERSION)
 
+GATEKEEPER_VERSION ?= $(shell cat GATEKEEPER_VERSION 2>/dev/null || cat VERSION)
+
 LOCAL_BIN ?= $(PWD)/ci-tools/bin
 export PATH := $(LOCAL_BIN):$(PATH)
 
