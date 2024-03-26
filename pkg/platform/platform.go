@@ -44,61 +44,79 @@ func GetPlatformName(cfg *rest.Config) (string, error) {
 	if err != nil {
 		return "", err
 	}
+
 	return string(info.Name), nil
 }
 
 // deal with cfg coming from legacy method signature and allow injection for client testing
-func (k8SBasedPlatformVersioner) defaultArgs(client discovery.DiscoveryInterface, cfg *rest.Config) (discovery.DiscoveryInterface, *rest.Config, error) {
+func (k8SBasedPlatformVersioner) defaultArgs(
+	client discovery.DiscoveryInterface, cfg *rest.Config,
+) (discovery.DiscoveryInterface, error) {
 	if cfg == nil {
 		var err error
+
 		cfg, err = config.GetConfig()
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 	}
+
 	if client == nil {
 		var err error
+
 		client, err = discovery.NewDiscoveryClientForConfig(cfg)
 		if err != nil {
-			return nil, nil, err
+			return nil, err
 		}
 	}
-	return client, cfg, nil
+
+	return client, nil
 }
 
-func (pv k8SBasedPlatformVersioner) getPlatformInfo(client discovery.DiscoveryInterface, cfg *rest.Config) (PlatformInfo, error) {
+func (pv k8SBasedPlatformVersioner) getPlatformInfo(
+	client discovery.DiscoveryInterface, cfg *rest.Config,
+) (PlatformInfo, error) {
 	log.Info("detecting platform version...")
+
 	info := PlatformInfo{Name: Kubernetes}
 
 	var err error
-	client, cfg, err = pv.defaultArgs(client, cfg)
+
+	client, err = pv.defaultArgs(client, cfg)
 	if err != nil {
 		log.Info("issue occurred while defaulting client/cfg args")
+
 		return info, err
 	}
 
 	k8sVersion, err := client.ServerVersion()
 	if err != nil {
 		log.Info("issue occurred while fetching ServerVersion")
+
 		return info, err
 	}
+
 	info.K8SVersion = k8sVersion.Major + "." + k8sVersion.Minor
 	info.OS = k8sVersion.Platform
 
 	apiList, err := client.ServerGroups()
 	if err != nil {
 		log.Info("issue occurred while fetching ServerGroups")
+
 		return info, err
 	}
 
 	for _, v := range apiList.Groups {
 		if v.Name == "route.openshift.io" {
-
 			log.Info("route.openshift.io found in apis, platform is OpenShift")
+
 			info.Name = OpenShift
+
 			break
 		}
 	}
+
 	log.Info(info.String())
+
 	return info, nil
 }

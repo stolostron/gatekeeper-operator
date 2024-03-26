@@ -3,8 +3,6 @@ package e2e
 import (
 	"time"
 
-	gv1alpha1 "github.com/gatekeeper/gatekeeper-operator/api/v1alpha1"
-	. "github.com/gatekeeper/gatekeeper-operator/test/e2e/util"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/open-policy-agent/gatekeeper/v3/apis/config/v1alpha1"
@@ -13,6 +11,9 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
+
+	gv1alpha1 "github.com/gatekeeper/gatekeeper-operator/api/v1alpha1"
+	. "github.com/gatekeeper/gatekeeper-operator/test/e2e/util"
 )
 
 const (

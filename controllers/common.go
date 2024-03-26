@@ -14,7 +14,9 @@ import (
 var errCrdNotReady = errors.New("CRD is not ready")
 
 // Check CRD status is "True" and type is "NamesAccepted"
-func checkCrdAvailable(ctx context.Context, dynamicClient *dynamic.DynamicClient, resourceName, crdName string) (bool, error) {
+func checkCrdAvailable(
+	ctx context.Context, dynamicClient *dynamic.DynamicClient, resourceName, crdName string,
+) (bool, error) {
 	crdGVR := schema.GroupVersionResource{
 		Group:    "apiextensions.k8s.io",
 		Version:  "v1",

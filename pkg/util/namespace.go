@@ -18,8 +18,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/gatekeeper/gatekeeper-operator/pkg/platform"
 	"github.com/pkg/errors"
+
+	"github.com/gatekeeper/gatekeeper-operator/pkg/platform"
 )
 
 var (
@@ -35,9 +36,12 @@ func GetOperatorNamespace() (string, error) {
 		if os.IsNotExist(err) {
 			return "", errors.New("namespace not found for current environment")
 		}
+
 		return "", err
 	}
+
 	ns := strings.TrimSpace(string(nsBytes))
+
 	return ns, nil
 }
 
@@ -46,5 +50,6 @@ func GetPlatformNamespace(platformInfo platform.PlatformInfo) string {
 	if platformInfo.IsOpenShift() {
 		return DefaultOpenShiftGatekeeperNamespace
 	}
+
 	return DefaultGatekeeperNamespace
 }

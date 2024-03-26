@@ -4,7 +4,6 @@ import (
 	"context"
 	"testing"
 
-	operatorv1alpha1 "github.com/gatekeeper/gatekeeper-operator/api/v1alpha1"
 	. "github.com/onsi/gomega"
 	"github.com/open-policy-agent/gatekeeper/v3/apis/config/v1alpha1"
 	"github.com/open-policy-agent/gatekeeper/v3/pkg/wildcard"
@@ -12,6 +11,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
+
+	operatorv1alpha1 "github.com/gatekeeper/gatekeeper-operator/api/v1alpha1"
 )
 
 func TestAddDefaultExemptNamespaces(t *testing.T) {
@@ -53,22 +54,25 @@ func TestAddDefaultExemptNamespaces(t *testing.T) {
 
 	disableDefaultMatches := true
 
-	t.Run("Should update the existing config when the existing config has match and gatekeeper match is []", func(t *testing.T) {
-		gatekeeper = &operatorv1alpha1.Gatekeeper{
-			ObjectMeta: metav1.ObjectMeta{
-				UID: "test-1",
-			},
-			Spec: operatorv1alpha1.GatekeeperSpec{
-				Config: &operatorv1alpha1.ConfigConfig{
-					Matches: []v1alpha1.MatchEntry{},
+	t.Run(
+		"Should update the existing config when the existing config has match and gatekeeper match is []",
+		func(t *testing.T,
+		) {
+			gatekeeper = &operatorv1alpha1.Gatekeeper{
+				ObjectMeta: metav1.ObjectMeta{
+					UID: "test-1",
 				},
-			},
-		}
+				Spec: operatorv1alpha1.GatekeeperSpec{
+					Config: &operatorv1alpha1.ConfigConfig{
+						Matches: []v1alpha1.MatchEntry{},
+					},
+				},
+			}
 
-		setExemptNamespaces(ctx, c, config, gatekeeper, scheme, Log)
-		g.Expect(config.Spec.Match).Should(HaveLen(1))
-		g.Expect(config.Spec.Match).Should(BeComparableTo(defaultConfig.Spec.Match))
-	})
+			_ = setExemptNamespaces(ctx, c, config, gatekeeper, scheme, Log)
+			g.Expect(config.Spec.Match).Should(HaveLen(1))
+			g.Expect(config.Spec.Match).Should(BeComparableTo(defaultConfig.Spec.Match))
+		})
 
 	t.Run("Should update the existing config when the existing config is nil", func(t *testing.T) {
 		gatekeeper = &operatorv1alpha1.Gatekeeper{
@@ -78,7 +82,7 @@ func TestAddDefaultExemptNamespaces(t *testing.T) {
 			Spec: operatorv1alpha1.GatekeeperSpec{},
 		}
 
-		setExemptNamespaces(ctx, c, config, gatekeeper, scheme, Log)
+		_ = setExemptNamespaces(ctx, c, config, gatekeeper, scheme, Log)
 		g.Expect(config.Spec.Match).Should(HaveLen(1))
 		g.Expect(config.Spec.Match).Should(BeComparableTo(defaultConfig.Spec.Match))
 	})
@@ -114,7 +118,7 @@ func TestAddDefaultExemptNamespaces(t *testing.T) {
 			},
 		}
 
-		setExemptNamespaces(ctx, c, config, gatekeeper, scheme, Log)
+		_ = setExemptNamespaces(ctx, c, config, gatekeeper, scheme, Log)
 		g.Expect(config.Spec.Match).Should(HaveLen(2))
 		g.Expect(config.Spec.Match[0]).Should(BeComparableTo(defaultConfig.Spec.Match[0]))
 		g.Expect(config.Spec.Match[1]).Should(BeComparableTo(gatekeeper.Spec.Config.Matches[0]))
@@ -149,7 +153,7 @@ func TestAddDefaultExemptNamespaces(t *testing.T) {
 			},
 		}
 
-		setExemptNamespaces(ctx, c, config, gatekeeper, scheme, Log)
+		_ = setExemptNamespaces(ctx, c, config, gatekeeper, scheme, Log)
 		g.Expect(config.Spec.Match).Should(Equal(gatekeeper.Spec.Config.Matches))
 	})
 
@@ -180,7 +184,7 @@ func TestAddDefaultExemptNamespaces(t *testing.T) {
 			},
 		}
 
-		setExemptNamespaces(ctx, c, config, gatekeeper, scheme, Log)
+		_ = setExemptNamespaces(ctx, c, config, gatekeeper, scheme, Log)
 		g.Expect(config.Spec.Match).Should(HaveLen(2))
 		g.Expect(config.Spec.Match[0]).Should(BeComparableTo(defaultConfig.Spec.Match[0]))
 		g.Expect(config.Spec.Match[1]).Should(BeComparableTo(gatekeeper.Spec.Config.Matches[0]))
@@ -216,13 +220,13 @@ func TestAddDefaultExemptNamespaces(t *testing.T) {
 			},
 		}
 		// First try
-		setExemptNamespaces(ctx, c, config, gatekeeper, scheme, Log)
+		_ = setExemptNamespaces(ctx, c, config, gatekeeper, scheme, Log)
 
 		// Second try
-		setExemptNamespaces(ctx, c, config, gatekeeper, scheme, Log)
+		_ = setExemptNamespaces(ctx, c, config, gatekeeper, scheme, Log)
 
 		// Third try
-		setExemptNamespaces(ctx, c, config, gatekeeper, scheme, Log)
+		_ = setExemptNamespaces(ctx, c, config, gatekeeper, scheme, Log)
 		g.Expect(config.Spec.Match).Should(HaveLen(2))
 		g.Expect(config.Spec.Match[0]).Should(BeComparableTo(defaultConfig.Spec.Match[0]))
 		g.Expect(config.Spec.Match[1]).Should(BeComparableTo(gatekeeper.Spec.Config.Matches[0]))
@@ -266,7 +270,7 @@ func TestAddDefaultExemptNamespaces(t *testing.T) {
 			},
 		}
 
-		setExemptNamespaces(ctx, c, config, gatekeeper, scheme, Log)
+		_ = setExemptNamespaces(ctx, c, config, gatekeeper, scheme, Log)
 
 		g.Expect(config.Spec.Match).Should(HaveLen(1))
 		g.Expect(config.Spec.Match[0]).Should(BeComparableTo(config.Spec.Match[0]))

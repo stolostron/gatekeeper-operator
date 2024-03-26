@@ -46,7 +46,7 @@ func (r *DiscoveryStorage) getSyncOnlys(constraintMatchKinds []interface{}) (
 
 		for _, apiGroup := range apiGroups {
 			for _, kind := range kindsInKinds {
-				version, err := r.getAPIVersion(kind.(string), apiGroup.(string), false, r.ClientSet)
+				version, err := r.getAPIVersion(kind.(string), apiGroup.(string), false)
 				if err != nil {
 					r.Log.V(1).Info("getAPIVersion has error but continue")
 
@@ -74,8 +74,8 @@ func (r *DiscoveryStorage) getSyncOnlys(constraintMatchKinds []interface{}) (
 
 // getAPIVersion gets the server preferred API version for the constraint's match kind entry
 // Constraint only provide kind and apiGroup. However the config resource need version
-func (r *DiscoveryStorage) getAPIVersion(kind string,
-	apiGroup string, skipRefresh bool, clientSet *kubernetes.Clientset,
+func (r *DiscoveryStorage) getAPIVersion(
+	kind string, apiGroup string, skipRefresh bool,
 ) (string, error) {
 	// Cool time(10 min) to refresh discoveries
 	if len(r.apiResourceList) == 0 ||
@@ -115,7 +115,7 @@ func (r *DiscoveryStorage) getAPIVersion(kind string,
 		}
 
 		// Retry one more time after refresh the discovery
-		return r.getAPIVersion(kind, apiGroup, true, clientSet)
+		return r.getAPIVersion(kind, apiGroup, true)
 	}
 
 	return "", ErrNotFoundDiscovery

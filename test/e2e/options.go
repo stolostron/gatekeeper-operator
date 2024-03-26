@@ -34,5 +34,10 @@ func init() {
 	flag.StringVar(&gatekeeperNamespace, "namespace", util.DefaultGatekeeperNamespace, "The namespace to run tests")
 	flag.DurationVar(&pollInterval, "poll-interval", 1*time.Second, "The length of time between polls")
 	flag.DurationVar(&timeout, "timeout", 1*time.Minute, "The length of time to poll before giving up")
-	flag.DurationVar(&deleteTimeout, "delete-timeout", 5*time.Minute, "The length of time to wait for deletion of all resources")
+	flag.DurationVar(
+		&deleteTimeout,
+		"delete-timeout",
+		5*time.Minute,
+		"The length of time to wait for deletion of all resources",
+	)
 }

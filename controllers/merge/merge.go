@@ -35,9 +35,7 @@ func RetainClusterObjectFields(desiredObj, clusterObj *unstructured.Unstructured
 	switch desiredObj.GetKind() {
 	case util.ServiceKind:
 		return retainServiceFields(desiredObj, clusterObj)
-	case util.ValidatingWebhookConfigurationKind:
-		fallthrough
-	case util.MutatingWebhookConfigurationKind:
+	case util.ValidatingWebhookConfigurationKind, util.MutatingWebhookConfigurationKind:
 		return retainWebhookConfigurationFields(desiredObj, clusterObj)
 	case util.ServiceAccountKind:
 		return retainServiceAccountFields(desiredObj, clusterObj)
@@ -74,6 +72,7 @@ func retainServiceAccountFields(desiredObj, clusterObj *unstructured.Unstructure
 			return errors.Wrap(err, "Error setting secrets list for service account")
 		}
 	}
+
 	return nil
 }
 
@@ -87,6 +86,7 @@ func retainSecretFields(desiredObj, clusterObj *unstructured.Unstructured) error
 			return errors.Wrap(err, "Error setting data for secret")
 		}
 	}
+
 	return nil
 }
 
@@ -100,6 +100,7 @@ func retainWebhookConfigurationFields(desiredObj, clusterObj *unstructured.Unstr
 		if err != nil {
 			return errors.Wrapf(err, "Error setting webhooks for desired object %s", desiredObj.GetKind())
 		}
+
 		return nil
 	} else if !ok {
 		return nil
@@ -117,13 +118,16 @@ func retainWebhookConfigurationFields(desiredObj, clusterObj *unstructured.Unstr
 		for j := range clusterWebhooks {
 			desiredWebhook := desiredWebhooks[i].(map[string]interface{})
 			clusterWebhook := clusterWebhooks[j].(map[string]interface{})
+
 			if desiredWebhook["name"] != clusterWebhook["name"] {
 				continue
 			}
 
 			caBundle, ok, err := unstructured.NestedFieldNoCopy(clusterWebhook, "clientConfig", "caBundle")
 			if err != nil {
-				return errors.Wrapf(err, "Error retrieving webhooks[%d].clientConfig.caBundle from cluster object %s", j, clusterObj.GetKind())
+				return errors.Wrapf(err,
+					"Error retrieving webhooks[%d].clientConfig.caBundle from cluster object %s",
+					j, clusterObj.GetKind())
 			} else if !ok {
 				// If no caBundle is configured, assume the system's CAs will be used.
 				break
@@ -131,8 +135,11 @@ func retainWebhookConfigurationFields(desiredObj, clusterObj *unstructured.Unstr
 
 			err = unstructured.SetNestedField(desiredWebhook, caBundle, "clientConfig", "caBundle")
 			if err != nil {
-				return errors.Wrapf(err, "Error setting webhooks[%d].clientConfig.caBundle for desired object %s", i, desiredObj.GetKind())
+				return errors.Wrapf(err,
+					"Error setting webhooks[%d].clientConfig.caBundle for desired object %s",
+					i, desiredObj.GetKind())
 			}
+
 			break
 		}
 	}
@@ -141,5 +148,6 @@ func retainWebhookConfigurationFields(desiredObj, clusterObj *unstructured.Unstr
 	if err != nil {
 		return errors.Wrapf(err, "Error setting webhooks for desired object %s", desiredObj.GetKind())
 	}
+
 	return nil
 }

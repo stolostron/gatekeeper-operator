@@ -5,8 +5,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gatekeeper/gatekeeper-operator/api/v1alpha1"
-	operatorv1alpha1 "github.com/gatekeeper/gatekeeper-operator/api/v1alpha1"
 	gkv1alpha1 "github.com/open-policy-agent/gatekeeper/v3/apis/config/v1alpha1"
 	"github.com/open-policy-agent/gatekeeper/v3/apis/status/v1beta1"
 	gkv1beta1 "github.com/open-policy-agent/gatekeeper/v3/apis/status/v1beta1"
@@ -21,6 +19,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/metrics/server"
+
+	"github.com/gatekeeper/gatekeeper-operator/api/v1alpha1"
+	operatorv1alpha1 "github.com/gatekeeper/gatekeeper-operator/api/v1alpha1"
 )
 
 var setupLog = ctrl.Log.WithName("setup")

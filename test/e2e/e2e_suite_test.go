@@ -24,9 +24,9 @@ import (
 	"path/filepath"
 	"testing"
 
-	test "github.com/gatekeeper/gatekeeper-operator/test/e2e/util"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
+	"github.com/open-policy-agent/gatekeeper/v3/apis/config/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
 	extv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -45,15 +45,13 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
 	operatorv1alpha1 "github.com/gatekeeper/gatekeeper-operator/api/v1alpha1"
-	"github.com/open-policy-agent/gatekeeper/v3/apis/config/v1alpha1"
-	// +kubebuilder:scaffold:imports
+	test "github.com/gatekeeper/gatekeeper-operator/test/e2e/util"
 )
 
 // These tests use Ginkgo (BDD-style Go testing framework). Refer to
 // http://onsi.github.io/ginkgo/ to learn more about Ginkgo.
 
 var (
-	cfg              *rest.Config
 	K8sClient        client.Client
 	testEnv          *envtest.Environment
 	affinityPod      *corev1.Pod
@@ -127,7 +125,11 @@ var _ = AfterSuite(func() {
 	By("tearing down the test environment")
 
 	if affinityNode != nil {
-		K8sClient.Delete(ctx, affinityPod, client.PropagationPolicy(v1.DeletePropagationForeground))
+		if affinityPod != nil {
+			err := K8sClient.Delete(ctx, affinityPod, client.PropagationPolicy(v1.DeletePropagationForeground))
+			Expect(err).ToNot(HaveOccurred())
+		}
+
 		Expect(unlabelNode(affinityNode)).Should(Succeed())
 		err := deleteAffinityPod()
 		Expect(err).ToNot(HaveOccurred())
@@ -138,14 +140,17 @@ var _ = AfterSuite(func() {
 
 func getAffinityNode() (*corev1.Node, error) {
 	nodes := &corev1.NodeList{}
+
 	err := K8sClient.List(context.TODO(), nodes)
 	if err != nil {
 		return nil, err
 	}
+
 	// If true, we use a testEnv
 	if len(nodes.Items) == 0 {
 		return nil, nil
 	}
+
 	return &nodes.Items[0], nil
 }
 
@@ -153,6 +158,7 @@ func labelNode(node *corev1.Node) error {
 	patch := client.MergeFrom(node.DeepCopy())
 	node.ObjectMeta.Labels["region"] = "EMEA"
 	node.ObjectMeta.Labels["topology.kubernetes.io/zone"] = "test"
+
 	return K8sClient.Patch(context.TODO(), node, patch)
 }
 
@@ -160,6 +166,7 @@ func unlabelNode(node *corev1.Node) error {
 	patch := client.MergeFrom(node.DeepCopy())
 	delete(node.ObjectMeta.Labels, "region")
 	delete(node.ObjectMeta.Labels, "topology.kubernetes.io/zone")
+
 	return K8sClient.Patch(context.TODO(), node, patch)
 }
 
@@ -180,13 +187,16 @@ func deleteAffinityPod() error {
 		Name:      affinityPodFromFile.ObjectMeta.Name,
 	}
 	pod := &corev1.Pod{}
+
 	err = K8sClient.Get(ctx, affinityPodName, pod)
 	if apierrors.IsNotFound(err) {
 		return nil
 	}
+
 	if err != nil {
 		return err
 	}
+
 	return K8sClient.Delete(ctx, pod)
 }
 
@@ -196,9 +206,11 @@ func loadAffinityPodFromFile(namespace string) (*corev1.Pod, error) {
 		return nil, err
 	}
 	defer f.Close()
+
 	pod := &corev1.Pod{}
 	err = decodeYAML(f, pod)
 	pod.ObjectMeta.Namespace = namespace
+
 	return pod, err
 }
 

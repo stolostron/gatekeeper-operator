@@ -56,21 +56,21 @@ const (
 	defaultGatekeeperCrName             = "gatekeeper"
 	GatekeeperImageEnvVar               = "RELATED_IMAGE_GATEKEEPER"
 	NamespaceFile                       = "v1_namespace_gatekeeper-system.yaml"
-	AssignCRDFile                       = "apiextensions.k8s.io_v1_customresourcedefinition_assign.mutations.gatekeeper.sh.yaml"
-	AssignMetadataCRDFile               = "apiextensions.k8s.io_v1_customresourcedefinition_assignmetadata.mutations.gatekeeper.sh.yaml"
-	MutatorPodStatusCRDFile             = "apiextensions.k8s.io_v1_customresourcedefinition_mutatorpodstatuses.status.gatekeeper.sh.yaml"
-	ModifySetCRDFile                    = "apiextensions.k8s.io_v1_customresourcedefinition_modifyset.mutations.gatekeeper.sh.yaml"
-	ProviderCRDFile                     = "apiextensions.k8s.io_v1_customresourcedefinition_providers.externaldata.gatekeeper.sh.yaml"
+	crdFilePrefix                       = "apiextensions.k8s.io_v1_customresourcedefinition_"
+	AssignCRDFile                       = crdFilePrefix + "assign.mutations.gatekeeper.sh.yaml"
+	AssignMetadataCRDFile               = crdFilePrefix + "assignmetadata.mutations.gatekeeper.sh.yaml"
+	MutatorPodStatusCRDFile             = crdFilePrefix + "mutatorpodstatuses.status.gatekeeper.sh.yaml"
+	ModifySetCRDFile                    = crdFilePrefix + "modifyset.mutations.gatekeeper.sh.yaml"
+	ProviderCRDFile                     = crdFilePrefix + "providers.externaldata.gatekeeper.sh.yaml"
 	AuditFile                           = "apps_v1_deployment_gatekeeper-audit.yaml"
 	WebhookFile                         = "apps_v1_deployment_gatekeeper-controller-manager.yaml"
-	ClusterRoleFile                     = "rbac.authorization.k8s.io_v1_clusterrole_gatekeeper-manager-role.yaml"
-	ClusterRoleBindingFile              = "rbac.authorization.k8s.io_v1_clusterrolebinding_gatekeeper-manager-rolebinding.yaml"
-	RoleFile                            = "rbac.authorization.k8s.io_v1_role_gatekeeper-manager-role.yaml"
-	RoleBindingFile                     = "rbac.authorization.k8s.io_v1_rolebinding_gatekeeper-manager-rolebinding.yaml"
+	rbacFilePrefix                      = "rbac.authorization.k8s.io_v1_"
+	ClusterRoleFile                     = rbacFilePrefix + "clusterrole_gatekeeper-manager-role.yaml"
+	ClusterRoleBindingFile              = rbacFilePrefix + "clusterrolebinding_gatekeeper-manager-rolebinding.yaml"
+	RoleFile                            = rbacFilePrefix + "role_gatekeeper-manager-role.yaml"
+	RoleBindingFile                     = rbacFilePrefix + "rolebinding_gatekeeper-manager-rolebinding.yaml"
 	ServerCertFile                      = "v1_secret_gatekeeper-webhook-server-cert.yaml"
 	ServiceFile                         = "v1_service_gatekeeper-webhook-service.yaml"
-	ValidatingWebhookConfiguration      = "admissionregistration.k8s.io_v1_validatingwebhookconfiguration_gatekeeper-validating-webhook-configuration.yaml"
-	MutatingWebhookConfiguration        = "admissionregistration.k8s.io_v1_mutatingwebhookconfiguration_gatekeeper-mutating-webhook-configuration.yaml"
 	ValidationGatekeeperWebhook         = "validation.gatekeeper.sh"
 	CheckIgnoreLabelGatekeeperWebhook   = "check-ignore-label.gatekeeper.sh"
 	MutationGatekeeperWebhook           = "mutation.gatekeeper.sh"
@@ -94,10 +94,14 @@ const (
 	DisabledBuiltinArg                  = "--disable-opa-builtin"
 	LogMutationsArg                     = "--log-mutations"
 	MutationAnnotationsArg              = "--mutation-annotations"
+	admissionFileFmt                    = "admissionregistration.k8s.io_v1_%[1]swebhookconfiguration" +
+		"_gatekeeper-%[1]s-webhook-configuration.yaml"
 )
 
 var (
-	orderedStaticAssets = []string{
+	ValidatingWebhookConfiguration = fmt.Sprintf(admissionFileFmt, "validating")
+	MutatingWebhookConfiguration   = fmt.Sprintf(admissionFileFmt, "mutating")
+	orderedStaticAssets            = []string{
 		NamespaceFile,
 		"v1_resourcequota_gatekeeper-critical-pods.yaml",
 		"apiextensions.k8s.io_v1_customresourcedefinition_configs.config.gatekeeper.sh.yaml",
@@ -208,6 +212,7 @@ func (r *GatekeeperReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	if req.Name != defaultGatekeeperCrName {
 		err := fmt.Errorf("Gatekeeper resource name must be '%s'", defaultGatekeeperCrName)
 		logger.Error(err, "Invalid Gatekeeper resource name")
+
 		// Return success to avoid requeue
 		return ctrl.Result{}, nil
 	}
@@ -227,12 +232,14 @@ func (r *GatekeeperReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return ctrl.Result{}, err
 	}
 
+	//nolint:staticcheck
 	if gatekeeper.Spec.Image != nil && gatekeeper.Spec.Image.Image != nil {
-		logger.Info("WARNING: operator.gatekeeper.sh/v1alpha1 Gatekeeper spec.image.image field is no longer supported and will be removed in a future release.",
+		logger.Info("WARNING: operator.gatekeeper.sh/v1alpha1 Gatekeeper spec.image.image field "+
+			"is no longer supported and will be removed in a future release.",
 			"spec.image.image", gatekeeper.Spec.Image.Image)
 	}
 
-	err, requeue := r.deployGatekeeperResources(gatekeeper)
+	err, requeue := r.deployGatekeeperResources(ctx, gatekeeper)
 	if err != nil {
 		return ctrl.Result{}, errors.Wrap(err, "Unable to deploy Gatekeeper resources")
 	} else if requeue {
@@ -319,55 +326,63 @@ func (r *GatekeeperReconciler) initConfig(ctx context.Context, gatekeeper *opera
 	return nil
 }
 
-func (r *GatekeeperReconciler) deployGatekeeperResources(gatekeeper *operatorv1alpha1.Gatekeeper) (error, bool) {
-	deleteWebhookAssets, applyOrderedAssets, applyWebhookAssets, deleteCRDAssets := getStaticAssets(gatekeeper, r.isOpenShift())
+func (r *GatekeeperReconciler) deployGatekeeperResources(
+	ctx context.Context, gatekeeper *operatorv1alpha1.Gatekeeper,
+) (error, bool) {
+	deleteWebhookAssets,
+		applyOrderedAssets,
+		applyWebhookAssets,
+		deleteCRDAssets := getStaticAssets(gatekeeper, r.isOpenShift())
 
-	if err := r.deleteAssets(deleteWebhookAssets, gatekeeper); err != nil {
+	if err := r.deleteAssets(ctx, deleteWebhookAssets, gatekeeper); err != nil {
 		return err, false
 	}
 
 	// Checking for deployment before deploying assets or deleting CRDs to
 	// avoid transient errors e.g. cert rotator errors, removing required CRD
 	// resources, etc.
-	err, requeue := r.validateWebhookDeployment()
+	err, requeue := r.validateWebhookDeployment(ctx)
 	if err != nil {
 		return err, false
 	}
 
-	if err := r.applyAssets(applyOrderedAssets, gatekeeper, false); err != nil {
+	if err := r.applyAssets(ctx, applyOrderedAssets, gatekeeper, false); err != nil {
 		return err, false
 	}
 
-	if err := r.applyAssets(applyWebhookAssets, gatekeeper, requeue); err != nil {
+	if err := r.applyAssets(ctx, applyWebhookAssets, gatekeeper, requeue); err != nil {
 		return err, false
 	}
 
-	if err := r.deleteAssets(deleteCRDAssets, gatekeeper); err != nil {
+	if err := r.deleteAssets(ctx, deleteCRDAssets, gatekeeper); err != nil {
 		return err, false
 	}
 
 	return nil, requeue
 }
 
-func (r *GatekeeperReconciler) deleteAssets(assets []string, gatekeeper *operatorv1alpha1.Gatekeeper) error {
+func (r *GatekeeperReconciler) deleteAssets(
+	ctx context.Context, assets []string, gatekeeper *operatorv1alpha1.Gatekeeper,
+) error {
 	for _, a := range assets {
 		obj, err := util.GetManifestObject(a)
 		if err != nil {
 			return err
 		}
 
-		if err = r.crudResource(obj, gatekeeper, deleteCrud); err != nil {
+		if err = r.crudResource(ctx, obj, gatekeeper, deleteCrud); err != nil {
 			return err
 		}
 	}
+
 	return nil
 }
 
-func (r *GatekeeperReconciler) applyAssets(assets []string,
-	gatekeeper *operatorv1alpha1.Gatekeeper, controllerDeploymentPending bool,
+func (r *GatekeeperReconciler) applyAssets(
+	ctx context.Context, assets []string, gatekeeper *operatorv1alpha1.Gatekeeper, controllerDeploymentPending bool,
 ) error {
 	for _, a := range assets {
-		err := r.applyAsset(gatekeeper, a, controllerDeploymentPending)
+		err := r.applyAsset(ctx, gatekeeper, a, controllerDeploymentPending)
 		if err != nil {
 			return err
 		}
@@ -376,31 +391,34 @@ func (r *GatekeeperReconciler) applyAssets(assets []string,
 	return nil
 }
 
-func (r *GatekeeperReconciler) applyAsset(gatekeeper *operatorv1alpha1.Gatekeeper, asset string, controllerDeploymentPending bool) error {
+func (r *GatekeeperReconciler) applyAsset(
+	ctx context.Context, gatekeeper *operatorv1alpha1.Gatekeeper, asset string, controllerDeploymentPending bool,
+) error {
 	obj, err := util.GetManifestObject(asset)
 	if err != nil {
 		return err
 	}
 
-	if err = crOverrides(gatekeeper, asset, obj, r.Namespace, r.isOpenShift(), controllerDeploymentPending); err != nil {
+	err = crOverrides(gatekeeper, asset, obj, r.Namespace, r.isOpenShift(), controllerDeploymentPending)
+	if err != nil {
 		return err
 	}
 
-	if err = r.crudResource(obj, gatekeeper, applyCrud); err != nil {
+	if err = r.crudResource(ctx, obj, gatekeeper, applyCrud); err != nil {
 		return err
 	}
 
 	return nil
 }
 
-func (r *GatekeeperReconciler) validateWebhookDeployment() (error, bool) {
+func (r *GatekeeperReconciler) validateWebhookDeployment(ctx context.Context) (error, bool) {
 	r.Log.Info(fmt.Sprintf("Validating %s deployment status", WebhookDeploymentName))
 
-	ctx := context.Background()
 	obj, err := util.GetManifestObject(WebhookFile)
 	if err != nil {
 		return err, false
 	}
+
 	deployment := &unstructured.Unstructured{}
 	deployment.SetAPIVersion(obj.GetAPIVersion())
 	deployment.SetKind(obj.GetKind())
@@ -413,13 +431,16 @@ func (r *GatekeeperReconciler) validateWebhookDeployment() (error, bool) {
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			r.Log.Info("Deployment not found, will set webhook failure policy to ignore and requeue...")
+
 			return nil, true
 		}
+
 		return err, false
 	}
+
 	r.Log.Info("Deployment found, checking replicas ...")
 
-	replicas, ok, err := unstructured.NestedInt64(deployment.Object, "status", "replicas")
+	replicas, _, err := unstructured.NestedInt64(deployment.Object, "status", "replicas")
 	if err != nil {
 		return err, false
 	}
@@ -428,20 +449,36 @@ func (r *GatekeeperReconciler) validateWebhookDeployment() (error, bool) {
 	if err != nil {
 		return err, false
 	}
+
 	if !ok {
-		r.Log.Info("Deployment status.readyReplicas not found or populated yet, will set webhook failure policy to ignore and requeue ...")
+		r.Log.Info(
+			"Deployment status.readyReplicas not found or populated yet, " +
+				"will set webhook failure policy to ignore and requeue.",
+		)
+
 		return nil, true
 	}
+
 	if replicas == readyReplicas {
-		r.Log.Info("Deployment validation successful, all replicas ready", "replicas", replicas, "readyReplicas", readyReplicas)
+		r.Log.Info("Deployment validation successful, all replicas ready",
+			"replicas", replicas,
+			"readyReplicas", readyReplicas,
+		)
+
 		return nil, false
 	}
-	r.Log.Info("Deployment replicas not ready, will set webhook failure policy to ignore and requeue ...",
-		"replicas", replicas, "readyReplicas", readyReplicas)
+
+	r.Log.Info("Deployment replicas not ready, will set webhook failure policy to ignore and requeue.",
+		"replicas", replicas,
+		"readyReplicas", readyReplicas,
+	)
+
 	return nil, true
 }
 
-func getStaticAssets(gatekeeper *operatorv1alpha1.Gatekeeper, isOpenshift bool) (deleteWebhookAssets, applyOrderedAssets, applyWebhookAssets, deleteCRDAssets []string) {
+func getStaticAssets(
+	gatekeeper *operatorv1alpha1.Gatekeeper, isOpenshift bool,
+) (deleteWebhookAssets, applyOrderedAssets, applyWebhookAssets, deleteCRDAssets []string) {
 	validatingWebhookEnabled := gatekeeper.Spec.ValidatingWebhook == nil || gatekeeper.Spec.ValidatingWebhook.ToBool()
 	mutatingWebhookEnabled := mutatingWebhookEnabled(gatekeeper.Spec.MutatingWebhook)
 
@@ -465,6 +502,7 @@ func getStaticAssets(gatekeeper *operatorv1alpha1.Gatekeeper, isOpenshift bool) 
 		deleteWebhookAssets = append(deleteWebhookAssets, MutatingWebhookConfiguration)
 		applyOrderedAssets = getSubsetOfAssets(applyOrderedAssets, MutatingCRDs...)
 		applyWebhookAssets = getSubsetOfAssets(applyWebhookAssets, MutatingWebhookConfiguration)
+
 		deleteCRDAssets = append(deleteCRDAssets, MutatingCRDs...)
 	}
 
@@ -481,23 +519,30 @@ func mutatingWebhookEnabled(mode *operatorv1alpha1.Mode) bool {
 
 func getSubsetOfAssets(inputAssets []string, assetsToRemove ...string) []string {
 	outputAssets := make([]string, 0)
+
 	for _, i := range inputAssets {
 		addAsset := true
+
 		for _, j := range assetsToRemove {
 			if i == j {
 				addAsset = false
 			}
 		}
+
 		if addAsset {
 			outputAssets = append(outputAssets, i)
 		}
 	}
+
 	return outputAssets
 }
 
-func (r *GatekeeperReconciler) crudResource(obj *unstructured.Unstructured, gatekeeper *operatorv1alpha1.Gatekeeper, operation crudOperation) error {
-	var err error
-	ctx := context.Background()
+func (r *GatekeeperReconciler) crudResource(
+	ctx context.Context,
+	obj *unstructured.Unstructured,
+	gatekeeper *operatorv1alpha1.Gatekeeper,
+	operation crudOperation,
+) error {
 	clusterObj := &unstructured.Unstructured{}
 	clusterObj.SetAPIVersion(obj.GetAPIVersion())
 	clusterObj.SetKind(obj.GetKind())
@@ -513,17 +558,26 @@ func (r *GatekeeperReconciler) crudResource(obj *unstructured.Unstructured, gate
 	// of the Gatekeeper CR does not also delete the namespace and everything
 	// within it.
 	if obj.GetKind() != util.NamespaceKind {
-		err = ctrl.SetControllerReference(gatekeeper, obj, r.Scheme)
+		err := ctrl.SetControllerReference(gatekeeper, obj, r.Scheme)
 		if err != nil {
 			return errors.Wrapf(err, "Unable to set controller reference for %s", namespacedName)
 		}
 	}
 
-	err = r.Get(ctx, namespacedName, clusterObj)
+	err := r.Get(ctx, namespacedName, clusterObj)
+	if err != nil && !apierrors.IsNotFound(err) {
+		return errors.Wrapf(err, "Error attempting to get resource %s", namespacedName)
+	}
 
-	switch {
-	case err == nil:
-		if operation == applyCrud {
+	switch operation {
+	case applyCrud:
+		if apierrors.IsNotFound(err) {
+			if err = r.Create(ctx, obj); err != nil {
+				return errors.Wrapf(err, "Error attempting to create resource %s", namespacedName)
+			}
+
+			logger.Info("Created Gatekeeper resource")
+		} else {
 			err = merge.RetainClusterObjectFields(obj, clusterObj)
 			if err != nil {
 				return errors.Wrapf(err, "Unable to retain cluster object fields from %s", namespacedName)
@@ -533,24 +587,14 @@ func (r *GatekeeperReconciler) crudResource(obj *unstructured.Unstructured, gate
 				return errors.Wrapf(err, "Error attempting to update resource %s", namespacedName)
 			}
 
-			logger.Info(fmt.Sprintf("Updated Gatekeeper resource"))
-		} else if operation == deleteCrud {
-			if err = r.Delete(ctx, obj); err != nil {
-				return errors.Wrapf(err, "Error attempting to delete resource %s", namespacedName)
-			}
-			logger.Info(fmt.Sprintf("Deleted Gatekeeper resource"))
+			logger.Info("Updated Gatekeeper resource")
+		}
+	case deleteCrud:
+		if err = r.Delete(ctx, obj); err != nil {
+			return errors.Wrapf(err, "Error attempting to delete resource %s", namespacedName)
 		}
 
-	case apierrors.IsNotFound(err):
-		if operation == applyCrud {
-			if err = r.Create(ctx, obj); err != nil {
-				return errors.Wrapf(err, "Error attempting to create resource %s", namespacedName)
-			}
-			logger.Info(fmt.Sprintf("Created Gatekeeper resource"))
-		}
-
-	case err != nil:
-		return errors.Wrapf(err, "Error attempting to get resource %s", namespacedName)
+		logger.Info("Deleted Gatekeeper resource")
 	}
 
 	return nil
@@ -574,24 +618,35 @@ var commonContainerOverridesFn = []func(map[string]interface{}, operatorv1alpha1
 }
 
 // crOverrides
-func crOverrides(gatekeeper *operatorv1alpha1.Gatekeeper, asset string, obj *unstructured.Unstructured, namespace string, isOpenshift bool, controllerDeploymentPending bool) error {
+func crOverrides(
+	gatekeeper *operatorv1alpha1.Gatekeeper,
+	asset string,
+	obj *unstructured.Unstructured,
+	namespace string,
+	isOpenshift bool,
+	controllerDeploymentPending bool,
+) error {
 	if asset == NamespaceFile {
 		obj.SetName(namespace)
+
 		return nil
 	}
 	// set resource's namespace
 	if err := setNamespace(obj, asset, namespace); err != nil {
 		return err
 	}
+
 	switch asset {
 	// audit overrides
 	case AuditFile:
 		if err := commonOverrides(obj, gatekeeper.Spec); err != nil {
 			return err
 		}
+
 		if err := auditOverrides(obj, gatekeeper.Spec.Audit); err != nil {
 			return err
 		}
+
 		if isOpenshift {
 			if err := removeAnnotations(obj); err != nil {
 				return err
@@ -606,9 +661,11 @@ func crOverrides(gatekeeper *operatorv1alpha1.Gatekeeper, asset string, obj *uns
 		if err := commonOverrides(obj, gatekeeper.Spec); err != nil {
 			return err
 		}
+
 		if err := webhookOverrides(obj, gatekeeper.Spec.Webhook); err != nil {
 			return err
 		}
+
 		if isOpenshift {
 			if err := removeAnnotations(obj); err != nil {
 				return err
@@ -625,6 +682,7 @@ func crOverrides(gatekeeper *operatorv1alpha1.Gatekeeper, asset string, obj *uns
 		); err != nil {
 			return err
 		}
+
 		if err := webhookConfigurationOverrides(
 			obj,
 			gatekeeper.Spec.Webhook,
@@ -699,6 +757,7 @@ func commonOverrides(obj *unstructured.Unstructured, spec operatorv1alpha1.Gatek
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -707,31 +766,41 @@ func auditOverrides(obj *unstructured.Unstructured, audit *operatorv1alpha1.Audi
 		if err := setReplicas(obj, audit.Replicas); err != nil {
 			return err
 		}
+
 		if err := setLogLevel(obj, audit.LogLevel); err != nil {
 			return err
 		}
+
 		if err := setAuditInterval(obj, audit.AuditInterval); err != nil {
 			return err
 		}
+
 		if err := setConstraintViolationLimit(obj, audit.ConstraintViolationLimit); err != nil {
 			return err
 		}
+
 		if err := setAuditFromCache(obj, audit.AuditFromCache); err != nil {
 			return err
 		}
+
 		if err := setAuditChunkSize(obj, audit.AuditChunkSize); err != nil {
 			return err
 		}
+
 		if err := setEmitEvents(obj, EmitAuditEventsArg, audit.EmitAuditEvents); err != nil {
 			return err
 		}
-		if err := setEventsInvolvedNamespace(obj, AuditEventsInvolvedNamespaceArg, audit.AuditEventsInvolvedNamespace); err != nil {
+
+		err := setEventsInvolvedNamespace(obj, AuditEventsInvolvedNamespaceArg, audit.AuditEventsInvolvedNamespace)
+		if err != nil {
 			return err
 		}
+
 		if err := setResources(obj, audit.Resources); err != nil {
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -783,6 +852,7 @@ func webhookConfigurationOverrides(
 	if controllerDeploymentPending {
 		ignore := admregv1.Ignore
 		failurePolicy := &ignore
+
 		if err := setFailurePolicy(obj, failurePolicy, webhookName); err != nil {
 			return err
 		}
@@ -803,7 +873,6 @@ func webhookConfigurationOverrides(
 		if err := setNamespaceSelector(obj, webhook.NamespaceSelector, gatekeeperNamespace, webhookName); err != nil {
 			return err
 		}
-
 	} else if err := setNamespaceSelector(obj, nil, gatekeeperNamespace, webhookName); err != nil {
 		return err
 	}
@@ -840,6 +909,7 @@ func removeRBACRule(obj *unstructured.Unstructured, matchRuleFn matchRuleFunc) e
 			return err
 		} else if found {
 			rules = append(rules[:i], rules[i+1:]...)
+
 			break
 		}
 	}
@@ -856,9 +926,11 @@ func matchGatekeeperMutatingRBACRule(rule map[string]interface{}) (bool, error) 
 	if !found || err != nil {
 		return false, errors.Wrapf(err, "Failed to retrieve apiGroups from rule")
 	}
+
 	if apiGroups[0] == "mutations.gatekeeper.sh" {
 		return true, nil
 	}
+
 	return false, nil
 }
 
@@ -867,26 +939,30 @@ func matchMutatingWebhookConfigurationRBACRule(rule map[string]interface{}) (boo
 	if !found || err != nil {
 		return false, errors.Wrapf(err, "Failed to retrieve apiGroups from rule")
 	}
+
 	resources, found, err := unstructured.NestedStringSlice(rule, "resources")
 	if !found || err != nil {
 		return false, errors.Wrapf(err, "Failed to retrieve resources from rule")
 	}
+
 	if apiGroups[0] == "admissionregistration.k8s.io" &&
 		resources[0] == "mutatingwebhookconfigurations" {
 		return true, nil
 	}
+
 	return false, nil
 }
 
 func containerOverrides(obj *unstructured.Unstructured, spec operatorv1alpha1.GatekeeperSpec) error {
 	for _, f := range commonContainerOverridesFn {
-		err := setContainerAttrWithFn(obj, managerContainer, func(container map[string]interface{}) error {
+		err := setContainerAttrWithFn(obj, func(container map[string]interface{}) error {
 			return f(container, spec)
 		})
 		if err != nil {
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -897,13 +973,18 @@ func setReplicas(obj *unstructured.Unstructured, replicas *int32) error {
 			return errors.Wrapf(err, "Failed to set replica value")
 		}
 	}
+
 	return nil
 }
 
 func removeAnnotations(obj *unstructured.Unstructured) error {
-	if err := unstructured.SetNestedField(obj.Object, map[string]interface{}{}, "spec", "template", "metadata", "annotations"); err != nil {
+	err := unstructured.SetNestedField(
+		obj.Object, map[string]interface{}{}, "spec", "template", "metadata", "annotations",
+	)
+	if err != nil {
 		return errors.Wrapf(err, "Failed to remove annotations")
 	}
+
 	return nil
 }
 
@@ -944,7 +1025,11 @@ func openShiftDeploymentOverrides(obj *unstructured.Unstructured) error {
 
 		if !hasDisabledCert {
 			args = append(args, "--disable-cert-rotation")
-			unstructured.SetNestedStringSlice(container, args, "args")
+
+			err = unstructured.SetNestedStringSlice(container, args, "args")
+			if err != nil {
+				return errors.Wrapf(err, "Failed to set the OpenShift override to disable cert rotation")
+			}
 		}
 
 		containers[i] = container
@@ -960,8 +1045,9 @@ func openShiftDeploymentOverrides(obj *unstructured.Unstructured) error {
 
 func setLogLevel(obj *unstructured.Unstructured, logLevel *operatorv1alpha1.LogLevelMode) error {
 	if logLevel != nil {
-		return setContainerArg(obj, managerContainer, LogLevelArg, string(*logLevel), false)
+		return setContainerArg(obj, LogLevelArg, string(*logLevel), false)
 	}
+
 	return nil
 }
 
@@ -971,7 +1057,7 @@ func setMutationFlags(obj *unstructured.Unstructured, webhookConfig *operatorv1a
 	}
 
 	if webhookConfig.LogMutations != nil && webhookConfig.LogMutations.ToBool() {
-		err := setContainerArg(obj, managerContainer, LogMutationsArg, webhookConfig.LogMutations.ToBoolString(), false)
+		err := setContainerArg(obj, LogMutationsArg, webhookConfig.LogMutations.ToBoolString(), false)
 		if err != nil {
 			return err
 		}
@@ -979,7 +1065,7 @@ func setMutationFlags(obj *unstructured.Unstructured, webhookConfig *operatorv1a
 
 	if webhookConfig.MutationAnnotations != nil && webhookConfig.MutationAnnotations.ToBool() {
 		return setContainerArg(
-			obj, managerContainer, MutationAnnotationsArg, webhookConfig.MutationAnnotations.ToBoolString(), false,
+			obj, MutationAnnotationsArg, webhookConfig.MutationAnnotations.ToBoolString(), false,
 		)
 	}
 
@@ -988,15 +1074,21 @@ func setMutationFlags(obj *unstructured.Unstructured, webhookConfig *operatorv1a
 
 func setAuditInterval(obj *unstructured.Unstructured, auditInterval *metav1.Duration) error {
 	if auditInterval != nil {
-		return setContainerArg(obj, managerContainer, AuditIntervalArg, fmt.Sprint(auditInterval.Round(time.Second).Seconds()), false)
+		return setContainerArg(
+			obj, AuditIntervalArg, fmt.Sprint(auditInterval.Round(time.Second).Seconds()), false,
+		)
 	}
+
 	return nil
 }
 
 func setConstraintViolationLimit(obj *unstructured.Unstructured, constraintViolationLimit *uint64) error {
 	if constraintViolationLimit != nil {
-		return setContainerArg(obj, managerContainer, ConstraintViolationLimitArg, strconv.FormatUint(*constraintViolationLimit, 10), false)
+		return setContainerArg(
+			obj, ConstraintViolationLimitArg, strconv.FormatUint(*constraintViolationLimit, 10), false,
+		)
 	}
+
 	return nil
 }
 
@@ -1007,15 +1099,18 @@ func setAuditFromCache(obj *unstructured.Unstructured, auditFromCache *operatorv
 			*auditFromCache == operatorv1alpha1.AuditFromCacheAutomatic {
 			auditFromCacheValue = "true"
 		}
-		return setContainerArg(obj, managerContainer, AuditFromCacheArg, auditFromCacheValue, false)
+
+		return setContainerArg(obj, AuditFromCacheArg, auditFromCacheValue, false)
 	}
+
 	return nil
 }
 
 func setAuditChunkSize(obj *unstructured.Unstructured, auditChunkSize *uint64) error {
 	if auditChunkSize != nil {
-		return setContainerArg(obj, managerContainer, AuditChunkSizeArg, strconv.FormatUint(*auditChunkSize, 10), false)
+		return setContainerArg(obj, AuditChunkSizeArg, strconv.FormatUint(*auditChunkSize, 10), false)
 	}
+
 	return nil
 }
 
@@ -1023,8 +1118,9 @@ func setEmitEvents(obj *unstructured.Unstructured, argName string, emitEvents *o
 	if emitEvents != nil {
 		emitArgValue := emitEvents.ToBoolString()
 
-		return setContainerArg(obj, managerContainer, argName, emitArgValue, false)
+		return setContainerArg(obj, argName, emitArgValue, false)
 	}
+
 	return nil
 }
 
@@ -1034,7 +1130,7 @@ func setEventsInvolvedNamespace(obj *unstructured.Unstructured,
 	if eventsInvolvedNs != nil {
 		emitEventsInvolvedNsArgValue := eventsInvolvedNs.ToBoolString()
 
-		return setContainerArg(obj, managerContainer, argName, emitEventsInvolvedNsArgValue, false)
+		return setContainerArg(obj, argName, emitEventsInvolvedNsArgValue, false)
 	}
 
 	return nil
@@ -1042,10 +1138,11 @@ func setEventsInvolvedNamespace(obj *unstructured.Unstructured,
 
 func setDisabledBuiltins(obj *unstructured.Unstructured, disabledBuiltins []string) error {
 	for _, b := range disabledBuiltins {
-		if err := setContainerArg(obj, managerContainer, DisabledBuiltinArg, b, true); err != nil {
+		if err := setContainerArg(obj, DisabledBuiltinArg, b, true); err != nil {
 			return err
 		}
 	}
+
 	return nil
 }
 
@@ -1053,29 +1150,32 @@ func setEnableMutation(obj *unstructured.Unstructured, spec operatorv1alpha1.Gat
 	if !mutatingWebhookEnabled(spec.MutatingWebhook) {
 		switch obj.GetName() {
 		case AuditDeploymentName:
-			return unsetContainerArg(obj, managerContainer, OperationArg, OperationMutationStatus, true)
+			return unsetContainerArg(obj, OperationArg, OperationMutationStatus, true)
 		case WebhookDeploymentName:
-			return unsetContainerArg(obj, managerContainer, OperationArg, OperationMutationWebhook, true)
+			return unsetContainerArg(obj, OperationArg, OperationMutationWebhook, true)
 		default:
 			return nil
 		}
 	} else {
 		switch obj.GetName() {
 		case AuditDeploymentName:
-			return setContainerArg(obj, managerContainer, OperationArg, OperationMutationStatus, true)
+			return setContainerArg(obj, OperationArg, OperationMutationStatus, true)
 		case WebhookDeploymentName:
-			return setContainerArg(obj, managerContainer, OperationArg, OperationMutationWebhook, true)
+			return setContainerArg(obj, OperationArg, OperationMutationWebhook, true)
 		default:
 			return nil
 		}
 	}
 }
 
-func setWebhookConfigurationWithFn(obj *unstructured.Unstructured, webhookName string, webhookFn func(map[string]interface{}) error) error {
+func setWebhookConfigurationWithFn(
+	obj *unstructured.Unstructured, webhookName string, webhookFn func(map[string]interface{}) error,
+) error {
 	webhooks, found, err := unstructured.NestedSlice(obj.Object, "webhooks")
 	if err != nil || !found {
 		return errors.Wrapf(err, "Failed to retrieve webhooks definition")
 	}
+
 	for _, w := range webhooks {
 		webhook := w.(map[string]interface{})
 		if webhook["name"] == webhookName {
@@ -1084,13 +1184,17 @@ func setWebhookConfigurationWithFn(obj *unstructured.Unstructured, webhookName s
 			}
 		}
 	}
+
 	if err := unstructured.SetNestedSlice(obj.Object, webhooks, "webhooks"); err != nil {
 		return errors.Wrapf(err, "Failed to set webhooks")
 	}
+
 	return nil
 }
 
-func setFailurePolicy(obj *unstructured.Unstructured, failurePolicy *admregv1.FailurePolicyType, webhookName string) error {
+func setFailurePolicy(
+	obj *unstructured.Unstructured, failurePolicy *admregv1.FailurePolicyType, webhookName string,
+) error {
 	if failurePolicy == nil {
 		return nil
 	}
@@ -1099,6 +1203,7 @@ func setFailurePolicy(obj *unstructured.Unstructured, failurePolicy *admregv1.Fa
 		if err := unstructured.SetNestedField(webhook, string(*failurePolicy), "failurePolicy"); err != nil {
 			return errors.Wrapf(err, "Failed to set webhook failure policy")
 		}
+
 		return nil
 	}
 
@@ -1113,6 +1218,7 @@ func setNamespaceSelector(
 		// Don't perform any overrides if no overrides are set and the default namespaceSelector can't be parsed
 		webhooks, ok := obj.Object["webhooks"].([]interface{})
 		if !ok || len(webhooks) == 0 {
+			// Return nil since an invalid object is unrecoverable
 			return nil
 		}
 
@@ -1129,18 +1235,22 @@ func setNamespaceSelector(
 
 			namespaceSelectorUntyped, ok := webhookMap["namespaceSelector"].(map[string]interface{})
 			if !ok {
+				// Return nil since an invalid namespaceSelector is unrecoverable
 				return nil
 			}
 
 			namespaceSelectorBytes, err := json.Marshal(namespaceSelectorUntyped)
 			if err != nil {
-				return nil
+				// Return nil since invalid JSON is unrecoverable
+				return nil //nolint:nilerr
 			}
 
 			namespaceSelectorTyped := &metav1.LabelSelector{}
+
 			err = json.Unmarshal(namespaceSelectorBytes, namespaceSelectorTyped)
 			if err != nil {
-				return nil
+				// Return nil since invalid JSON is unrecoverable
+				return nil //nolint:nilerr
 			}
 
 			for i, expression := range namespaceSelectorTyped.MatchExpressions {
@@ -1166,6 +1276,7 @@ func setNamespaceSelector(
 		if err := unstructured.SetNestedField(webhook, util.ToMap(namespaceSelector), "namespaceSelector"); err != nil {
 			return errors.Wrapf(err, "Failed to set webhook namespace selector")
 		}
+
 		return nil
 	}
 
@@ -1211,28 +1322,40 @@ func setOperations(
 
 func setAffinity(obj *unstructured.Unstructured, spec operatorv1alpha1.GatekeeperSpec) error {
 	if spec.Affinity != nil {
-		if err := unstructured.SetNestedField(obj.Object, util.ToMap(spec.Affinity), "spec", "template", "spec", "affinity"); err != nil {
+		err := unstructured.SetNestedField(
+			obj.Object, util.ToMap(spec.Affinity), "spec", "template", "spec", "affinity",
+		)
+		if err != nil {
 			return errors.Wrapf(err, "Failed to set affinity value")
 		}
 	}
+
 	return nil
 }
 
 func setNodeSelector(obj *unstructured.Unstructured, spec operatorv1alpha1.GatekeeperSpec) error {
 	if spec.NodeSelector != nil {
-		if err := unstructured.SetNestedStringMap(obj.Object, spec.NodeSelector, "spec", "template", "spec", "nodeSelector"); err != nil {
+		err := unstructured.SetNestedStringMap(
+			obj.Object, spec.NodeSelector, "spec", "template", "spec", "nodeSelector",
+		)
+		if err != nil {
 			return errors.Wrapf(err, "Failed to set nodeSelector value")
 		}
 	}
+
 	return nil
 }
 
 func setPodAnnotations(obj *unstructured.Unstructured, spec operatorv1alpha1.GatekeeperSpec) error {
 	if spec.PodAnnotations != nil {
-		if err := unstructured.SetNestedStringMap(obj.Object, spec.PodAnnotations, "spec", "template", "metadata", "annotations"); err != nil {
+		err := unstructured.SetNestedStringMap(
+			obj.Object, spec.PodAnnotations, "spec", "template", "metadata", "annotations",
+		)
+		if err != nil {
 			return errors.Wrapf(err, "Failed to set podAnnotations")
 		}
 	}
+
 	return nil
 }
 
@@ -1242,10 +1365,13 @@ func setTolerations(obj *unstructured.Unstructured, spec operatorv1alpha1.Gateke
 		for i, t := range spec.Tolerations {
 			tolerations[i] = util.ToMap(t)
 		}
-		if err := unstructured.SetNestedSlice(obj.Object, tolerations, "spec", "template", "spec", "tolerations"); err != nil {
+
+		err := unstructured.SetNestedSlice(obj.Object, tolerations, "spec", "template", "spec", "tolerations")
+		if err != nil {
 			return errors.Wrapf(err, "Failed to set container tolerations")
 		}
 	}
+
 	return nil
 }
 
@@ -1253,13 +1379,15 @@ func setTolerations(obj *unstructured.Unstructured, spec operatorv1alpha1.Gateke
 
 func setResources(obj *unstructured.Unstructured, resources *corev1.ResourceRequirements) error {
 	if resources != nil {
-		return setContainerAttrWithFn(obj, managerContainer, func(container map[string]interface{}) error {
+		return setContainerAttrWithFn(obj, func(container map[string]interface{}) error {
 			if err := unstructured.SetNestedField(container, util.ToMap(resources), "resources"); err != nil {
 				return errors.Wrapf(err, "Failed to set container resources")
 			}
+
 			return nil
 		})
 	}
+
 	return nil
 }
 
@@ -1276,41 +1404,51 @@ func setImage(container map[string]interface{}, spec operatorv1alpha1.Gatekeeper
 	if spec.Image == nil {
 		return nil
 	}
+
 	if spec.Image.ImagePullPolicy != nil {
-		if err := unstructured.SetNestedField(container, string(*spec.Image.ImagePullPolicy), "imagePullPolicy"); err != nil {
+		err := unstructured.SetNestedField(container, string(*spec.Image.ImagePullPolicy), "imagePullPolicy")
+		if err != nil {
 			return errors.Wrapf(err, "Failed to set container image pull policy")
 		}
 	}
+
 	return nil
 }
 
-func setContainerAttrWithFn(obj *unstructured.Unstructured, containerName string, containerFn func(map[string]interface{}) error) error {
+func setContainerAttrWithFn(obj *unstructured.Unstructured, containerFn func(map[string]interface{}) error) error {
 	containers, found, err := unstructured.NestedSlice(obj.Object, "spec", "template", "spec", "containers")
 	if err != nil || !found {
 		return errors.Wrapf(err, "Failed to retrieve containers")
 	}
+
 	for _, c := range containers {
 		container := c.(map[string]interface{})
 		if name, found, err := unstructured.NestedString(container, "name"); err != nil || !found {
 			return errors.Wrapf(err, "Unable to retrieve container: %s", name)
-		} else if name == containerName {
+		} else if name == managerContainer {
 			if err := containerFn(container); err != nil {
 				return err
 			}
 		}
 	}
-	if err := unstructured.SetNestedSlice(obj.Object, containers, "spec", "template", "spec", "containers"); err != nil {
+
+	err = unstructured.SetNestedSlice(obj.Object, containers, "spec", "template", "spec", "containers")
+	if err != nil {
 		return errors.Wrapf(err, "Failed to set containers")
 	}
+
 	return nil
 }
 
-func setContainerArg(obj *unstructured.Unstructured, containerName, argName string, argValue string, isMultiArg bool) error {
-	return setContainerAttrWithFn(obj, containerName, func(container map[string]interface{}) error {
+func setContainerArg(
+	obj *unstructured.Unstructured, argName string, argValue string, isMultiArg bool,
+) error {
+	return setContainerAttrWithFn(obj, func(container map[string]interface{}) error {
 		args, found, err := unstructured.NestedStringSlice(container, "args")
 		if !found || err != nil {
-			return errors.Wrapf(err, "Unable to retrieve container arguments for: %s", containerName)
+			return errors.Wrapf(err, "Unable to retrieve container arguments for: %s", managerContainer)
 		}
+
 		exists := false
 		for i, arg := range args {
 			n, v := util.FromArg(arg)
@@ -1319,18 +1457,22 @@ func setContainerArg(obj *unstructured.Unstructured, containerName, argName stri
 				exists = true
 			}
 		}
+
 		if !exists {
 			args = append(args, util.ToArg(argName, argValue))
 		}
+
 		return unstructured.SetNestedStringSlice(container, args, "args")
 	})
 }
 
-func unsetContainerArg(obj *unstructured.Unstructured, containerName, argName string, argValue string, isMultiArg bool) error {
-	return setContainerAttrWithFn(obj, containerName, func(container map[string]interface{}) error {
+func unsetContainerArg(
+	obj *unstructured.Unstructured, argName string, argValue string, isMultiArg bool,
+) error {
+	return setContainerAttrWithFn(obj, func(container map[string]interface{}) error {
 		args, found, err := unstructured.NestedStringSlice(container, "args")
 		if !found || err != nil {
-			return errors.Wrapf(err, "Unable to retrieve container arguments for: %s", containerName)
+			return errors.Wrapf(err, "Unable to retrieve container arguments for: %s", managerContainer)
 		}
 		exists := false
 		index := 0
@@ -1348,6 +1490,7 @@ func unsetContainerArg(obj *unstructured.Unstructured, containerName, argName st
 			newArgs = append(newArgs, args[index+1:]...)
 			args = newArgs
 		}
+
 		return unstructured.SetNestedStringSlice(container, args, "args")
 	})
 }
@@ -1356,12 +1499,15 @@ func setNamespace(obj *unstructured.Unstructured, asset, namespace string) error
 	if obj.GetNamespace() != "" {
 		obj.SetNamespace(namespace)
 	}
+
 	if err := setClientConfigNamespace(obj, asset, namespace); err != nil {
 		return err
 	}
+
 	if err := setControllerManagerExceptNamespace(obj, asset, namespace); err != nil {
 		return err
 	}
+
 	return setRoleBindingSubjectNamespace(obj, asset, namespace)
 }
 
@@ -1369,19 +1515,23 @@ func setClientConfigNamespace(obj *unstructured.Unstructured, asset, namespace s
 	if asset != ValidatingWebhookConfiguration && asset != MutatingWebhookConfiguration {
 		return nil
 	}
+
 	webhooks, found, err := unstructured.NestedSlice(obj.Object, "webhooks")
 	if err != nil || !found {
 		return errors.Wrapf(err, "Failed to retrieve webhooks definition")
 	}
+
 	for _, w := range webhooks {
 		webhook := w.(map[string]interface{})
 		if err := unstructured.SetNestedField(webhook, namespace, "clientConfig", "service", "namespace"); err != nil {
 			return errors.Wrapf(err, "Failed to set webhook clientConfig.service.namespace")
 		}
 	}
+
 	if err := unstructured.SetNestedSlice(obj.Object, webhooks, "webhooks"); err != nil {
 		return errors.Wrapf(err, "Failed to set webhooks")
 	}
+
 	return nil
 }
 
@@ -1389,25 +1539,30 @@ func setControllerManagerExceptNamespace(obj *unstructured.Unstructured, asset, 
 	if asset != WebhookFile {
 		return nil
 	}
-	return setContainerArg(obj, managerContainer, ExemptNamespaceArg, namespace, false)
+
+	return setContainerArg(obj, ExemptNamespaceArg, namespace, false)
 }
 
 func setRoleBindingSubjectNamespace(obj *unstructured.Unstructured, asset, namespace string) error {
 	if asset != ClusterRoleBindingFile && asset != RoleBindingFile {
 		return nil
 	}
+
 	subjects, found, err := unstructured.NestedSlice(obj.Object, "subjects")
 	if !found || err != nil {
 		return errors.Wrapf(err, "Failed to retrieve subjects from roleBinding")
 	}
+
 	for _, s := range subjects {
 		subject := s.(map[string]interface{})
 		if err := unstructured.SetNestedField(subject, namespace, "namespace"); err != nil {
 			return errors.Wrapf(err, "Failed to set namespace for rolebinding subject")
 		}
 	}
+
 	if err := unstructured.SetNestedSlice(obj.Object, subjects, "subjects"); err != nil {
 		return errors.Wrapf(err, "Failed to set updated subjects in rolebinding")
 	}
+
 	return nil
 }

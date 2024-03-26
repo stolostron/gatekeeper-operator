@@ -6,7 +6,6 @@ import (
 	"sort"
 	"time"
 
-	operatorv1alpha1 "github.com/gatekeeper/gatekeeper-operator/api/v1alpha1"
 	"github.com/go-logr/logr"
 	"github.com/open-policy-agent/gatekeeper/v3/apis/config/v1alpha1"
 	"github.com/open-policy-agent/gatekeeper/v3/apis/status/v1beta1"
@@ -24,6 +23,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
+
+	operatorv1alpha1 "github.com/gatekeeper/gatekeeper-operator/api/v1alpha1"
 )
 
 var ControllerName = "constraintstatus_reconciler"
@@ -101,11 +102,11 @@ func (r *ConstraintPodStatusReconciler) Reconcile(ctx context.Context,
 
 	// Get config or create if not exist
 	config := &v1alpha1.Config{}
+
 	err = r.Get(ctx, types.NamespacedName{
 		Namespace: r.Namespace,
 		Name:      "config",
 	}, config)
-
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			r.Log.Info("The Gatekeeper's Config resource does not exist, wait for creating the config")
