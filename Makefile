@@ -108,7 +108,7 @@ clean-manifests: kustomize unpatch-deployment bundle
 
 GO_BINDATA = $(LOCAL_BIN)/go-bindata
 OPM_VERSION ?= v1.27.0
-GO_BINDATA_VERSION ?= v3.1.2+incompatible
+GO_BINDATA_VERSION ?= v3.1.3
 OLM_VERSION ?= v0.25.0
 KUBERNETES_VERSION ?= v1.28.0
 
@@ -216,40 +216,24 @@ docker-build: test ## Build docker image with the manager.
 docker-push: ## Push docker image with the manager.
 	$(DOCKER) push ${IMG}
 
-BINDATA_OUTPUT_FILE := ./pkg/bindata/bindata.go
+BINDATA_OUTPUT_FILE := pkg/bindata/bindata.go
 
 .PHONY: go-bindata
 go-bindata:
-	$(call go-get-tool,github.com/go-bindata/go-bindata/go-bindata@${GO_BINDATA_VERSION})
+	$(call go-get-tool,github.com/go-bindata/go-bindata/v3/go-bindata@${GO_BINDATA_VERSION})
 
-.PHONY: .run-bindata
-.run-bindata: go-bindata
-	mkdir -p ./$(GATEKEEPER_MANIFEST_DIR)-rendered && \
-	$(KUSTOMIZE) build $(GATEKEEPER_MANIFEST_DIR) -o ./$(GATEKEEPER_MANIFEST_DIR)-rendered && \
+.PHONY: update-bindata
+update-bindata: go-bindata
+	mkdir -p ./$(GATEKEEPER_MANIFEST_DIR)-rendered
+	$(KUSTOMIZE) build $(GATEKEEPER_MANIFEST_DIR) -o ./$(GATEKEEPER_MANIFEST_DIR)-rendered
 	$(GO_BINDATA) -nocompress -nometadata \
 		-prefix "bindata" \
 		-pkg "bindata" \
-		-o "$${BINDATA_OUTPUT_PREFIX}$(BINDATA_OUTPUT_FILE)" \
+		-o "$(BINDATA_OUTPUT_FILE)" \
 		-ignore "OWNERS" \
-		./$(GATEKEEPER_MANIFEST_DIR)-rendered/... && \
-	rm -rf ./$(GATEKEEPER_MANIFEST_DIR)-rendered && \
-	gofmt -s -w "$${BINDATA_OUTPUT_PREFIX}$(BINDATA_OUTPUT_FILE)"
-
-.PHONY: update-bindata
-update-bindata:
-	$(MAKE) .run-bindata ;\
-
-.PHONY: verify-bindata
-verify-bindata:
-	export TMP_DIR=$$(mktemp -d) ;\
-	export BINDATA_OUTPUT_PREFIX="$${TMP_DIR}/" ;\
-	$(MAKE) .run-bindata ;\
-	if ! diff -Naup {.,$${TMP_DIR}}/$(BINDATA_OUTPUT_FILE); then \
-		echo "Error: $(BINDATA_OUTPUT_FILE) and $${TMP_DIR}/$(BINDATA_OUTPUT_FILE) files differ. Run 'make update-bindata' and try again." ;\
-		rm -rf "$${TMP_DIR}" ;\
-		exit 1 ;\
-	fi ;\
-	rm -rf "$${TMP_DIR}" ;\
+		./$(GATEKEEPER_MANIFEST_DIR)-rendered/...
+	rm -rf ./$(GATEKEEPER_MANIFEST_DIR)-rendered
+	$(MAKE) fmt
 
 .PHONY: release
 release: manifests kustomize patch-deployment
@@ -316,13 +300,6 @@ kustomize: ## Download kustomize locally if necessary.
 
 .PHONY: envtest
 envtest: ## Download envtest-setup locally if necessary.
-
-# go-get-tool will 'go install' any package $1 and install it to LOCAL_BIN.
-define go-get-tool
-  @set -e ;\
-  echo "Checking installation of $(1)" ;\
-  GOBIN=$(LOCAL_BIN) go install $(1)
-endef
 
 ##@ Operator Bundling
 
