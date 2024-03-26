@@ -66,7 +66,8 @@ jobs:
 
     - name: Verify bindata
       run: |
-        make verify-bindata
+        make update-bindata
+        git diff --exit-code
 
     - name: Unit and Integration Tests
       run: |
