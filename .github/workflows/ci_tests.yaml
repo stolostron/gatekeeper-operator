@@ -197,7 +197,7 @@ jobs:
 
     - name: Set Up Environment Variables
       run: |
-        GATEKEEPER_VERSION=$(awk '/^GATEKEEPER_VERSION/ {print $3}' Makefile)
+        GATEKEEPER_VERSION=v$(cat GATEKEEPER_VERSION || cat VERSION)
         echo "GATEKEEPER_VERSION=${GATEKEEPER_VERSION}" >> ${GITHUB_ENV}
 
     # Checkout a local copy of Gatekeeper to use its bats e2e tests.
