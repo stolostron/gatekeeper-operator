@@ -175,6 +175,7 @@ test-openshift-setup:
 test-cluster: ## Create a local kind cluster with a registry for testing
 	KIND_CLUSTER_VERSION=$(KUBERNETES_VERSION) ./scripts/kind-with-registry.sh
 
+CLUSTER_NAME = kind
 KIND_CLUSTER_NAME ?= kind
 .PHONY: delete-test-cluster
 delete-test-cluster: ## Clean up the local kind cluster and registry
@@ -303,7 +304,7 @@ undeploy: ## Undeploy controller from the K8s cluster specified in ~/.kube/confi
 deploy-ci: install patch-image deploy unpatch-image ## Deploys the controller with a patched pull policy.
 
 .PHONY: deploy-olm
-deploy-olm:
+deploy-olm: operator-sdk
 	$(OPERATOR_SDK) olm install --version $(OLM_VERSION) --timeout 5m
 
 .PHONY: deploy-using-olm
@@ -454,14 +455,16 @@ OPERATOR_SDK_VERSION ?= v1.31.0
 OPERATOR_SDK = $(LOCAL_BIN)/operator-sdk
 OPERATOR_SDK_URL := https://github.com/operator-framework/operator-sdk/releases/download/$(OPERATOR_SDK_VERSION)/operator-sdk_$(GOOS)_$(GOARCH)
 
+$(OPERATOR_SDK):
+	mkdir -p $(@D)
+
 .PHONY: operator-sdk
 operator-sdk: $(OPERATOR_SDK)
-
-$(OPERATOR_SDK):
-	# Installing operator-sdk
-	mkdir -p $(@D)
-	curl -L $(OPERATOR_SDK_URL) -o $(OPERATOR_SDK) || (echo "curl returned $$? trying to fetch operator-sdk"; exit 1)
-	chmod +x $(OPERATOR_SDK)
+	@if [ "$$($(OPERATOR_SDK) version 2>/dev/null | grep -o "v[0-9]\+\.[0-9]\+\.[0-9]\+" | head -1)" != "$(OPERATOR_SDK_VERSION)" ]; then \
+		echo "Installing operator-sdk"; \
+		curl -L $(OPERATOR_SDK_URL) -o $(OPERATOR_SDK) || (echo "curl returned $$? trying to fetch operator-sdk"; exit 1); \
+		chmod +x $(OPERATOR_SDK); \
+	fi
 
 # Default bundle index image tag
 BUNDLE_INDEX_IMG ?= $(IMAGE_TAG_BASE)-bundle-index:$(VERSION_TAG)
