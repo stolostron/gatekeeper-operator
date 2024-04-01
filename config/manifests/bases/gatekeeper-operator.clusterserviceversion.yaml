@@ -13,7 +13,10 @@ spec:
   apiservicedefinitions: {}
   customresourcedefinitions:
     owned:
-    - description: Gatekeeper is the Schema for the gatekeepers API
+    - description: Gatekeeper is the schema for the gatekeepers API. Gatekeeper contains
+        configurations for the Gatekeeper operator, which deploys Open Policy Agent
+        Gatekeeper, a policy engine that enforces policies through admission controller
+        webhooks. See https://github.com/open-policy-agent/gatekeeper.
       displayName: Gatekeeper
       kind: Gatekeeper
       name: gatekeepers.operator.gatekeeper.sh
@@ -22,37 +25,48 @@ spec:
         name: gatekeeper-deployment
         version: v1
       specDescriptors:
-      - displayName: Affinity
+      - description: Affinity is a node affinity specification to add to the Gatekeeper
+          deployment Pods. See https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/.
+        displayName: Affinity
         path: affinity
-      - displayName: Audit Configuration
+      - description: Audit specifies the configuration for the Gatekeeper auditing
+          function. See https://open-policy-agent.github.io/gatekeeper/website/docs/audit.
+        displayName: Audit Configuration
         path: audit
-      - displayName: Config Configuration
+      - description: Config specifies configurations for the configs.config.gatekeeper.sh
+          API, allowing high-level configuration of Gatekeeper.
+        displayName: Config Configuration
         path: config
-      - displayName: Image Configuration
+      - description: Image specifies the configuration for handling Gatekeeper deployment
+          images.
+        displayName: Image Configuration
         path: image
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:hidden
-      - displayName: Mutating Webhook
+      - description: MutatingWebhook specifies whether the Gatekeeper mutating admission
+          webhook is enabled. The default value is Enabled. See https://open-policy-agent.github.io/gatekeeper/website/docs/mutation.
+        displayName: Mutating Webhook
         path: mutatingWebhook
-      - displayName: Node Selector
+      - description: NodeSelector is a map of node selectors to add to the Gatekeeper
+          deployment Pods. See https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/.
+        displayName: Node Selector
         path: nodeSelector
-      - displayName: Pod Annotations
+      - description: PodAnnotations is a map of additional annotations to be added
+          to the Gatekeeper deployment Pods.
+        displayName: Pod Annotations
         path: podAnnotations
-      - displayName: Tolerations
+      - description: Tolerations is an array of tolerations to add to the Gatekeeper
+          deployment Pods. See https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/.
+        displayName: Tolerations
         path: tolerations
-      - displayName: Validating Webhook
+      - description: ValidatingWebhook specifies whether the Gatekeeper validating
+          admission webhook is enabled. The default value is Enabled.
+        displayName: Validating Webhook
         path: validatingWebhook
-      - displayName: Webhook Config
+      - description: Webhook specifies the configuration for the Gatekeeper admission
+          webhook.
+        displayName: Webhook Config
         path: webhook
-      statusDescriptors:
-      - displayName: Audit Conditions
-        path: auditConditions
-      - description: ObservedGeneration is the generation as observed by the operator
-          consuming this API.
-        displayName: Observed Generation
-        path: observedGeneration
-      - displayName: Webhook Conditions
-        path: webhookConditions
       version: v1alpha1
   description: |
     Open Policy Agent Gatekeeper enforces CRD-based policies.
