@@ -11,11 +11,11 @@ GOLANGCI_VERSION := v1.52.2
 # https://github.com/mvdan/gofumpt/releases/latest
 GOFUMPT_VERSION := v0.6.0
 # https://github.com/daixiang0/gci/releases/latest
-GCI_VERSION := v0.12.3
+GCI_VERSION := v0.13.4
 # https://github.com/securego/gosec/releases/latest
 GOSEC_VERSION := v2.19.0
 # https://github.com/kubernetes-sigs/kubebuilder/releases/latest
-KBVERSION := 3.14.0
+KBVERSION := 3.14.1
 # https://github.com/kubernetes/kubernetes/releases/latest
 ENVTEST_K8S_VERSION := 1.29.x
 
@@ -75,7 +75,7 @@ lint-dependencies:
 
 .PHONY: lint-yaml
 lint-yaml:
-	# Linting YAML
+	# Linting YAML 
 	@$(FINDFILES) \( -name '*.yml' -o -name '*.yaml' \) -print0 | $(XARGS) grep -L -e "{{" | $(CLEANXARGS) yamllint -c ./build/common/config/.yamllint.yml
 
 .PHONY: lint-go
