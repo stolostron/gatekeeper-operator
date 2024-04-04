@@ -6,13 +6,16 @@ GitHub Actions release workflow.
 **NOTE: This assumes that your git remote name for this repository is named `upstream` and that the remote name for your
 fork is named `origin`.**
 
-1. Enable [fast-forwarding](https://github.com/stolostron/gatekeeper-operator/actions/workflows/fast_forward.yaml) to
-   push commits to a new release branch.
-2. Make sure your clone is up-to-date:
+1. Check the latest upstream release https://github.com/open-policy-agent/gatekeeper/releases/latest. Ensure an
+   associated release branch has been created and updated in https://github.com/stolostron/gatekeeper and tagged with
+   the correct version.
+2. Make sure your clone is up-to-date and check out the `main` branch (this assumes your local remote of
+   https://github.com/stolostron/gatekeeper-operator is called `upstream`):
    ```shell
    git fetch --prune upstream
+   git checkout upstream/main
    ```
-3. Store the current version for use later. If this is the first release in a channel, set this value to `none`.
+3. Update the `VERSION` file with the latest version, and then store the latest released version for use later:
    ```shell
    RELEASE_PREV_VERSION=$(cat VERSION)
    ```
@@ -20,69 +23,53 @@ fork is named `origin`.**
    ```shell
    RELEASE_VERSION=1.2.3
    ```
-5. Check the latest upstream Gatekeeper. If it's a different z-version than the current operator version, set the
+5. If the latest upstream Gatekeeper version is a different z-version than the current operator version, set the
    version:
    ```shell
    printf "1.2.3" > GATEKEEPER_VERSION
    ```
 6. Checkout a new branch based on `upstream/main`:
    ```shell
-   git checkout -b create-release-$(echo ${RELEASE_VERSION}) --no-track upstream/main
+   git checkout -b create-release-$(echo ${RELEASE_VERSION})
    ```
-7. Update the version of the operator in the VERSION file:
+7. Update the version of the operator in the `VERSION` file, and update the base CSV `replaces` field:
    ```shell
    printf "${RELEASE_VERSION}" > VERSION
-   ```
-8. Update the release manifest:
-   ```shell
-   make release
-   ```
-9. Update the base CSV `replaces` field. This is **only** needed if the previous released version
-   `${RELEASE_PREV_VERSION}` was an official release i.e. no release candidate, such that users would have the previous
-   released version installed in their cluster via OLM:
-   ```shell
    printf "${RELEASE_PREV_VERSION}" > REPLACES_VERSION
    ```
-10. Update bundle:
-
-    ```shell
-    make bundle
-    ```
-
-11. Commit above changes:
-
-    ```shell
-    git commit -am "Release ${RELEASE_VERSION}"
-    ```
-
-12. Push the changes in the branch to your fork:
-
+8. Update the release manifest and update the bundle:
+   ```shell
+   make release
+   make bundle
+   ```
+   **NOTE**: If this is a z-stream release for a previous y-stream and there is a subsequent y-stream released, then
+   `CHANNEL` and `DEFAULT_CHANNEL` must be set to remove the `stable` channel prior to running the release Make targets:
+   ```shell
+   export CHANNEL=$(cat VERSION | cut -d '.' -f 1-2)
+   export DEFAULT_CHANNEL=${CHANNEL}
+   ```
+9. Commit above changes:
+   ```shell
+   git commit --signoff -am "Release ${RELEASE_VERSION}"
+   ```
+10. Push the changes in the branch to your fork:
     ```shell
     git push -u origin create-release-${RELEASE_VERSION}
     ```
-
-13. Create a PR with the above changes and merge it. If using the `gh` [GitHub CLI](https://cli.github.com/) you can
+11. Create a PR with the above changes and merge it. If using the `gh` [GitHub CLI](https://cli.github.com/) you can
     create the PR using:
-
     ```shell
     gh pr create --repo stolostron/gatekeeper-operator --title "Release ${RELEASE_VERSION}" --body ""
     ```
-
-14. After the PR is merged (and any subsequent fixes), fetch the new commits:
-
+12. After the PR is merged (and any subsequent fixes), fetch the new commits:
     ```shell
     git fetch --prune upstream
     ```
-
-15. Create and push a new release tag. This will trigger the GitHub actions release workflow to build and push the
+13. Create and push a new release tag. This will trigger the GitHub actions release workflow to build and push the
     release image and create a new release on GitHub. Note that `upstream` is used as the remote name for this
     repository:
-
     ```shell
     RELEASE_VERSION="$(cat VERSION)"
     git tag -a ${RELEASE_VERSION} -m "${RELEASE_VERSION}" upstream/main
     git push upstream ${RELEASE_VERSION}
     ```
-
-16. Disable [fast-forwarding](https://github.com/stolostron/gatekeeper-operator/actions/workflows/fast_forward.yaml) to
-    prevent unwanted commits from going to the new release.

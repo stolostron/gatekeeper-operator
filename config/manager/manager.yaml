@@ -27,39 +27,39 @@ spec:
       securityContext:
         runAsNonRoot: true
       containers:
-      - command:
-        - /manager
-        args:
-        - --leader-elect
-        image: controller:latest
-        name: manager
-        imagePullPolicy: Always
-        securityContext:
-          allowPrivilegeEscalation: false
-          capabilities:
-            drop:
-            - ALL
-        livenessProbe:
-          httpGet:
-            path: /healthz
-            port: 8081
-          initialDelaySeconds: 15
-          periodSeconds: 20
-        readinessProbe:
-          httpGet:
-            path: /readyz
-            port: 8081
-          initialDelaySeconds: 5
-          periodSeconds: 10
-        resources:
-          limits:
-            cpu: 200m
-            memory: 100Mi
-          requests:
-            cpu: 100m
-            memory: 20Mi
-        env:
-        - name: RELATED_IMAGE_GATEKEEPER
-          value: openpolicyagent/gatekeeper:v3.14.0
+        - command:
+            - /manager
+          args:
+            - --leader-elect
+          image: controller:latest
+          name: manager
+          imagePullPolicy: Always
+          securityContext:
+            allowPrivilegeEscalation: false
+            capabilities:
+              drop:
+                - ALL
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: 8081
+            initialDelaySeconds: 15
+            periodSeconds: 20
+          readinessProbe:
+            httpGet:
+              path: /readyz
+              port: 8081
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            limits:
+              cpu: 200m
+              memory: 100Mi
+            requests:
+              cpu: 100m
+              memory: 20Mi
+          env:
+            - name: RELATED_IMAGE_GATEKEEPER
+              value: openpolicyagent/gatekeeper:v3.15.1
       serviceAccountName: gatekeeper-operator-controller-manager
       terminationGracePeriodSeconds: 10

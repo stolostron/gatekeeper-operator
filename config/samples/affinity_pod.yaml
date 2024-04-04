@@ -15,6 +15,7 @@ spec:
         drop:
         - ALL
       readOnlyRootFilesystem: true
+      runAsUser: 1000
       runAsNonRoot: true
       seccompProfile:
         type: RuntimeDefault

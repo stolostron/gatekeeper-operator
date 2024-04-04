@@ -27,6 +27,7 @@ resources:
 - v1_serviceaccount_gatekeeper-admin.yaml
 - v1_service_gatekeeper-webhook-service.yaml
 - apiextensions.k8s.io_v1_customresourcedefinition_assignimage.mutations.gatekeeper.sh.yaml
+- apiextensions.k8s.io_v1_customresourcedefinition_syncsets.syncset.gatekeeper.sh.yaml
 # Remove --disable-cert-rotation
 # Set a CPU limit
 # Increase default Memory limit

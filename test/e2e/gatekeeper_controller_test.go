@@ -778,7 +778,7 @@ var _ = Describe("Gatekeeper", func() {
 		const openshiftNamespace = "openshift-gatekeeper-system"
 		Describe("Test Gatekeeper Certification", Label("openshift"), func() {
 			It("Should have Openshift Cert Annotation in the Service Resource"+
-				"and not have Cert Secret in the Gatekeeper Namespace", func(ctx context.Context) {
+				" and not have Cert Secret in the Gatekeeper Namespace", func(ctx context.Context) {
 				gatekeeper := emptyGatekeeper()
 				By("First creating Gatekeeper CR", func() {
 					Expect(K8sClient.Create(ctx, gatekeeper)).Should(Succeed())

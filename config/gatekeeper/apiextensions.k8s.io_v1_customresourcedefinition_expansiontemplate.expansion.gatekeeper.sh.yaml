@@ -33,6 +33,10 @@ spec:
               submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
             type: string
           metadata:
+            properties:
+              name:
+                maxLength: 63
+                type: string
             type: object
           spec:
             description: ExpansionTemplateSpec defines the desired state of ExpansionTemplate.

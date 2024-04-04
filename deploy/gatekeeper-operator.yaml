@@ -29,7 +29,11 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: Gatekeeper is the Schema for the gatekeepers API
+        description: |-
+          Gatekeeper is the schema for the gatekeepers API. Gatekeeper contains configurations for the Gatekeeper operator,
+          which deploys Open Policy Agent Gatekeeper, a policy engine that enforces policies through admission controller
+          webhooks.
+          See https://github.com/open-policy-agent/gatekeeper.
         properties:
           apiVersion:
             description: |-
@@ -49,10 +53,13 @@ spec:
           metadata:
             type: object
           spec:
-            description: GatekeeperSpec defines the desired state of Gatekeeper
+            description: GatekeeperSpec specifies how the operator should deploy Gatekeeper
+              to the cluster.
             properties:
               affinity:
-                description: Affinity is a group of affinity scheduling rules.
+                description: |-
+                  Affinity is a node affinity specification to add to the Gatekeeper deployment Pods.
+                  See https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/.
                 properties:
                   nodeAffinity:
                     description: Describes node affinity scheduling rules for the
@@ -814,37 +821,68 @@ spec:
                     type: object
                 type: object
               audit:
+                description: |-
+                  Audit specifies the configuration for the Gatekeeper auditing function.
+                  See https://open-policy-agent.github.io/gatekeeper/website/docs/audit.
                 properties:
                   auditChunkSize:
+                    description: |-
+                      AuditChunkSize causes audit list requests against the Kubernetes API to be paginated, reducing
+                      memory usage. Setting to zero disables pagination. The default value is 500.
+                      See https://open-policy-agent.github.io/gatekeeper/website/docs/performance-tuning/#audit-chunk-size.
                     format: int64
                     minimum: 0
                     type: integer
                   auditEventsInvolvedNamespace:
+                    description: |-
+                      AuditEventsInvolvedNamespace controls in which namespace the audit events are created. When you
+                      set it to Enabled, audit events are created in the namespace of the object violating the
+                      constraint. If you set the parameter to Disabled, it causes all audit events to be created in
+                      the Gatekeeper namespace. The default value is Disabled.
+                      See https://open-policy-agent.github.io/gatekeeper/website/docs/customize-startup/#alpha-emit-admission-and-audit-events.
                     enum:
                     - Enabled
                     - Disabled
                     type: string
                   auditFromCache:
                     description: |-
-                      Setting Automatic lets the Gatekeeper operator manage syncOnly in the config resource.
-                      It is not recommended to use Automatic when using referential constraints since those are not detected.
+                      AuditFromCache sets whether a cache is used for auditing. The parameter value options are
+                      Enabled, Disabled, and Automatic. If you set the parameter to Automatic, the Gatekeeper
+                      operator manages the syncOnly field in the Config resource. It is not recommended to use
+                      Automatic when using referential constraints since those are not detected.
+                      See https://open-policy-agent.github.io/gatekeeper/website/docs/sync/#replicating-data-with-config.
                     enum:
                     - Enabled
                     - Disabled
                     - Automatic
                     type: string
                   auditInterval:
+                    description: |-
+                      AuditInterval configures how often an audit is run on the cluster. The default value is 60s.
+                      See https://open-policy-agent.github.io/gatekeeper/website/docs/performance-tuning/#audit-interval.
                     type: string
                   constraintViolationLimit:
+                    description: |-
+                      ConstraintViolationLimit configures how many violations are reported in a given Constraint
+                      resource. The default value is 20.
+                      See https://open-policy-agent.github.io/gatekeeper/website/docs/performance-tuning/#constraint-violations-limit.
                     format: int64
                     minimum: 0
                     type: integer
                   emitAuditEvents:
+                    description: |-
+                      EmitAuditEvents enables the emission of all admission violations as Kubernetes events. The
+                      default value is Disabled.
+                      See https://open-policy-agent.github.io/gatekeeper/website/docs/customize-startup/#alpha-emit-admission-and-audit-events.
                     enum:
                     - Enabled
                     - Disabled
                     type: string
                   logLevel:
+                    description: |-
+                      LogLevel specifies the verbosity of the Pod logs. The supported parameter values are DEBUG, INFO,
+                      WARNING, or ERROR. The parameter value DEBUG produces the most logs, while ERROR produces the
+                      least. The default value is INFO.
                     enum:
                     - DEBUG
                     - INFO
@@ -852,12 +890,13 @@ spec:
                     - ERROR
                     type: string
                   replicas:
+                    description: Replicas is the number of desired pods for auditing.
                     format: int32
                     minimum: 0
                     type: integer
                   resources:
-                    description: ResourceRequirements describes the compute resource
-                      requirements.
+                    description: Resources describes the compute resource requirements
+                      for the auditing pods.
                     properties:
                       claims:
                         description: |-
@@ -913,14 +952,21 @@ spec:
                     type: object
                 type: object
               config:
+                description: |-
+                  Config specifies configurations for the configs.config.gatekeeper.sh API, allowing
+                  high-level configuration of Gatekeeper.
                 properties:
                   disableDefaultMatches:
-                    description: Default is false. Setting this to true disables appending
-                      the default exempt namespaces to spec.config.matches.
+                    description: |-
+                      DisableDefaultMatches is a boolean parameter to disable appending default exempt namespaces of
+                      the Gatekeeper Operator to spec.config.matches. The default value is false to enable appending
+                      default namespaces of the operator.
                     type: boolean
                   matches:
-                    description: This field is the same type as the config spec.match.
-                      These will be appended to config.spec.match
+                    description: |-
+                      Matches is a list of exempt namespaces for specified processes. If you specify the namespaces,
+                      the Matches are set on the existing Config spec.match.
+                      See https://open-policy-agent.github.io/gatekeeper/website/docs/exempt-namespaces.
                     items:
                       properties:
                         excludedNamespaces:
@@ -940,14 +986,15 @@ spec:
                     type: array
                 type: object
               image:
+                description: Image specifies the configuration for handling Gatekeeper
+                  deployment images.
                 properties:
                   image:
                     description: |-
-                      Deprecated: Image is deprecated. Its continued use will be honored by
-                      the operator with a warning and removed in a future release. Instead,
-                      the operator will rely on the environment variable set in its manifest
-                      at deployment time and will be the default behavior after this field is
-                      removed.
+                      Deprecated: Image is deprecated. If you decide to use Image, the operator displays a warning
+                      and message about removal in a future release. To address this, the operator relies on the
+                      environment variable set in its manifest at deployment time and is the expected behavior after
+                      this field is removed.
                       Image to pull including registry (optional), repository, name, and tag
                       e.g. quay.io/gatekeeper/gatekeeper-operator:latest
                     type: string
@@ -957,6 +1004,10 @@ spec:
                     type: string
                 type: object
               mutatingWebhook:
+                description: |-
+                  MutatingWebhook specifies whether the Gatekeeper mutating admission webhook is enabled.
+                  The default value is Enabled.
+                  See https://open-policy-agent.github.io/gatekeeper/website/docs/mutation.
                 enum:
                 - Enabled
                 - Disabled
@@ -964,12 +1015,21 @@ spec:
               nodeSelector:
                 additionalProperties:
                   type: string
+                description: |-
+                  NodeSelector is a map of node selectors to add to the Gatekeeper deployment Pods.
+                  See https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/.
                 type: object
               podAnnotations:
                 additionalProperties:
                   type: string
+                description: |-
+                  PodAnnotations is a map of additional annotations to be added to the Gatekeeper deployment
+                  Pods.
                 type: object
               tolerations:
+                description: |-
+                  Tolerations is an array of tolerations to add to the Gatekeeper deployment Pods.
+                  See https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/.
                 items:
                   description: |-
                     The pod this Toleration is attached to tolerates any taint that matches
@@ -1008,22 +1068,41 @@ spec:
                   type: object
                 type: array
               validatingWebhook:
+                description: |-
+                  ValidatingWebhook specifies whether the Gatekeeper validating admission webhook is enabled.
+                  The default value is Enabled.
                 enum:
                 - Enabled
                 - Disabled
                 type: string
               webhook:
+                description: Webhook specifies the configuration for the Gatekeeper
+                  admission webhook.
                 properties:
                   admissionEventsInvolvedNamespace:
+                    description: |-
+                      AdmissionEventsInvolvedNamespace controls in which namespace admission events are created. When
+                      set to true, admission events are created in the namespace of the object violating the
+                      constraint. If you set the parameter to Disabled, it causes all admission events to be created
+                      in the Gatekeeper namespace. The default value is Disabled.
+                      See https://open-policy-agent.github.io/gatekeeper/website/docs/customize-startup/#alpha-emit-admission-and-audit-events.
                     enum:
                     - Enabled
                     - Disabled
                     type: string
                   disabledBuiltins:
+                    description: |-
+                      DisabledBuiltins is a list of specific OPA built-in functions to disable. By default, http.send
+                      is disabled.
+                      See https://open-policy-agent.github.io/gatekeeper/website/docs/customize-startup#disable-opa-built-in-functions.
                     items:
                       type: string
                     type: array
                   emitAdmissionEvents:
+                    description: |-
+                      EmitAdmissionEvents enables the emission of all admission violations as Kubernetes events.
+                      The default value is Disabled.
+                      See https://open-policy-agent.github.io/gatekeeper/website/docs/customize-startup/#alpha-emit-admission-and-audit-events.
                     enum:
                     - Enabled
                     - Disabled
@@ -1032,8 +1111,15 @@ spec:
                     description: FailurePolicyType specifies a failure policy that
                       defines how unrecognized errors from the admission endpoint
                       are handled.
+                    enum:
+                    - Ignore
+                    - Fail
                     type: string
                   logLevel:
+                    description: |-
+                      LogLevel specifies the verbosity of the Pod logs. The supported parameter values are DEBUG, INFO,
+                      WARNING, or ERROR. The parameter value DEBUG produces the most logs, while ERROR produces the
+                      least. The default value is INFO.
                     enum:
                     - DEBUG
                     - INFO
@@ -1041,25 +1127,26 @@ spec:
                     - ERROR
                     type: string
                   logMutations:
-                    description: Sets the --log-mutations flag which enables logging
-                      of mutation events and errors. This defaults to Disabled.
+                    description: |-
+                      LogMutations enables the logging of mutation events and errors. The default value is Disabled.
+                      See https://open-policy-agent.github.io/gatekeeper/website/docs/customize-startup#beta-enable-mutation-logging-and-annotations.
                     enum:
                     - Enabled
                     - Disabled
                     type: string
                   mutationAnnotations:
                     description: |-
-                      Sets the --mutation-annotations flag which adds the gatekeeper.sh/mutation-id and gatekeeper.sh/mutations
-                      annotations on mutated objects. This defaults to Disabled.
+                      MutationAnnotations adds the gatekeeper.sh/mutation-id and gatekeeper.sh/mutations annotations
+                      to mutated objects. The default value is Disabled.
+                      See https://open-policy-agent.github.io/gatekeeper/website/docs/customize-startup#beta-enable-mutation-logging-and-annotations.
                     enum:
                     - Enabled
                     - Disabled
                     type: string
                   namespaceSelector:
                     description: |-
-                      A label selector is a label query over a set of resources. The result of matchLabels and
-                      matchExpressions are ANDed. An empty label selector matches all objects. A null
-                      label selector matches no objects.
+                      NamespaceSelector is a label selector to define which namespaces should be handled by the
+                      admission webhook.
                     properties:
                       matchExpressions:
                         description: matchExpressions is a list of label selector
@@ -1103,6 +1190,10 @@ spec:
                     type: object
                     x-kubernetes-map-type: atomic
                   operations:
+                    description: |-
+                      Operations specifies a list of API operations to be checked by the admission webhook. The
+                      default value is ["CREATE","UPDATE"].
+                      See https://open-policy-agent.github.io/gatekeeper/website/docs/customize-admission/#enable-validation-of-delete-operations.
                     items:
                       description: OperationType specifies an operation for a request.
                       enum:
@@ -1114,12 +1205,14 @@ spec:
                       type: string
                     type: array
                   replicas:
+                    description: Replicas is the number of desired pods for the admission
+                      webhook.
                     format: int32
                     minimum: 0
                     type: integer
                   resources:
-                    description: ResourceRequirements describes the compute resource
-                      requirements.
+                    description: Resources describes the compute resource requirements
+                      for the admission webhook pods.
                     properties:
                       claims:
                         description: |-
@@ -1177,84 +1270,6 @@ spec:
             type: object
           status:
             description: GatekeeperStatus defines the observed state of Gatekeeper
-            properties:
-              auditConditions:
-                items:
-                  description: StatusCondition describes the current state of a component.
-                  properties:
-                    lastProbeTime:
-                      description: Last time the condition was checked.
-                      format: date-time
-                      type: string
-                    lastTransitionTime:
-                      description: Last time the condition transit from one status
-                        to another.
-                      format: date-time
-                      type: string
-                    message:
-                      description: Human readable message indicating details about
-                        last transition.
-                      type: string
-                    reason:
-                      description: (brief) reason for the condition's last transition.
-                      type: string
-                    status:
-                      description: Status of the condition, one of True, False, Unknown.
-                      type: string
-                    type:
-                      description: Type of status condition.
-                      enum:
-                      - Ready
-                      - Not Ready
-                      type: string
-                  required:
-                  - status
-                  - type
-                  type: object
-                type: array
-              observedGeneration:
-                description: ObservedGeneration is the generation as observed by the
-                  operator consuming this API.
-                format: int64
-                type: integer
-              webhookConditions:
-                items:
-                  description: StatusCondition describes the current state of a component.
-                  properties:
-                    lastProbeTime:
-                      description: Last time the condition was checked.
-                      format: date-time
-                      type: string
-                    lastTransitionTime:
-                      description: Last time the condition transit from one status
-                        to another.
-                      format: date-time
-                      type: string
-                    message:
-                      description: Human readable message indicating details about
-                        last transition.
-                      type: string
-                    reason:
-                      description: (brief) reason for the condition's last transition.
-                      type: string
-                    status:
-                      description: Status of the condition, one of True, False, Unknown.
-                      type: string
-                    type:
-                      description: Type of status condition.
-                      enum:
-                      - Ready
-                      - Not Ready
-                      type: string
-                  required:
-                  - status
-                  - type
-                  type: object
-                type: array
-            required:
-            - auditConditions
-            - observedGeneration
-            - webhookConditions
             type: object
         type: object
     served: true
@@ -1747,8 +1762,8 @@ spec:
         - /manager
         env:
         - name: RELATED_IMAGE_GATEKEEPER
-          value: openpolicyagent/gatekeeper:v3.14.0
-        image: quay.io/gatekeeper/gatekeeper-operator:v3.14.0
+          value: openpolicyagent/gatekeeper:v3.15.1
+        image: quay.io/gatekeeper/gatekeeper-operator:v3.15.1
         imagePullPolicy: Always
         livenessProbe:
           httpGet:

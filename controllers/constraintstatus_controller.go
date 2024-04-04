@@ -109,7 +109,7 @@ func (r *ConstraintPodStatusReconciler) Reconcile(ctx context.Context,
 	}, config)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
-			r.Log.Info("The Gatekeeper's Config resource does not exist, wait for creating the config")
+			r.Log.Info("The Gatekeeper Config resource does not exist. Waiting for Config to be created.")
 
 			return reconcile.Result{RequeueAfter: time.Second * 5}, nil
 		} else {
