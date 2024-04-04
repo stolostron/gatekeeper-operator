@@ -111,6 +111,7 @@ var (
 		"apiextensions.k8s.io_v1_customresourcedefinition_expansiontemplate.expansion.gatekeeper.sh.yaml",
 		"apiextensions.k8s.io_v1_customresourcedefinition_expansiontemplatepodstatuses.status.gatekeeper.sh.yaml",
 		"apiextensions.k8s.io_v1_customresourcedefinition_assignimage.mutations.gatekeeper.sh.yaml",
+		"apiextensions.k8s.io_v1_customresourcedefinition_syncsets.syncset.gatekeeper.sh.yaml",
 		ModifySetCRDFile,
 		ProviderCRDFile,
 		AssignCRDFile,
@@ -305,7 +306,7 @@ func (r *GatekeeperReconciler) initConfig(ctx context.Context, gatekeeper *opera
 				return err
 			}
 
-			r.Log.Info("The Gatekeeper's Config resource is just created")
+			r.Log.Info("The Gatekeeper Config resource is created.")
 
 			return nil
 		}

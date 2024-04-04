@@ -15,6 +15,7 @@
 // config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_modifyset.mutations.gatekeeper.sh.yaml
 // config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_mutatorpodstatuses.status.gatekeeper.sh.yaml
 // config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_providers.externaldata.gatekeeper.sh.yaml
+// config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_syncsets.syncset.gatekeeper.sh.yaml
 // config/gatekeeper-rendered/apps_v1_deployment_gatekeeper-audit.yaml
 // config/gatekeeper-rendered/apps_v1_deployment_gatekeeper-controller-manager.yaml
 // config/gatekeeper-rendered/policy_v1_poddisruptionbudget_gatekeeper-controller-manager.yaml
@@ -2928,8 +2929,7 @@ var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_cons
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.11.3
-  creationTimestamp: null
+    controller-gen.kubebuilder.io/version: v0.10.0
   labels:
     gatekeeper.sh/system: "yes"
   name: constrainttemplates.templates.gatekeeper.sh
@@ -3367,6 +3367,10 @@ spec:
               submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
             type: string
           metadata:
+            properties:
+              name:
+                maxLength: 63
+                type: string
             type: object
           spec:
             description: ExpansionTemplateSpec defines the desired state of ExpansionTemplate.
@@ -4749,7 +4753,7 @@ var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_prov
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.11.3
+    controller-gen.kubebuilder.io/version: v0.10.0
   creationTimestamp: null
   labels:
     gatekeeper.sh/system: "yes"
@@ -4856,6 +4860,82 @@ func configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_prov
 	return a, nil
 }
 
+var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_syncsetsSyncsetGatekeeperShYaml = []byte(`apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.10.0
+  creationTimestamp: null
+  labels:
+    gatekeeper.sh/system: "yes"
+  name: syncsets.syncset.gatekeeper.sh
+spec:
+  group: syncset.gatekeeper.sh
+  names:
+    kind: SyncSet
+    listKind: SyncSetList
+    plural: syncsets
+    singular: syncset
+  preserveUnknownFields: false
+  scope: Cluster
+  versions:
+  - name: v1alpha1
+    schema:
+      openAPIV3Schema:
+        description: SyncSet defines which resources Gatekeeper will cache. The union
+          of all SyncSets plus the syncOnly field of Gatekeeper's Config resource
+          defines the sets of resources that will be synced.
+        properties:
+          apiVersion:
+            description: 'APIVersion defines the versioned schema of this representation
+              of an object. Servers should convert recognized schemas to the latest
+              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            type: string
+          kind:
+            description: 'Kind is a string value representing the REST resource this
+              object represents. Servers may infer this from the endpoint the client
+              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            type: string
+          metadata:
+            properties:
+              name:
+                maxLength: 63
+                type: string
+            type: object
+          spec:
+            properties:
+              gvks:
+                items:
+                  properties:
+                    group:
+                      type: string
+                    kind:
+                      type: string
+                    version:
+                      type: string
+                  type: object
+                type: array
+            type: object
+        type: object
+    served: true
+    storage: true
+`)
+
+func configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_syncsetsSyncsetGatekeeperShYamlBytes() ([]byte, error) {
+	return _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_syncsetsSyncsetGatekeeperShYaml, nil
+}
+
+func configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_syncsetsSyncsetGatekeeperShYaml() (*asset, error) {
+	bytes, err := configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_syncsetsSyncsetGatekeeperShYamlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_syncsets.syncset.gatekeeper.sh.yaml", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info}
+	return a, nil
+}
+
 var _configGatekeeperRenderedApps_v1_deployment_gatekeeperAuditYaml = []byte(`apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -4906,7 +4986,9 @@ spec:
               fieldPath: metadata.namespace
         - name: CONTAINER_NAME
           value: manager
-        image: openpolicyagent/gatekeeper:v3.14.0
+        - name: OTEL_RESOURCE_ATTRIBUTES
+          value: k8s.pod.name=$(POD_NAME),k8s.namespace.name=$(NAMESPACE),k8s.container.name=$(CONTAINER_NAME)
+        image: openpolicyagent/gatekeeper:v3.15.1
         imagePullPolicy: Always
         livenessProbe:
           httpGet:
@@ -5040,7 +5122,9 @@ spec:
               fieldPath: metadata.namespace
         - name: CONTAINER_NAME
           value: manager
-        image: openpolicyagent/gatekeeper:v3.14.0
+        - name: OTEL_RESOURCE_ATTRIBUTES
+          value: k8s.pod.name=$(POD_NAME),k8s.namespace.name=$(NAMESPACE),k8s.container.name=$(CONTAINER_NAME)
+        image: openpolicyagent/gatekeeper:v3.15.1
         imagePullPolicy: Always
         livenessProbe:
           httpGet:
@@ -5655,6 +5739,7 @@ var _bindata = map[string]func() (*asset, error){
 	"config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_modifyset.mutations.gatekeeper.sh.yaml":                         configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_modifysetMutationsGatekeeperShYaml,
 	"config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_mutatorpodstatuses.status.gatekeeper.sh.yaml":                   configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_mutatorpodstatusesStatusGatekeeperShYaml,
 	"config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_providers.externaldata.gatekeeper.sh.yaml":                      configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_providersExternaldataGatekeeperShYaml,
+	"config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_syncsets.syncset.gatekeeper.sh.yaml":                            configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_syncsetsSyncsetGatekeeperShYaml,
 	"config/gatekeeper-rendered/apps_v1_deployment_gatekeeper-audit.yaml":                                                                        configGatekeeperRenderedApps_v1_deployment_gatekeeperAuditYaml,
 	"config/gatekeeper-rendered/apps_v1_deployment_gatekeeper-controller-manager.yaml":                                                           configGatekeeperRenderedApps_v1_deployment_gatekeeperControllerManagerYaml,
 	"config/gatekeeper-rendered/policy_v1_poddisruptionbudget_gatekeeper-controller-manager.yaml":                                                configGatekeeperRenderedPolicy_v1_poddisruptionbudget_gatekeeperControllerManagerYaml,
@@ -5728,6 +5813,7 @@ var _bintree = &bintree{nil, map[string]*bintree{
 			"apiextensions.k8s.io_v1_customresourcedefinition_modifyset.mutations.gatekeeper.sh.yaml":                         {configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_modifysetMutationsGatekeeperShYaml, map[string]*bintree{}},
 			"apiextensions.k8s.io_v1_customresourcedefinition_mutatorpodstatuses.status.gatekeeper.sh.yaml":                   {configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_mutatorpodstatusesStatusGatekeeperShYaml, map[string]*bintree{}},
 			"apiextensions.k8s.io_v1_customresourcedefinition_providers.externaldata.gatekeeper.sh.yaml":                      {configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_providersExternaldataGatekeeperShYaml, map[string]*bintree{}},
+			"apiextensions.k8s.io_v1_customresourcedefinition_syncsets.syncset.gatekeeper.sh.yaml":                            {configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_syncsetsSyncsetGatekeeperShYaml, map[string]*bintree{}},
 			"apps_v1_deployment_gatekeeper-audit.yaml":                                                                        {configGatekeeperRenderedApps_v1_deployment_gatekeeperAuditYaml, map[string]*bintree{}},
 			"apps_v1_deployment_gatekeeper-controller-manager.yaml":                                                           {configGatekeeperRenderedApps_v1_deployment_gatekeeperControllerManagerYaml, map[string]*bintree{}},
 			"policy_v1_poddisruptionbudget_gatekeeper-controller-manager.yaml":                                                {configGatekeeperRenderedPolicy_v1_poddisruptionbudget_gatekeeperControllerManagerYaml, map[string]*bintree{}},
