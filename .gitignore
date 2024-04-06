@@ -19,8 +19,7 @@ testbin/*
 !vendor/**/zz_generated.*
 
 ci-tools/
-
 .vscode/
-gatekeeper/
-
 __debug_*
+operator.log
+/gatekeeper/

@@ -15,30 +15,39 @@ fork is named `origin`.**
    git fetch --prune upstream
    git checkout upstream/main
    ```
-3. Update the `VERSION` file with the latest version, and then store the latest released version for use later:
+3. Update the `VERSION` file with the latest operator version, and then store the latest released version for use later:
    ```shell
    RELEASE_PREV_VERSION=$(cat VERSION)
    ```
-4. Set the desired version being released:
+4. Set the desired operator version being released:
    ```shell
    RELEASE_VERSION=1.2.3
    ```
 5. If the latest upstream Gatekeeper version is a different z-version than the current operator version, set the
-   version:
+   Gatekeeper version:
    ```shell
    printf "1.2.3" > GATEKEEPER_VERSION
    ```
-6. Checkout a new branch based on `upstream/main`:
+6. Update the `go.mod` with the matching Gatekeeper version:
+   ```shell
+   GATEKEEPER_VERSION=$(cat GATEKEEPER_VERSION 2>/dev/null || cat VERSION)
+   go get github.com/open-policy-agent/gatekeeper/v3@v${GATEKEEPER_VERSION}
+   go mod tidy
+   ```
+7. Checkout a new branch based on `upstream/main`:
    ```shell
    git checkout -b create-release-$(echo ${RELEASE_VERSION})
    ```
-7. Update the version of the operator in the `VERSION` file, and update the base CSV `replaces` field:
+8. Update the version of the operator in the `VERSION` file, and update the base CSV `replaces` field:
    ```shell
    printf "${RELEASE_VERSION}" > VERSION
    printf "${RELEASE_PREV_VERSION}" > REPLACES_VERSION
    ```
-8. Update the release manifest and update the bundle:
+9. Update the release manifest and update the bundle:
    ```shell
+   make update-gatekeeper-image
+   make import-manifests
+   make update-bindata
    make release
    make bundle
    ```
@@ -48,24 +57,24 @@ fork is named `origin`.**
    export CHANNEL=$(cat VERSION | cut -d '.' -f 1-2)
    export DEFAULT_CHANNEL=${CHANNEL}
    ```
-9. Commit above changes:
-   ```shell
-   git commit --signoff -am "Release ${RELEASE_VERSION}"
-   ```
-10. Push the changes in the branch to your fork:
+10. Commit above changes:
+    ```shell
+    git commit --signoff -am "Release ${RELEASE_VERSION}"
+    ```
+11. Push the changes in the branch to your fork:
     ```shell
     git push -u origin create-release-${RELEASE_VERSION}
     ```
-11. Create a PR with the above changes and merge it. If using the `gh` [GitHub CLI](https://cli.github.com/) you can
+12. Create a PR with the above changes and merge it. If using the `gh` [GitHub CLI](https://cli.github.com/) you can
     create the PR using:
     ```shell
     gh pr create --repo stolostron/gatekeeper-operator --title "Release ${RELEASE_VERSION}" --body ""
     ```
-12. After the PR is merged (and any subsequent fixes), fetch the new commits:
+13. After the PR is merged (and any subsequent fixes), fetch the new commits:
     ```shell
     git fetch --prune upstream
     ```
-13. Create and push a new release tag. This will trigger the GitHub actions release workflow to build and push the
+14. Create and push a new release tag. This will trigger the GitHub actions release workflow to build and push the
     release image and create a new release on GitHub. Note that `upstream` is used as the remote name for this
     repository:
     ```shell
