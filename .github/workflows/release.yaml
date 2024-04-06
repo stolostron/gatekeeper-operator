@@ -18,8 +18,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-      with:
-        fetch-depth: 0 # Fetch all history for all tags and branches
 
     - name: Set Up Go to Install OPM
       uses: actions/setup-go@v3

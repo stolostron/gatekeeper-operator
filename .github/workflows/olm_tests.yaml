@@ -17,8 +17,6 @@ jobs:
 
     steps:
     - uses: actions/checkout@v3
-      with:
-        fetch-depth: 0 # Fetch all history for all tags and branches
 
     - uses: actions/setup-go@v3
       with:
@@ -48,11 +46,17 @@ jobs:
     - name: Deploy resources on KIND cluster to install Gatekeeper
       run: |
         make deploy-using-olm REPO=localhost:5000 VERSION_TAG=${GITHUB_SHA} NAMESPACE=mygatekeeper
-        while ! kubectl -n mygatekeeper get deployment gatekeeper-operator-controller; do \
-          echo "Waiting for operator deployment"; \
-          sleep 2; \
+        for i in {1..9}; do
+          echo "Waiting for gatekeeper-operator-controller deployment creation (${i}/9) ..."
+          kubectl -n mygatekeeper get deployment gatekeeper-operator-controller && break
+          sleep 10
         done
-        kubectl -n mygatekeeper wait deployment/gatekeeper-operator-controller --for condition=Available --timeout=90s
+        for i in {1..6}; do
+          err_code=0
+          echo "Waiting for gatekeeper-operator-controller deployment to be available (${i}/6) ..."
+          kubectl -n mygatekeeper rollout status deployment/gatekeeper-operator-controller --timeout=30s && break || err_code=$?
+        done
+        [[ "${err_code}" == "0" ]] || { echo "Deployment failed to become available."; exit ${err_code}; }
 
     - name: E2E Tests
       run: |
