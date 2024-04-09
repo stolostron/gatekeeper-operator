@@ -397,7 +397,7 @@ TMP_IMPORT_MANIFESTS_PATH := $(shell mktemp -d)
 import-manifests: kustomize
 	if [[ $(IMPORT_MANIFESTS_PATH) =~ https://* ]]; then \
 		git clone --branch v$(GATEKEEPER_VERSION)  $(IMPORT_MANIFESTS_PATH) $(TMP_IMPORT_MANIFESTS_PATH) ; \
-		cd $(TMP_IMPORT_MANIFESTS_PATH) && make patch-image ; \
+		cd $(TMP_IMPORT_MANIFESTS_PATH) && make patch-image && $(SED) -i 's/openpolicyagent/quay.io\/gatekeeper/g' config/manager/manager.yaml ; \
 		$(KUSTOMIZE) build --load-restrictor LoadRestrictionsNone $(TMP_IMPORT_MANIFESTS_PATH)/config/default -o $(MAKEFILE_DIR)/$(GATEKEEPER_MANIFEST_DIR); \
 		rm -rf "$${TMP_IMPORT_MANIFESTS_PATH}" ; \
 	else \

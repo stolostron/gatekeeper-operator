@@ -4905,7 +4905,7 @@ spec:
               fieldPath: metadata.namespace
         - name: CONTAINER_NAME
           value: manager
-        image: openpolicyagent/gatekeeper:v3.14.1
+        image: quay.io/gatekeeper/gatekeeper:v3.14.1
         imagePullPolicy: Always
         livenessProbe:
           httpGet:
@@ -5039,7 +5039,7 @@ spec:
               fieldPath: metadata.namespace
         - name: CONTAINER_NAME
           value: manager
-        image: openpolicyagent/gatekeeper:v3.14.1
+        image: quay.io/gatekeeper/gatekeeper:v3.14.1
         imagePullPolicy: Always
         livenessProbe:
           httpGet:

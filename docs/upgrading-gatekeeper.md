@@ -34,7 +34,7 @@ git commit -m "Set Gatekeeper version to ${GATEKEEPER_VERSION}" Makefile
 ## 2. Update Operator deployment's Gatekeeper image environment variable
 
 ```shell
-sed -Ei "s|(value: openpolicyagent/gatekeeper:)${GATEKEEPER_PREV_VERSION}|\1${GATEKEEPER_VERSION}|" ./config/manager/manager.yaml
+sed -Ei "s|(value: quay.io/gatekeeper/gatekeeper:)${GATEKEEPER_PREV_VERSION}|\1${GATEKEEPER_VERSION}|" ./config/manager/manager.yaml
 git commit -m "Update deployed Gatekeeper image to ${GATEKEEPER_VERSION}" ./config/manager/manager.yaml
 ```
 
