@@ -216,7 +216,7 @@ docker-build: test ## Build docker image with the manager.
 docker-push: ## Push docker image with the manager.
 	$(DOCKER) push ${IMG}
 
-BINDATA_OUTPUT_FILE := pkg/bindata/bindata.go
+BINDATA_OUTPUT_FILE := pkg/bindata/bindata.go 
 
 .PHONY: go-bindata
 go-bindata:
@@ -287,6 +287,7 @@ deploy-using-olm:
 .PHONY: patch-image
 patch-image: ## Patches the manager's image pull policy to be IfNotPresent.
 	$(SED) -i 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' config/manager/manager.yaml
+	$(SED) -i 's/openpolicyagent/quay.io/g'
 
 .PHONY: unpatch-image
 unpatch-image: ## Patches the manager's image pull policy to be Always.

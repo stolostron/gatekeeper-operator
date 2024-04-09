@@ -392,7 +392,7 @@ spec:
                 - /manager
                 env:
                 - name: RELATED_IMAGE_GATEKEEPER
-                  value: openpolicyagent/gatekeeper:v3.14.1
+                  value: quay.io/gatekeeper/gatekeeper:v3.14.1
                 image: quay.io/gatekeeper/gatekeeper-operator:v3.14.1
                 imagePullPolicy: Always
                 livenessProbe:
@@ -529,7 +529,7 @@ spec:
   provider:
     name: Red Hat
   relatedImages:
-  - image: openpolicyagent/gatekeeper:v3.14.1
+  - image: quay.io/gatekeeper/gatekeeper:v3.14.1
     name: gatekeeper
   replaces: gatekeeper-operator.v3.11.1
   version: "3.14.1"
