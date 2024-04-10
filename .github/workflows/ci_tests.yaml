@@ -15,22 +15,6 @@ defaults:
     shell: bash
 
 jobs:
-  gosec:
-    name: Run gosec scan
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Gatekeeper
-        uses: actions/checkout@v4
-      - name: Run Gosec Security Scanner
-        uses: securego/gosec@v2.19.0
-        with:
-          args: -no-fail -fmt sonarqube -out gosec.json -stdout -exclude-dir=.go -exclude-dir=test ./...
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: artifacts
-          path: gosec.json
-
   verify-and-unit-tests:
     name: Run verify and unit tests
     runs-on: ubuntu-latest
@@ -76,12 +60,19 @@ jobs:
         echo "::group::Test coverage"
         make test-coverage
         echo "::endgroup::"
-    
+
+    - name: Run Gosec Security Scanner
+      uses: securego/gosec@v2.19.0
+      with:
+        args: -no-fail -fmt sonarqube -out gosec.json -stdout -exclude-dir=.go -exclude-dir=test ./...
+
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
         name: artifacts
-        path: coverage_unit.out
+        path: |
+          gosec.json
+          coverage_unit.out
 
   e2e-tests:
     name: Run e2e tests
@@ -177,6 +168,7 @@ jobs:
     - uses: actions/setup-go@v5
       with:
         go-version-file: gatekeeper-operator/go.mod
+        cache-dependency-path: gatekeeper-operator/go.sum        
 
     - name: Download binaries
       run: |
