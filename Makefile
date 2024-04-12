@@ -145,14 +145,20 @@ generate: controller-gen ## Generate code containing DeepCopy, DeepCopyInto, and
 	$(CONTROLLER_GEN) object:headerFile="hack/boilerplate.go.txt" paths="./..."
 
 # Path used to import Gatekeeper manifests
-IMPORT_MANIFESTS_PATH ?= https://github.com/open-policy-agent/gatekeeper
+IMPORT_MANIFESTS_PATH ?= https://github.com/stolostron/gatekeeper
 TMP_IMPORT_MANIFESTS_PATH := $(shell mktemp -d)
 GATEKEEPER_MANIFEST_DIR ?= config/gatekeeper
 
+GATEKEEPER_TAG := $(shell curl -sL https://api.github.com/repos/stolostron/gatekeeper/tags | jq -r '.[].name' | sort --version-sort | grep $(shell echo $(GATEKEEPER_VERSION) | cut -d '.' -f 1-2) | tail -1 )
+
 .PHONY: import-manifests
 import-manifests: kustomize ## Import Gatekeeper manifests.
+	if [ "$(shell echo $(GATEKEEPER_TAG) | cut -d '-' -f 1)" != "v$(GATEKEEPER_VERSION)" ]; then \
+		echo "error: Gatekeeper version v$(GATEKEEPER_VERSION) set in the operator doesn't match Gatekeeper tag $(shell echo $(GATEKEEPER_TAG) | cut -d '-' -f 1) from $(IMPORT_MANIFESTS_PATH)." ;\
+		exit 1 ;\
+	fi 
 	if [ "$${IMPORT_MANIFESTS_PATH#https://}" != "$(IMPORT_MANIFESTS_PATH)" ]; then \
-		git clone --depth=1 --branch v$(GATEKEEPER_VERSION)  $(IMPORT_MANIFESTS_PATH) $(TMP_IMPORT_MANIFESTS_PATH) ; \
+		git clone --depth=1 --branch $(GATEKEEPER_TAG) $(IMPORT_MANIFESTS_PATH) $(TMP_IMPORT_MANIFESTS_PATH) ; \
 		cd $(TMP_IMPORT_MANIFESTS_PATH) && make patch-image ; \
 		$(KUSTOMIZE) build --load-restrictor LoadRestrictionsNone $(TMP_IMPORT_MANIFESTS_PATH)/config/default -o $(MAKEFILE_DIR)/$(GATEKEEPER_MANIFEST_DIR); \
 		rm -rf $(TMP_IMPORT_MANIFESTS_PATH) ; \
@@ -181,7 +187,7 @@ update-bindata: go-bindata ## Update bindata.go file.
 	rm -rf ./$(GATEKEEPER_MANIFEST_DIR)-rendered
 	$(MAKE) fmt
 
-GATEKEEPER_IMAGE ?= openpolicyagent/gatekeeper
+GATEKEEPER_IMAGE ?= quay.io/gatekeeper/gatekeeper
 
 .PHONY: update-gatekeeper-image
 update-gatekeeper-image: ## Update Gatekeeper image in manifests.
