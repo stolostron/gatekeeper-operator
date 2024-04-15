@@ -212,11 +212,8 @@ build: generate fmt vet ## Build manager binary.
 	CGO_ENABLED=1 GOFLAGS=$(GOFLAGS) go build -ldflags $(LDFLAGS) -o bin/manager main.go
 
 .PHONY: docker-build
-docker-build: GOOS = linux
-docker-build: GOARCH = amd64
 docker-build: test ## Build docker image with the manager.
-	# Building with --platform=linux/amd64 because the image-builder is only built for that architecture: https://github.com/stolostron/image-builder
-	$(DOCKER) build --platform $(GOOS)/$(GOARCH) --build-arg GOOS=$(GOOS) --build-arg GOARCH=$(GOARCH) --build-arg LDFLAGS=${LDFLAGS} -t ${IMG} .
+	$(DOCKER) build --platform linux/$(GOARCH) --build-arg GOOS=linux --build-arg GOARCH=$(GOARCH) --build-arg LDFLAGS=${LDFLAGS} -t ${IMG} .
 
 .PHONY: docker-push
 docker-push: ## Push docker image with the manager.
