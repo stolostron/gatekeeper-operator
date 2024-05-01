@@ -353,6 +353,11 @@ var _ = Describe("Gatekeeper", func() {
 			webhookTemplate := webhookDeployment.Spec.Template
 			webhookContainer := webhookTemplate.Spec.Containers[0]
 
+			By("Checking the first element of deployment.volume is about certification", func() {
+				Expect(auditDeployment.Spec.Template.Spec.Volumes[0].Secret.SecretName).NotTo(Equal(""))
+				Expect(webhookDeployment.Spec.Template.Spec.Volumes[0].Secret.SecretName).NotTo(Equal(""))
+			})
+
 			By("Checking default replicas", func() {
 				Expect(auditDeployment.Spec.Replicas).NotTo(BeNil())
 				Expect(*auditDeployment.Spec.Replicas).To(Equal(test.DefaultDeployment.AuditReplicas))
@@ -776,6 +781,7 @@ var _ = Describe("Gatekeeper", func() {
 
 	Describe("Test in Openshift Env", Label("openshift"), Ordered, Serial, func() {
 		const openshiftNamespace = "openshift-gatekeeper-system"
+
 		Describe("Test Gatekeeper Certification", Label("openshift"), func() {
 			It("Should have Openshift Cert Annotation in the Service Resource"+
 				" and not have Cert Secret in the Gatekeeper Namespace", func(ctx context.Context) {
@@ -784,7 +790,8 @@ var _ = Describe("Gatekeeper", func() {
 					Expect(K8sClient.Create(ctx, gatekeeper)).Should(Succeed())
 				})
 
-				By("All Deployment resources should have a --disable-cert-rotation arg")
+				By("All Deployment resources should have a --disable-cert-rotation arg" +
+					" and cert secret name for openshift")
 				Eventually(func(g Gomega) {
 					audit := &appsv1.Deployment{}
 					err := K8sClient.Get(ctx, types.NamespacedName{
@@ -795,6 +802,9 @@ var _ = Describe("Gatekeeper", func() {
 
 					g.Expect(audit.Spec.Template.Spec.Containers[0].Args).
 						Should(ContainElement("--disable-cert-rotation"), "Audit should have disabled cert arg")
+					g.Expect(audit.Spec.Template.Spec.Volumes[0].Secret.SecretName).
+						Should(Equal(controllers.OpenshiftSecretName),
+							"Audit deployment certificate volume mount should have the expected name")
 				}, timeout, pollInterval).Should(Succeed())
 
 				Eventually(func(g Gomega) {
@@ -807,6 +817,9 @@ var _ = Describe("Gatekeeper", func() {
 
 					g.Expect(webhook.Spec.Template.Spec.Containers[0].Args).
 						Should(ContainElement("--disable-cert-rotation"), "Webhook should have disabled cert arg")
+					g.Expect(webhook.Spec.Template.Spec.Volumes[0].Secret.SecretName).
+						Should(Equal(controllers.OpenshiftSecretName),
+							"Webhook deployment certificate volume mount should have the expected name")
 				}, timeout, pollInterval).Should(Succeed())
 
 				By("Service resource should have a service.beta.openshift.io/serving-cert-secret-name annotation")
@@ -824,8 +837,8 @@ var _ = Describe("Gatekeeper", func() {
 					v, ok := annotations["service.beta.openshift.io/serving-cert-secret-name"]
 					g.Expect(ok).Should(BeTrue(),
 						"Should have service.beta.openshift.io/serving-cert-secret-name annotation")
-					g.Expect(v).Should(Equal("gatekeeper-webhook-server-cert"),
-						"Should be gatekeeper-webhook-server-cert")
+					g.Expect(v).Should(Equal(controllers.OpenshiftSecretName),
+						"service.beta.openshift.io/serving-cert-secret-name should have the expected value")
 				}, timeout, pollInterval).Should(Succeed())
 
 				By("ValidatingWebhookConfiguration should have a service.beta.openshift.io/inject-cabundle annotation")
