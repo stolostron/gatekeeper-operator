@@ -96,6 +96,7 @@ const (
 	MutationAnnotationsArg              = "--mutation-annotations"
 	admissionFileFmt                    = "admissionregistration.k8s.io_v1_%[1]swebhookconfiguration" +
 		"_gatekeeper-%[1]s-webhook-configuration.yaml"
+	OpenshiftSecretName = "gatekeeper-webhook-server-cert-ocp"
 )
 
 var (
@@ -736,7 +737,7 @@ func setOpenshiftCertAnnotation(obj *unstructured.Unstructured) {
 		annotations = make(map[string]string, 1)
 	}
 
-	annotations["service.beta.openshift.io/serving-cert-secret-name"] = "gatekeeper-webhook-server-cert"
+	annotations["service.beta.openshift.io/serving-cert-secret-name"] = OpenshiftSecretName
 
 	obj.SetAnnotations(annotations)
 }
@@ -1038,7 +1039,31 @@ func openShiftDeploymentOverrides(obj *unstructured.Unstructured) error {
 
 	err = unstructured.SetNestedField(obj.Object, containers, "spec", "template", "spec", "containers")
 	if err != nil {
-		return errors.Wrapf(err, "Failed to set the OpenShift overrides")
+		return errors.Wrapf(err, "Failed to set the OpenShift overrides for the Deployment containers")
+	}
+
+	const volumeErrMsg = "Failed to set the certificate volume mount for OpenShift"
+
+	volumes, _, err := unstructured.NestedSlice(obj.Object, "spec", "template", "spec", "volumes")
+	if err != nil || len(volumes) == 0 {
+		return errors.Wrapf(err, volumeErrMsg)
+	}
+
+	vol, ok := volumes[0].(map[string]interface{})
+	if !ok {
+		return errors.Wrapf(err, "Failed to parse volumes")
+	}
+
+	err = unstructured.SetNestedField(vol, OpenshiftSecretName, "secret", "secretName")
+	if err != nil {
+		return errors.Wrapf(err, volumeErrMsg)
+	}
+
+	volumes[0] = vol
+
+	err = unstructured.SetNestedField(obj.Object, volumes, "spec", "template", "spec", "volumes")
+	if err != nil {
+		return errors.Wrapf(err, volumeErrMsg)
 	}
 
 	return nil
