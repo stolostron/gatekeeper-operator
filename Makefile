@@ -355,7 +355,7 @@ bundle: operator-sdk manifests kustomize ## Generate bundle manifests and metada
 	$(SED) -i 's/^  version:.*/  version: "$(VERSION)"/' bundle/manifests/gatekeeper-operator.clusterserviceversion.yaml
 	$(SED) -i '/^    createdAt:.*/d' bundle/manifests/gatekeeper-operator.clusterserviceversion.yaml
 	$(SED) -i 's/$(CHANNELS)/"$(CHANNELS)"/g' bundle/metadata/annotations.yaml
-	$(SED) -i 's/^    olm.skipRange:.*/    olm.skipRange: "<$(shell echo $(VERSION) | cut -d '.' -f 1-2).0"/' bundle/manifests/gatekeeper-operator.clusterserviceversion.yaml
+	$(SED) -i 's/^    olm.skipRange:.*/    olm.skipRange: "<$(VERSION)"/' bundle/manifests/gatekeeper-operator.clusterserviceversion.yaml
   ifneq ($(REPLACES_VERSION), none)
 	  $(SED) -i 's/^  replaces:.*/  replaces: gatekeeper-operator.v$(REPLACES_VERSION)/' bundle/manifests/gatekeeper-operator.clusterserviceversion.yaml
   else
