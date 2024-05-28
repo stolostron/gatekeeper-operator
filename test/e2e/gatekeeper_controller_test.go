@@ -33,8 +33,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	extv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/yaml"
@@ -42,7 +42,6 @@ import (
 	"github.com/gatekeeper/gatekeeper-operator/api/v1alpha1"
 	"github.com/gatekeeper/gatekeeper-operator/controllers"
 	"github.com/gatekeeper/gatekeeper-operator/pkg/util"
-	. "github.com/gatekeeper/gatekeeper-operator/test/e2e/util"
 	test "github.com/gatekeeper/gatekeeper-operator/test/e2e/util"
 )
 
@@ -97,7 +96,7 @@ var _ = Describe("Gatekeeper", func() {
 
 	AfterEach(func() {
 		By("Clean gatekeeper")
-		_, err := KubectlWithOutput("delete", "gatekeeper", "gatekeeper", "--ignore-not-found")
+		_, err := test.KubectlWithOutput("delete", "gatekeeper", "gatekeeper", "--ignore-not-found")
 		Expect(err).ShouldNot(HaveOccurred())
 
 		// Once this succeeds, clean up has happened for all owned resources.
@@ -129,7 +128,7 @@ var _ = Describe("Gatekeeper", func() {
 		}, deleteTimeout, pollInterval).Should(BeTrue())
 
 		By("Clean Config surely")
-		_, _ = KubectlWithOutput("delete", "config", "config", "-n", gatekeeperNamespace, "--ignore-not-found")
+		_, _ = test.KubectlWithOutput("delete", "config", "config", "-n", gatekeeperNamespace, "--ignore-not-found")
 
 		By("Clean Config", func() {
 			Eventually(func() bool {
@@ -141,7 +140,7 @@ var _ = Describe("Gatekeeper", func() {
 					return false
 				}
 
-				return apierrors.IsNotFound(err) || strings.Contains(err.Error(), "failed to get API group resources")
+				return apierrors.IsNotFound(err) || meta.IsNoMatchError(err)
 			}, deleteTimeout, pollInterval).Should(BeTrue())
 		})
 	})
@@ -155,7 +154,7 @@ var _ = Describe("Gatekeeper", func() {
 
 		AfterEach(func() {
 			By("Clean gatekeeper")
-			_, err := KubectlWithOutput("delete", "gatekeeper", "gatekeeper", "--ignore-not-found")
+			_, err := test.KubectlWithOutput("delete", "gatekeeper", "gatekeeper", "--ignore-not-found")
 			Expect(err).ShouldNot(HaveOccurred())
 
 			By("Clean config surely", func() {
@@ -189,7 +188,7 @@ var _ = Describe("Gatekeeper", func() {
 			var originalNs wildcard.Wildcard = "mynamespace"
 
 			gatekeeper := &v1alpha1.Gatekeeper{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name: gkName,
 				},
 				Spec: v1alpha1.GatekeeperSpec{
@@ -229,7 +228,7 @@ var _ = Describe("Gatekeeper", func() {
 		It("Should not attach the default ns when the DisableDefaultMatches is true", func() {
 			disableDefaultMatches := true
 			gatekeeper := &v1alpha1.Gatekeeper{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      gkName,
 					Namespace: gatekeeperNamespace,
 				},
@@ -267,7 +266,7 @@ var _ = Describe("Gatekeeper", func() {
 
 		It("Should keep config.spec.match when config is updated", func() {
 			gatekeeper := &v1alpha1.Gatekeeper{
-				ObjectMeta: v1.ObjectMeta{
+				ObjectMeta: metav1.ObjectMeta{
 					Name:      gkName,
 					Namespace: gatekeeperNamespace,
 				},
@@ -1161,7 +1160,7 @@ func getDeploymentReadyReplicas(ctx context.Context, name types.NamespacedName,
 
 func emptyGatekeeper() *v1alpha1.Gatekeeper {
 	return &v1alpha1.Gatekeeper{
-		ObjectMeta: v1.ObjectMeta{
+		ObjectMeta: metav1.ObjectMeta{
 			Name:      gkName,
 			Namespace: gatekeeperNamespace,
 		},
