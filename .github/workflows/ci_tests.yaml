@@ -108,6 +108,11 @@ jobs:
     - name: Debug
       if: ${{ failure() }}
       run: |
+        echo "::group:Deployments"
+        kubectl -n gatekeeper-system get all
+        echo "---"
+        kubectl -n gatekeeper-system get deployment/gatekeeper-operator-controller -o yaml
+        echo "::endgroup::"
         echo "::group::Operator Logs"
         cat operator.log
         echo "::endgroup::"
@@ -147,6 +152,11 @@ jobs:
     - name: Debug
       if: ${{ failure() }}
       run: |
+        echo "::group:Deployments"
+        kubectl -n openshift-gatekeeper-system get all
+        echo "---"
+        kubectl -n openshift-gatekeeper-system get deployment/gatekeeper-operator-controller -o yaml
+        echo "::endgroup::"
         echo "::group::Operator Logs"
         cat operator.log
         echo "::endgroup::"
