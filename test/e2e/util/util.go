@@ -20,6 +20,7 @@ import (
 	"context"
 	"fmt"
 	"os/exec"
+	"strings"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -165,9 +166,18 @@ func Kubectl(args ...string) {
 
 // KubectlWithOutput execute kubectl cli and return output and error
 func KubectlWithOutput(args ...string) (string, error) {
-	output, err := exec.Command("kubectl", args...).CombinedOutput()
-	//nolint:forbidigo
-	fmt.Println(string(output))
+	kubectlCmd := exec.Command("kubectl", args...)
+
+	output, err := kubectlCmd.CombinedOutput()
+	if err != nil {
+		// Reformat error to include kubectl command and stderr output
+		err = fmt.Errorf(
+			"error running command '%s':\n %s: %s",
+			strings.Join(kubectlCmd.Args, " "),
+			output,
+			err.Error(),
+		)
+	}
 
 	return string(output), err
 }
