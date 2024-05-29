@@ -25,6 +25,8 @@ spec:
           capabilities:
             drop:
             - ALL
+          seccompProfile:
+            type: RuntimeDefault
       - name: manager
         args:
         - "--health-probe-bind-address=:8081"
