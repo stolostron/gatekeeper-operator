@@ -60,7 +60,7 @@ jobs:
 
     - name: E2E Tests
       run: |
-        kubectl -n mygatekeeper logs deployment/gatekeeper-operator-controller -c manager -f > operator.log &
+        kubectl -n mygatekeeper logs deployment/gatekeeper-operator-controller -c manager -f  2>&1 | tee operator.log &
         make test-e2e NAMESPACE=mygatekeeper
         kubectl delete --wait namespace mygatekeeper
 
