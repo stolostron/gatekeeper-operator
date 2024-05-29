@@ -110,7 +110,7 @@ var _ = Describe("Test auditFromCache", Ordered, func() {
 	})
 
 	Describe("Gatekeeper with auditFromCache=Automatic create syncOnly config", Ordered, func() {
-		It("should create config resource with syncOnly includes pod, ingress, storageclass", func() {
+		It("should create config resource with syncOnly includes pod, ingress, storageclass", func(ctx SpecContext) {
 			config := &v1alpha1.Config{}
 
 			By("config syncOnly should have 3 elements, duplicates should be omitted")
@@ -156,7 +156,7 @@ var _ = Describe("Test auditFromCache", Ordered, func() {
 	})
 
 	Describe("Gatekeeper with auditFromCache=Automatic delete syncOnly config", Ordered, func() {
-		It("Should have 3 syncOnly elements in config", func() {
+		It("Should have 3 syncOnly elements in config", func(ctx SpecContext) {
 			config := &v1alpha1.Config{}
 			By("Config syncOnly should have 3 elements")
 
@@ -167,7 +167,7 @@ var _ = Describe("Test auditFromCache", Ordered, func() {
 				return config.Spec.Sync.SyncOnly
 			}, timeout).Should(HaveLen(3))
 		})
-		It("Should have 2 syncOnly elements in config", func() {
+		It("Should have 2 syncOnly elements in config", func(ctx SpecContext) {
 			Kubectl("delete", "-f", case1ConstraintIngressYaml, "--ignore-not-found")
 
 			config := &v1alpha1.Config{}
@@ -184,7 +184,7 @@ var _ = Describe("Test auditFromCache", Ordered, func() {
 				return s.Kind == "Ingress"
 			})).Should(Equal(-1))
 		})
-		It("Should have 1 syncOnly elements in config", func() {
+		It("Should have 1 syncOnly elements in config", func(ctx SpecContext) {
 			Kubectl("delete", "-f", case1ConstraintStorageclassYaml, "--ignore-not-found")
 
 			config := &v1alpha1.Config{}
@@ -201,7 +201,7 @@ var _ = Describe("Test auditFromCache", Ordered, func() {
 				return s.Kind == "StorageClass"
 			})).Should(Equal(-1))
 		})
-		It("Should still have 1 syncOnly elements in config when Pod constraint is deleted", func() {
+		It("Should still have 1 syncOnly elements in config when Pod constraint is deleted", func(ctx SpecContext) {
 			Kubectl("delete", "-f", case1ConstraintPodYaml, "--ignore-not-found")
 			config := &v1alpha1.Config{}
 
@@ -217,7 +217,7 @@ var _ = Describe("Test auditFromCache", Ordered, func() {
 				return s.Kind == "Pod"
 			})).ShouldNot(Equal(-1))
 		})
-		It("Should have 0 syncOnly elements in config ", func() {
+		It("Should have 0 syncOnly elements in config ", func(ctx SpecContext) {
 			Kubectl("delete", "-f", case1ConstraintPod2Yaml, "--ignore-not-found")
 			config := &v1alpha1.Config{}
 
@@ -231,7 +231,7 @@ var _ = Describe("Test auditFromCache", Ordered, func() {
 	})
 
 	Describe("Updating constraint should apply to config resource", Ordered, func() {
-		It("Should update the config resource", func() {
+		It("Should update the config resource", func(ctx SpecContext) {
 			config := &v1alpha1.Config{}
 
 			By("Add a new constraint")
@@ -273,7 +273,7 @@ var _ = Describe("Test auditFromCache", Ordered, func() {
 	})
 
 	Describe("Add wrong match kinds", Ordered, func() {
-		It("Should not add not founded matches", func() {
+		It("Should not add not founded matches", func(ctx SpecContext) {
 			config := &v1alpha1.Config{}
 
 			By("Apply constraint")
@@ -325,7 +325,7 @@ var _ = Describe("Test auditFromCache", Ordered, func() {
 		})
 	})
 
-	AfterAll(func() {
+	AfterAll(func(ctx SpecContext) {
 		Kubectl("delete", "ns", allowNamespace, "--ignore-not-found", "--grace-period=1")
 		Kubectl("delete", "ns", denyNamespace, "--ignore-not-found", "--grace-period=1")
 		Kubectl("delete", "-f", case1ConstraintPodYaml, "--ignore-not-found")

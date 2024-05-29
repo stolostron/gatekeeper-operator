@@ -17,7 +17,6 @@ limitations under the License.
 package e2e
 
 import (
-	"context"
 	"fmt"
 	"os"
 	"os/user"
@@ -31,7 +30,6 @@ import (
 	extv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/dynamic"
@@ -65,7 +63,7 @@ func TestE2e(t *testing.T) {
 	RunSpecs(t, "Controller Suite")
 }
 
-var _ = BeforeSuite(func() {
+var _ = BeforeSuite(func(ctx SpecContext) {
 	logf.SetLogger(zap.New(zap.WriteTo(GinkgoWriter), zap.UseDevMode(true)))
 
 	By("bootstrapping test environment")
@@ -92,12 +90,12 @@ var _ = BeforeSuite(func() {
 	err = extv1.AddToScheme(scheme.Scheme)
 	Expect(err).NotTo(HaveOccurred())
 
-	affinityNode, err = getAffinityNode()
+	affinityNode, err = getAffinityNode(ctx)
 	Expect(err).ToNot(HaveOccurred())
 
 	if affinityNode != nil {
-		Expect(labelNode(affinityNode)).Should(Succeed())
-		createAffinityPod()
+		Expect(labelNode(ctx, affinityNode)).Should(Succeed())
+		createAffinityPod(ctx)
 	}
 
 	err = v1alpha1.AddToScheme(scheme.Scheme)
@@ -121,27 +119,27 @@ var _ = BeforeSuite(func() {
 	}
 })
 
-var _ = AfterSuite(func() {
+var _ = AfterSuite(func(ctx SpecContext) {
 	By("tearing down the test environment")
 
 	if affinityNode != nil {
 		if affinityPod != nil {
-			err := K8sClient.Delete(ctx, affinityPod, client.PropagationPolicy(v1.DeletePropagationForeground))
+			err := K8sClient.Delete(ctx, affinityPod, client.PropagationPolicy(metav1.DeletePropagationForeground))
 			Expect(err).ToNot(HaveOccurred())
 		}
 
-		Expect(unlabelNode(affinityNode)).Should(Succeed())
-		err := deleteAffinityPod()
+		Expect(unlabelNode(ctx, affinityNode)).Should(Succeed())
+		err := deleteAffinityPod(ctx)
 		Expect(err).ToNot(HaveOccurred())
 	}
 	err := testEnv.Stop()
 	Expect(err).NotTo(HaveOccurred())
 })
 
-func getAffinityNode() (*corev1.Node, error) {
+func getAffinityNode(ctx SpecContext) (*corev1.Node, error) {
 	nodes := &corev1.NodeList{}
 
-	err := K8sClient.List(context.TODO(), nodes)
+	err := K8sClient.List(ctx, nodes)
 	if err != nil {
 		return nil, err
 	}
@@ -154,29 +152,29 @@ func getAffinityNode() (*corev1.Node, error) {
 	return &nodes.Items[0], nil
 }
 
-func labelNode(node *corev1.Node) error {
+func labelNode(ctx SpecContext, node *corev1.Node) error {
 	patch := client.MergeFrom(node.DeepCopy())
 	node.ObjectMeta.Labels["region"] = "EMEA"
 	node.ObjectMeta.Labels["topology.kubernetes.io/zone"] = "test"
 
-	return K8sClient.Patch(context.TODO(), node, patch)
+	return K8sClient.Patch(ctx, node, patch)
 }
 
-func unlabelNode(node *corev1.Node) error {
+func unlabelNode(ctx SpecContext, node *corev1.Node) error {
 	patch := client.MergeFrom(node.DeepCopy())
 	delete(node.ObjectMeta.Labels, "region")
 	delete(node.ObjectMeta.Labels, "topology.kubernetes.io/zone")
 
-	return K8sClient.Patch(context.TODO(), node, patch)
+	return K8sClient.Patch(ctx, node, patch)
 }
 
-func createAffinityPod() {
+func createAffinityPod(ctx SpecContext) {
 	affinityPod, err := loadAffinityPodFromFile(gatekeeperNamespace)
 	Expect(err).ToNot(HaveOccurred())
 	Expect(K8sClient.Create(ctx, affinityPod)).Should(Succeed())
 }
 
-func deleteAffinityPod() error {
+func deleteAffinityPod(ctx SpecContext) error {
 	affinityPodFromFile, err := loadAffinityPodFromFile(gatekeeperNamespace)
 	if err != nil {
 		return err
