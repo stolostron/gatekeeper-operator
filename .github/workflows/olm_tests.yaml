@@ -62,11 +62,15 @@ jobs:
       run: |
         kubectl -n mygatekeeper logs deployment/gatekeeper-operator-controller -c manager -f  2>&1 | tee operator.log &
         make test-e2e NAMESPACE=mygatekeeper
-        kubectl delete --wait namespace mygatekeeper
 
     - name: Debug
       if: ${{ failure() }}
       run: |
+        echo "::group:Deployments"
+        kubectl -n mygatekeeper get all
+        echo "---"
+        kubectl -n mygatekeeper get deployment/gatekeeper-operator-controller -o yaml
+        echo "::endgroup::"
         echo "::group::Operator Logs"
         cat operator.log
         echo "::endgroup::"
