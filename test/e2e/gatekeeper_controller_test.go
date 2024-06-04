@@ -984,7 +984,8 @@ func byCheckingMutationDisabled(ctx SpecContext, auditDeployment, webhookDeploym
 			)
 
 			return found
-		}, timeout, pollInterval).Should(BeFalse())
+		}, timeout, pollInterval).Should(BeFalse(),
+			fmt.Sprintf("Argument %s should not be set", controllers.EnableMutationArg))
 	})
 
 	By(fmt.Sprintf("Checking %s=%s argument is set",
@@ -996,7 +997,10 @@ func byCheckingMutationDisabled(ctx SpecContext, auditDeployment, webhookDeploym
 				controllers.OperationArg, controllers.OperationMutationStatus)
 
 			return found
-		}, timeout, pollInterval).Should(BeTrue())
+		}, timeout, pollInterval).Should(BeTrue(),
+			fmt.Sprintf("Should have argument %s=%s",
+				controllers.OperationArg, controllers.OperationMutationStatus),
+		)
 	})
 
 	By("Checking MutatingWebhookConfiguration not deployed", func() {
@@ -1005,7 +1009,7 @@ func byCheckingMutationDisabled(ctx SpecContext, auditDeployment, webhookDeploym
 			err := K8sClient.Get(ctx, mutatingWebhookName, mutatingWebhookConfiguration)
 
 			return apierrors.IsNotFound(err)
-		}, timeout, pollInterval).Should(BeTrue())
+		}, timeout, pollInterval).Should(BeTrue(), "MutatingWebhookConfiguration should not exist")
 	})
 
 	crdFn := func(crdName types.NamespacedName, mutatingCRD *extv1.CustomResourceDefinition) {
@@ -1013,7 +1017,7 @@ func byCheckingMutationDisabled(ctx SpecContext, auditDeployment, webhookDeploym
 			err := K8sClient.Get(ctx, crdName, mutatingCRD)
 
 			return apierrors.IsNotFound(err)
-		}, timeout, pollInterval).Should(BeTrue())
+		}, timeout, pollInterval).Should(BeTrue(), "CRD "+crdName.Name+" should not exist")
 	}
 	byCheckingMutatingCRDs("not deployed", crdFn)
 }
