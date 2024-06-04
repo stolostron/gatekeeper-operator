@@ -593,7 +593,9 @@ func (r *GatekeeperReconciler) crudResource(
 		}
 	case deleteCrud:
 		if err = r.Delete(ctx, obj); err != nil {
-			return errors.Wrapf(err, "Error attempting to delete resource %s", namespacedName)
+			if !apierrors.IsNotFound(err) {
+				return errors.Wrapf(err, "Error attempting to delete resource %s", namespacedName)
+			}
 		}
 
 		logger.Info("Deleted Gatekeeper resource")
