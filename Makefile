@@ -8,7 +8,7 @@ OLM_VERSION ?= v0.27.0
 # https://github.com/operator-framework/operator-sdk/releases/latest
 OPERATOR_SDK_VERSION ?= v1.34.1
 # https://github.com/kubernetes/kubernetes/releases/latest
-KUBERNETES_VERSION ?= v1.29.0
+KUBERNETES_VERSION ?= v1.29.4
 # https://github.com/bats-core/bats-core/releases/latest
 BATS_VERSION ?= 1.11.0
 
