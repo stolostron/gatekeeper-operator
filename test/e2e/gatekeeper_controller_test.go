@@ -952,19 +952,6 @@ func byCheckingValidationEnabled(ctx SpecContext) {
 type getCRDFunc func(types.NamespacedName, *extv1.CustomResourceDefinition)
 
 func byCheckingMutationEnabled(ctx SpecContext, auditDeployment, webhookDeployment *appsv1.Deployment) {
-	By(fmt.Sprintf("Checking %s argument is set", controllers.EnableMutationArg), func() {
-		Eventually(func() bool {
-			webhookDeployment = gatekeeperWebhookDeployment(ctx)
-			_, found := getContainerArg(
-				webhookDeployment.Spec.Template.Spec.Containers[0].Args,
-				controllers.EnableMutationArg,
-			)
-
-			return found
-		}, timeout, pollInterval).Should(BeTrue(),
-			fmt.Sprintf("Argument %s should be set", controllers.EnableMutationArg))
-	})
-
 	By(fmt.Sprintf(
 		"Checking %s=%s argument is set", controllers.OperationArg, controllers.OperationMutationWebhook,
 	), func() {
@@ -1012,19 +999,6 @@ func byCheckingValidationDisabled(ctx SpecContext) {
 }
 
 func byCheckingMutationDisabled(ctx SpecContext, auditDeployment, webhookDeployment *appsv1.Deployment) {
-	By(fmt.Sprintf("Checking %s argument is not set", controllers.EnableMutationArg), func() {
-		Eventually(func() bool {
-			webhookDeployment = gatekeeperWebhookDeployment(ctx)
-			_, found := getContainerArg(
-				webhookDeployment.Spec.Template.Spec.Containers[0].Args,
-				controllers.EnableMutationArg,
-			)
-
-			return found
-		}, timeout, pollInterval).Should(BeFalse(),
-			fmt.Sprintf("Argument %s should not be set", controllers.EnableMutationArg))
-	})
-
 	By(fmt.Sprintf(
 		"Checking %s=%s argument is not set", controllers.OperationArg, controllers.OperationMutationWebhook,
 	), func() {

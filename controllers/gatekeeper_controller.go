@@ -87,7 +87,6 @@ const (
 	AdmissionEventsInvolvedNamespaceArg = "--admission-events-involved-namespace"
 	AuditEventsInvolvedNamespaceArg     = "--audit-events-involved-namespace"
 	ExemptNamespaceArg                  = "--exempt-namespace"
-	EnableMutationArg                   = "--enable-mutation"
 	OperationArg                        = "--operation"
 	OperationMutationStatus             = "mutation-status"
 	OperationMutationWebhook            = "mutation-webhook"
