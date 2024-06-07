@@ -135,7 +135,7 @@ func (r *ConstraintPodStatusReconciler) Reconcile(ctx context.Context,
 		return reconcile.Result{}, err
 	}
 
-	constraint, constraintName, err := getConstraint(ctx, *constraintPodStatus, r.DynamicClient)
+	constraint, constraintName, err := getConstraint(ctx, constraintPodStatus.GetLabels(), r.DynamicClient)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			r.Log.Info("The Constraint was not found", "constraintName:", constraintName)

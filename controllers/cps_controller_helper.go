@@ -3,10 +3,8 @@ package controllers
 import (
 	"context"
 	"strings"
-	"time"
 
 	gkv1alpha1 "github.com/open-policy-agent/gatekeeper/v3/apis/config/v1alpha1"
-	"github.com/open-policy-agent/gatekeeper/v3/apis/status/v1beta1"
 	gkv1beta1 "github.com/open-policy-agent/gatekeeper/v3/apis/status/v1beta1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -43,8 +41,9 @@ func (r *GatekeeperReconciler) handleCPSController(ctx context.Context,
 
 	// auditFromCache is not set to Automatic, so stop the existing ConstraintPodStatus controller
 	if !isAutomaticOn {
-		if r.isCPSCtrlRunning {
-			r.StopCPSController()
+		if r.isCPSCtrlRunning && r.cpsCtrlCtxCancel != nil {
+			setupLog.Info("Gatekeeper auditFromCache unset from Automatic. Stopping the ConstraintPodStatus manager.")
+			r.cpsCtrlCtxCancel()
 		}
 
 		return nil
@@ -113,6 +112,7 @@ func (r *GatekeeperReconciler) handleCPSController(ctx context.Context,
 	}
 
 	r.isCPSCtrlRunning = true
+	r.subControllerWait.Add(1)
 
 	// Use another go routine for the ConstraintPodStatus controller
 	go func() {
@@ -123,7 +123,6 @@ func (r *GatekeeperReconciler) handleCPSController(ctx context.Context,
 
 		defer r.cpsCtrlCtxCancel()
 
-		r.cpsCtrlCtxCancel = nil
 		r.isCPSCtrlRunning = false
 
 		// In case it is not an error and a child context is cancelled
@@ -141,30 +140,43 @@ func (r *GatekeeperReconciler) handleCPSController(ctx context.Context,
 				},
 			},
 		}
+
+		r.subControllerWait.Done()
 	}()
 
 	return nil
 }
 
 func (r *GatekeeperReconciler) getConstraintToSyncOnly(ctx context.Context) map[string][]gkv1alpha1.SyncOnlyEntry {
-	cpsList := &v1beta1.ConstraintPodStatusList{}
+	cpsGVR := schema.GroupVersionResource{
+		Group:    "status.gatekeeper.sh",
+		Version:  "v1beta1",
+		Resource: "constraintpodstatuses",
+	}
 
 	// key = ConstraintPodStatus Name
 	constraintToSyncOnly := map[string][]gkv1alpha1.SyncOnlyEntry{}
 
-	err := r.Client.List(ctx, cpsList, &client.ListOptions{})
+	unstructCpsList, err := r.DynamicClient.Resource(cpsGVR).List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return constraintToSyncOnly
 	}
 
 	// Add to table for unique filtering
-	for _, cps := range cpsList.Items {
-		// Pick only Audit ConstraintPodStatus
-		if !slices.Contains(cps.Status.Operations, "audit") {
+	for _, cps := range unstructCpsList.Items {
+		operations, found, err := unstructured.NestedStringSlice(cps.Object, "status", "operations")
+		if !found || err != nil {
+			r.Log.Error(err, "Failed to parse status.operations from ConstraintPodStatus "+cps.GetName())
+
 			continue
 		}
 
-		constraint, constraintName, err := getConstraint(ctx, cps, r.DynamicClient)
+		// Pick only Audit ConstraintPodStatus
+		if !slices.Contains(operations, "audit") {
+			continue
+		}
+
+		constraint, constraintName, err := getConstraint(ctx, cps.GetLabels(), r.DynamicClient)
 		if err != nil {
 			if apierrors.IsNotFound(err) {
 				r.Log.Info("The Constraint was not found", "constraintName:", constraintName)
@@ -186,17 +198,16 @@ func (r *GatekeeperReconciler) getConstraintToSyncOnly(ctx context.Context) map[
 			continue
 		}
 
-		constraintToSyncOnly[cps.Name] = constraintSyncOnlyEntries
+		constraintToSyncOnly[cps.GetName()] = constraintSyncOnlyEntries
 	}
 
 	return constraintToSyncOnly
 }
 
 // Helper function to get constraint from ConstraintPodStatus
-func getConstraint(ctx context.Context, cps gkv1beta1.ConstraintPodStatus,
+func getConstraint(ctx context.Context, labels map[string]string,
 	dynamicClient *dynamic.DynamicClient,
 ) (*unstructured.Unstructured, string, error) {
-	labels := cps.GetLabels()
 	constraintKind := labels["internal.gatekeeper.sh/constraint-kind"]
 	constraintName := labels["internal.gatekeeper.sh/constraint-name"]
 
@@ -218,20 +229,4 @@ func getConstraint(ctx context.Context, cps gkv1beta1.ConstraintPodStatus,
 func checkCPScontrollerPrereqs(gatekeeper *operatorv1alpha1.Gatekeeper) bool {
 	return gatekeeper.Spec.Audit != nil && gatekeeper.Spec.Audit.AuditFromCache != nil &&
 		*gatekeeper.Spec.Audit.AuditFromCache == operatorv1alpha1.AuditFromCacheAutomatic
-}
-
-func (r *GatekeeperReconciler) StopCPSController() {
-	if r.cpsCtrlCtxCancel == nil {
-		return
-	}
-
-	setupLog.Info("Gatekeeper auditFromCache unset from Automatic. Stopping the ConstraintPodStatus manager.")
-
-	r.cpsCtrlCtxCancel()
-
-	for r.isCPSCtrlRunning {
-		setupLog.Info("Waiting for the ConstraintPodStatus manager to shutdown")
-
-		time.Sleep(1 * time.Second)
-	}
 }

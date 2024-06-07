@@ -2,15 +2,15 @@ package controllers
 
 import (
 	"context"
-	"reflect"
 
-	"github.com/go-logr/logr"
 	"github.com/open-policy-agent/gatekeeper/v3/apis/config/v1alpha1"
 	"github.com/open-policy-agent/gatekeeper/v3/pkg/wildcard"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/fields"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	ctrl "sigs.k8s.io/controller-runtime"
 	cacheRuntime "sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -85,69 +85,31 @@ func createDefaultConfig(ctx context.Context, c client.Client, namespace string,
 	return nil
 }
 
-// Reset Config.Spec.Match and append the default exempt namespaces and
-// provided matches from the Gatekeeper CR
-func setExemptNamespaces(ctx context.Context,
-	c client.Client, existingConfig *v1alpha1.Config,
-	gatekeeper *operatorv1alpha1.Gatekeeper, scheme *runtime.Scheme, log logr.Logger,
+func (r *GatekeeperReconciler) initConfig(
+	ctx context.Context,
+	gatekeeper *operatorv1alpha1.Gatekeeper,
 ) error {
-	// Find OwnerReference
-	ownerRefFound := false
-
-	for _, ownerRef := range existingConfig.GetOwnerReferences() {
-		if ownerRef.UID == gatekeeper.UID {
-			ownerRefFound = true
-
-			break
-		}
+	configGVR := schema.GroupVersionResource{
+		Group:    "config.gatekeeper.sh",
+		Version:  "v1alpha1",
+		Resource: "configs",
 	}
 
-	// The ownerRefFound which is false means the Config resource was not created by gatekeeper-operator
-	if !ownerRefFound && len(existingConfig.Spec.Match) != 0 {
-		log.V(1).Info("The gatekeeper matches already exist. Skip adding DefaultExemptNamespaces")
-
-		return nil
-	}
-
-	// Reset Config Match
-	var newMatch []v1alpha1.MatchEntry
-
-	var configDefault *v1alpha1.Config
-
-	// When it is DisableDefaultMatches = false or nil then append default exempt namespaces
-	if gatekeeper.Spec.Config == nil || !gatekeeper.Spec.Config.DisableDefaultMatches {
-		configDefault = getDefaultConfig("")
-		newMatch = append(newMatch, configDefault.Spec.Match...)
-	}
-
-	// Avoid gatekeeper.Spec.Config nil error
-	if gatekeeper.Spec.Config != nil {
-		// Append matched from Gatekeeper CR spec.config.matches
-		newMatch = append(newMatch, gatekeeper.Spec.Config.Matches...)
-	}
-
-	// When ownerRefFound is false, config will be updated for adding ownerRef
-	if reflect.DeepEqual(existingConfig.Spec.Match, newMatch) && ownerRefFound {
-		log.V(1).Info("No need to Update")
-
-		return nil
-	}
-
-	existingConfig.Spec.Match = newMatch
-
-	// Set OwnerReference
-	if !ownerRefFound {
-		if err := controllerutil.SetOwnerReference(gatekeeper, existingConfig, scheme); err != nil {
-			return err
-		}
-	}
-
-	err := c.Update(ctx, existingConfig, &client.UpdateOptions{})
+	_, err := r.DynamicClient.Resource(configGVR).Get(ctx, "config", metav1.GetOptions{})
 	if err != nil {
+		if apierrors.IsNotFound(err) {
+			err = createDefaultConfig(ctx, r.Client, r.Namespace, gatekeeper, r.Scheme)
+			if err != nil {
+				return err
+			}
+
+			r.Log.Info("The Gatekeeper Config resource is created.")
+
+			return nil
+		}
+
 		return err
 	}
-
-	log.Info("Updated Config object with excluded namespaces")
 
 	return nil
 }
@@ -165,6 +127,10 @@ func (r *GatekeeperReconciler) handleConfigController(ctx context.Context) error
 	if r.isConfigCtrlRunning {
 		return nil
 	}
+
+	var configCtrlCtx context.Context
+
+	configCtrlCtx, r.configCtrlCtxCancel = context.WithCancel(ctx)
 
 	configMgr, err := ctrl.NewManager(r.KubeConfig, ctrl.Options{
 		Scheme: r.Scheme,
@@ -203,13 +169,16 @@ func (r *GatekeeperReconciler) handleConfigController(ctx context.Context) error
 	}
 
 	r.isConfigCtrlRunning = true
+	r.subControllerWait.Add(1)
 
 	// Use another go routine for the Config controller
 	go func() {
-		err := configMgr.Start(ctx)
+		err := configMgr.Start(configCtrlCtx)
 		if err != nil {
 			setupLog.Error(err, "A problem running Config manager. Triggering a reconcile to restart it.")
 		}
+
+		defer r.configCtrlCtxCancel()
 
 		r.isConfigCtrlRunning = false
 
@@ -224,6 +193,8 @@ func (r *GatekeeperReconciler) handleConfigController(ctx context.Context) error
 				},
 			},
 		}
+
+		r.subControllerWait.Done()
 	}()
 
 	return nil
