@@ -3,12 +3,12 @@ name: OLM-Tests
 on:
   push:
     branches:
-    - main
-    - release-[0-9]+.[0-9]+
+      - main
+      - release-[0-9]+.[0-9]+
   pull_request:
     branches:
-    - main
-    - release-[0-9]+.[0-9]+
+      - main
+      - release-[0-9]+.[0-9]+
 
 jobs:
   main:
@@ -16,70 +16,70 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - uses: actions/setup-go@v5
-      with:
-        go-version-file: go.mod
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
 
-    - name: Download binaries
-      run: |
-        make download-binaries
+      - name: Download binaries
+        run: |
+          make download-binaries
 
-    - name: Verify bundle
-      run: |
-        make bundle
-        git diff --exit-code
+      - name: Verify bundle
+        run: |
+          make bundle
+          git diff --exit-code
 
-    - name: Create and set up K8s KinD Cluster
-      run: |
-        make test-cluster
+      - name: Create and set up K8s KinD Cluster
+        run: |
+          make test-cluster
 
-    - name: Build and Push Test Container Image and Bundle/Bundle Index Images
-      run: |
-        make build-and-push-bundle-images REPO=localhost:5000 VERSION_TAG=${GITHUB_SHA}
+      - name: Build and Push Test Container Image and Bundle/Bundle Index Images
+        run: |
+          make build-and-push-bundle-images REPO=localhost:5000 VERSION_TAG=${GITHUB_SHA}
 
-    - name: Deploy OLM
-      run: |
-        make deploy-olm
+      - name: Deploy OLM
+        run: |
+          make deploy-olm
 
-    - name: Deploy resources on KIND cluster to install Gatekeeper
-      run: |
-        make deploy-using-olm REPO=localhost:5000 VERSION_TAG=${GITHUB_SHA} NAMESPACE=mygatekeeper
-        for i in {1..9}; do
-          echo "Waiting for gatekeeper-operator-controller deployment creation (${i}/9) ..."
-          kubectl -n mygatekeeper get deployment gatekeeper-operator-controller && break
+      - name: Deploy resources on KIND cluster to install Gatekeeper
+        run: |
+          make deploy-using-olm REPO=localhost:5000 VERSION_TAG=${GITHUB_SHA} NAMESPACE=mygatekeeper
+          for i in {1..9}; do
+            echo "Waiting for gatekeeper-operator-controller deployment creation (${i}/9) ..."
+            kubectl -n mygatekeeper get deployment gatekeeper-operator-controller && break
 
-          # Patch any ErrorPreventedResolution status, which would unnecessarily block the deployment for 10 minutes
-          oc get subscription -n mygatekeeper -l operators.coreos.com/gatekeeper-operator.mygatekeeper= -o yaml |
-            yq '.items[0] | .status.conditions[] |= del(select(.reason == "ErrorPreventedResolution"))' | oc apply -f -
+            # Patch any ErrorPreventedResolution status, which would unnecessarily block the deployment for 10 minutes
+            oc get subscription -n mygatekeeper -l operators.coreos.com/gatekeeper-operator.mygatekeeper= -o yaml |
+              yq '.items[0] | .status.conditions[] |= del(select(.reason == "ErrorPreventedResolution"))' | oc apply -f -
 
-          sleep 10
-        done
-        for i in {1..6}; do
-          err_code=0
-          echo "Waiting for gatekeeper-operator-controller deployment to be available (${i}/6) ..."
-          kubectl -n mygatekeeper rollout status deployment/gatekeeper-operator-controller --timeout=30s && break || err_code=$?
-        done
-        [[ "${err_code}" == "0" ]] || { echo "Deployment failed to become available."; exit ${err_code}; }
+            sleep 10
+          done
+          for i in {1..6}; do
+            err_code=0
+            echo "Waiting for gatekeeper-operator-controller deployment to be available (${i}/6) ..."
+            kubectl -n mygatekeeper rollout status deployment/gatekeeper-operator-controller --timeout=30s && break || err_code=$?
+          done
+          [[ "${err_code}" == "0" ]] || { echo "Deployment failed to become available."; exit ${err_code}; }
 
-    - name: E2E Tests
-      run: |
-        kubectl -n mygatekeeper logs deployment/gatekeeper-operator-controller -c manager -f  2>&1 | tee operator.log &
-        make test-e2e NAMESPACE=mygatekeeper
+      - name: E2E Tests
+        run: |
+          kubectl -n mygatekeeper logs deployment/gatekeeper-operator-controller -c manager -f  2>&1 | tee operator.log &
+          make test-e2e NAMESPACE=mygatekeeper
 
-    - name: Debug
-      if: ${{ failure() }}
-      run: |
-        echo "::group:Deployments"
-        kubectl -n mygatekeeper get all
-        echo "---"
-        kubectl -n mygatekeeper get deployment/gatekeeper-operator-controller -o yaml
-        echo "::endgroup::"
-        echo "::group::Operator Logs"
-        cat operator.log
-        echo "::endgroup::"
+      - name: Debug
+        if: ${{ failure() }}
+        run: |
+          echo "::group:Deployments"
+          kubectl -n mygatekeeper get all
+          echo "---"
+          kubectl -n mygatekeeper get deployment/gatekeeper-operator-controller -o yaml
+          echo "::endgroup::"
+          echo "::group::Operator Logs"
+          cat operator.log
+          echo "::endgroup::"
 
-        echo "::group::Deployments"
-        kubectl -n mygatekeeper get deployments -o yaml
-        echo "::endgroup::"
+          echo "::group::Deployments"
+          kubectl -n mygatekeeper get deployments -o yaml
+          echo "::endgroup::"

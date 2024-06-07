@@ -3,12 +3,12 @@ name: CI-Tests
 on:
   push:
     branches:
-    - main
-    - release-[0-9]+.[0-9]+
+      - main
+      - release-[0-9]+.[0-9]+
   pull_request:
     branches:
-    - main
-    - release-[0-9]+.[0-9]+
+      - main
+      - release-[0-9]+.[0-9]+
 
 defaults:
   run:
@@ -20,146 +20,146 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - uses: actions/setup-go@v5
-      with:
-        go-version-file: go.mod
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
 
-    - name: Verify modules
-      run: |
-        go mod tidy
-        go mod verify
-        git diff --exit-code
+      - name: Verify modules
+        run: |
+          go mod tidy
+          go mod verify
+          git diff --exit-code
 
-    - name: Verify format
-      run: |
-        make fmt
-        git diff --exit-code
-        make lint
+      - name: Verify format
+        run: |
+          make fmt
+          git diff --exit-code
+          make lint
 
-    - name: Verify manifests
-      run: |
-        make manifests
-        git diff --exit-code
+      - name: Verify manifests
+        run: |
+          make manifests
+          git diff --exit-code
 
-    - name: Verify imported manifests
-      run: |
-        make import-manifests
-        git diff --exit-code
+      - name: Verify imported manifests
+        run: |
+          make import-manifests
+          git diff --exit-code
 
-    - name: Verify bindata
-      run: |
-        make update-bindata
-        git diff --exit-code
+      - name: Verify bindata
+        run: |
+          make update-bindata
+          git diff --exit-code
 
-    - name: Unit and Integration Tests
-      run: |
-        make test
+      - name: Unit and Integration Tests
+        run: |
+          make test
 
-        echo "::group::Test coverage"
-        make test-coverage
-        echo "::endgroup::"
+          echo "::group::Test coverage"
+          make test-coverage
+          echo "::endgroup::"
 
-    - name: Run Gosec Security Scanner
-      uses: securego/gosec@v2.20.0
-      with:
-        args: -no-fail -fmt sonarqube -out gosec.json -stdout -exclude-dir=.go -exclude-dir=test ./...
+      - name: Run Gosec Security Scanner
+        uses: securego/gosec@v2.20.0
+        with:
+          args: -no-fail -fmt sonarqube -out gosec.json -stdout -exclude-dir=.go -exclude-dir=test ./...
 
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: artifacts
-        path: |
-          gosec.json
-          coverage_unit.out
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts
+          path: |
+            gosec.json
+            coverage_unit.out
 
   e2e-tests:
     name: Run e2e tests
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - uses: actions/setup-go@v5
-      with:
-        go-version-file: go.mod
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
 
-    - name: Download binaries
-      run: |
-        make download-binaries
+      - name: Download binaries
+        run: |
+          make download-binaries
 
-    - name: Create K8s KinD Cluster
-      run: |
-        make test-cluster
+      - name: Create K8s KinD Cluster
+        run: |
+          make test-cluster
 
-    - name: Build and Push Test Container Image to KIND node
-      run: |
-        make docker-build IMG=localhost:5000/gatekeeper-operator:$GITHUB_SHA
-        kind load docker-image localhost:5000/gatekeeper-operator:$GITHUB_SHA
+      - name: Build and Push Test Container Image to KIND node
+        run: |
+          make docker-build IMG=localhost:5000/gatekeeper-operator:$GITHUB_SHA
+          kind load docker-image localhost:5000/gatekeeper-operator:$GITHUB_SHA
 
-    - name: E2E Tests
-      run: |
-        make deploy-ci NAMESPACE=gatekeeper-system IMG=localhost:5000/gatekeeper-operator:$GITHUB_SHA
-        kubectl -n gatekeeper-system wait deployment/gatekeeper-operator-controller --for condition=Available --timeout=90s
-        kubectl -n gatekeeper-system logs deployment/gatekeeper-operator-controller -c manager -f 2>&1 | tee operator.log &
-        make test-e2e NAMESPACE=gatekeeper-system
+      - name: E2E Tests
+        run: |
+          make deploy-ci NAMESPACE=gatekeeper-system IMG=localhost:5000/gatekeeper-operator:$GITHUB_SHA
+          kubectl -n gatekeeper-system wait deployment/gatekeeper-operator-controller --for condition=Available --timeout=90s
+          kubectl -n gatekeeper-system logs deployment/gatekeeper-operator-controller -c manager -f 2>&1 | tee operator.log &
+          make test-e2e NAMESPACE=gatekeeper-system
 
-    - name: Debug
-      if: ${{ failure() }}
-      run: |
-        echo "::group:Deployments"
-        kubectl -n gatekeeper-system get all
-        echo "---"
-        kubectl -n gatekeeper-system get deployment/gatekeeper-operator-controller -o yaml
-        echo "::endgroup::"
-        echo "::group::Operator Logs"
-        cat operator.log
-        echo "::endgroup::"
+      - name: Debug
+        if: ${{ failure() }}
+        run: |
+          echo "::group:Deployments"
+          kubectl -n gatekeeper-system get all
+          echo "---"
+          kubectl -n gatekeeper-system get deployment/gatekeeper-operator-controller -o yaml
+          echo "::endgroup::"
+          echo "::group::Operator Logs"
+          cat operator.log
+          echo "::endgroup::"
 
   e2e-openshift-tests:
     name: Run e2e Openshift tests
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-    - uses: actions/setup-go@v5
-      with:
-        go-version-file: go.mod
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
 
-    - name: Download binaries
-      run: |
-        make download-binaries
+      - name: Download binaries
+        run: |
+          make download-binaries
 
-    - name: Create K8s KinD Cluster
-      run: |
-        make test-cluster
-        make test-openshift-setup
+      - name: Create K8s KinD Cluster
+        run: |
+          make test-cluster
+          make test-openshift-setup
 
-    - name: Build and Push Test Container Image to KIND node
-      run: |
-        make docker-build IMG=localhost:5000/gatekeeper-operator:$GITHUB_SHA
-        kind load docker-image localhost:5000/gatekeeper-operator:$GITHUB_SHA
+      - name: Build and Push Test Container Image to KIND node
+        run: |
+          make docker-build IMG=localhost:5000/gatekeeper-operator:$GITHUB_SHA
+          kind load docker-image localhost:5000/gatekeeper-operator:$GITHUB_SHA
 
-    - name: E2E Openshift Tests
-      run: |
-        make deploy-ci NAMESPACE=openshift-gatekeeper-system IMG=localhost:5000/gatekeeper-operator:$GITHUB_SHA
-        kubectl -n openshift-gatekeeper-system wait deployment/gatekeeper-operator-controller --for condition=Available --timeout=90s
-        kubectl -n openshift-gatekeeper-system logs deployment/gatekeeper-operator-controller -c manager -f  2>&1 | tee operator.log &
-        make test-e2e-openshift
+      - name: E2E Openshift Tests
+        run: |
+          make deploy-ci NAMESPACE=openshift-gatekeeper-system IMG=localhost:5000/gatekeeper-operator:$GITHUB_SHA
+          kubectl -n openshift-gatekeeper-system wait deployment/gatekeeper-operator-controller --for condition=Available --timeout=90s
+          kubectl -n openshift-gatekeeper-system logs deployment/gatekeeper-operator-controller -c manager -f  2>&1 | tee operator.log &
+          make test-e2e-openshift
 
-    - name: Debug
-      if: ${{ failure() }}
-      run: |
-        echo "::group:Deployments"
-        kubectl -n openshift-gatekeeper-system get all
-        echo "---"
-        kubectl -n openshift-gatekeeper-system get deployment/gatekeeper-operator-controller -o yaml
-        echo "::endgroup::"
-        echo "::group::Operator Logs"
-        cat operator.log
-        echo "::endgroup::"
+      - name: Debug
+        if: ${{ failure() }}
+        run: |
+          echo "::group:Deployments"
+          kubectl -n openshift-gatekeeper-system get all
+          echo "---"
+          kubectl -n openshift-gatekeeper-system get deployment/gatekeeper-operator-controller -o yaml
+          echo "::endgroup::"
+          echo "::group::Operator Logs"
+          cat operator.log
+          echo "::endgroup::"
 
   gatekeeper-e2e-tests:
     name: Run gatekeeper e2e tests
@@ -170,65 +170,65 @@ jobs:
         working-directory: gatekeeper-operator
 
     steps:
-    - uses: actions/checkout@v4
-      with:
-        path: gatekeeper-operator
+      - uses: actions/checkout@v4
+        with:
+          path: gatekeeper-operator
 
-    - uses: actions/setup-go@v5
-      with:
-        go-version-file: gatekeeper-operator/go.mod
-        cache-dependency-path: gatekeeper-operator/go.sum        
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: gatekeeper-operator/go.mod
+          cache-dependency-path: gatekeeper-operator/go.sum
 
-    - name: Download binaries
-      run: |
-        make download-binaries
+      - name: Download binaries
+        run: |
+          make download-binaries
 
-    - name: Create K8s KinD Cluster
-      run: |
-        make test-cluster
+      - name: Create K8s KinD Cluster
+        run: |
+          make test-cluster
 
-    - name: Build and Push Test Container Image to KIND node
-      run: |
-        make docker-build IMG=localhost:5000/gatekeeper-operator:$GITHUB_SHA
-        kind load docker-image localhost:5000/gatekeeper-operator:$GITHUB_SHA
+      - name: Build and Push Test Container Image to KIND node
+        run: |
+          make docker-build IMG=localhost:5000/gatekeeper-operator:$GITHUB_SHA
+          kind load docker-image localhost:5000/gatekeeper-operator:$GITHUB_SHA
 
-    - name: Set Up Environment Variables
-      run: |
-        GATEKEEPER_VERSION=v$(cat GATEKEEPER_VERSION 2>/dev/null || cat VERSION)
-        echo "GATEKEEPER_VERSION=${GATEKEEPER_VERSION}" >> ${GITHUB_ENV}
+      - name: Set Up Environment Variables
+        run: |
+          GATEKEEPER_VERSION=v$(cat GATEKEEPER_VERSION 2>/dev/null || cat VERSION)
+          echo "GATEKEEPER_VERSION=${GATEKEEPER_VERSION}" >> ${GITHUB_ENV}
 
-    - name: Deploy operator
-      env:
-        NAMESPACE: gatekeeper-system
-      run: |
-        make deploy-ci IMG=localhost:5000/gatekeeper-operator:$GITHUB_SHA
-        kubectl -n ${NAMESPACE} wait deployment/gatekeeper-operator-controller --for condition=Available --timeout=90s
-        echo "BATS_PATH=$PWD/ci-tools/bin" >> ${GITHUB_ENV}
-        make test-gatekeeper-e2e
+      - name: Deploy operator
+        env:
+          NAMESPACE: gatekeeper-system
+        run: |
+          make deploy-ci IMG=localhost:5000/gatekeeper-operator:$GITHUB_SHA
+          kubectl -n ${NAMESPACE} wait deployment/gatekeeper-operator-controller --for condition=Available --timeout=90s
+          echo "BATS_PATH=$PWD/ci-tools/bin" >> ${GITHUB_ENV}
+          make test-gatekeeper-e2e
 
-    # Checkout a local copy of Gatekeeper to use its bats e2e tests.
-    - name: Checkout Gatekeeper to verify imported manifests
-      uses: actions/checkout@v4
-      with:
-        repository: open-policy-agent/gatekeeper
-        ref: ${{ env.GATEKEEPER_VERSION }}
-        path: gatekeeper
+      # Checkout a local copy of Gatekeeper to use its bats e2e tests.
+      - name: Checkout Gatekeeper to verify imported manifests
+        uses: actions/checkout@v4
+        with:
+          repository: open-policy-agent/gatekeeper
+          ref: ${{ env.GATEKEEPER_VERSION }}
+          path: gatekeeper
 
-    - name: Gatekeeper E2E Tests
-      working-directory: gatekeeper
-      run: |
-        echo "::group::Patch Gatekeeper tests / Build and push test image"
-        export PATH=${{ env.BATS_PATH }}:$PATH
-        echo "* Patching test command for exempt namespaces:"
-        replace='num_namespaces=$(($(kubectl get ns -o json | jq '\''.items | length'\'')-$(kubectl get ns | grep excluded | wc  -l)))'
-        sed -i "s/num_namespaces=.*/$replace/" test/bats/test.bats
+      - name: Gatekeeper E2E Tests
+        working-directory: gatekeeper
+        run: |
+          echo "::group::Patch Gatekeeper tests / Build and push test image"
+          export PATH=${{ env.BATS_PATH }}:$PATH
+          echo "* Patching test command for exempt namespaces:"
+          replace='num_namespaces=$(($(kubectl get ns -o json | jq '\''.items | length'\'')-$(kubectl get ns | grep excluded | wc  -l)))'
+          sed -i "s/num_namespaces=.*/$replace/" test/bats/test.bats
 
-        echo "* Patching svc manifest NodePort (See https://github.com/open-policy-agent/gatekeeper/pull/3267):"
-        yq '.spec.type = "NodePort"' -i test/bats/tests/mutations/mutate_svc.yaml
+          echo "* Patching svc manifest NodePort (See https://github.com/open-policy-agent/gatekeeper/pull/3267):"
+          yq '.spec.type = "NodePort"' -i test/bats/tests/mutations/mutate_svc.yaml
 
-        test/externaldata/dummy-provider/scripts/generate-tls-certificate.sh
-        docker build -t dummy-provider:test -f test/externaldata/dummy-provider/Dockerfile test/externaldata/dummy-provider
-        kind load docker-image --name kind dummy-provider:test
-        echo "::endgroup::"
+          test/externaldata/dummy-provider/scripts/generate-tls-certificate.sh
+          docker build -t dummy-provider:test -f test/externaldata/dummy-provider/Dockerfile test/externaldata/dummy-provider
+          kind load docker-image --name kind dummy-provider:test
+          echo "::endgroup::"
 
-        make test-e2e GATEKEEPER_NAMESPACE=${NAMESPACE} ENABLE_MUTATION_TESTS=1
+          make test-e2e GATEKEEPER_NAMESPACE=${NAMESPACE} ENABLE_MUTATION_TESTS=1
