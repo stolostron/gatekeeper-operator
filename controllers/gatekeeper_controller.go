@@ -23,10 +23,10 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/go-logr/logr"
-	"github.com/open-policy-agent/gatekeeper/v3/apis/config/v1alpha1"
 	"github.com/pkg/errors"
 	admregv1 "k8s.io/api/admissionregistration/v1"
 	corev1 "k8s.io/api/core/v1"
@@ -150,11 +150,13 @@ type GatekeeperReconciler struct {
 	DiscoveryStorage       *DiscoveryStorage
 	ManualReconcileTrigger chan event.GenericEvent
 	isCPSCtrlRunning       bool
+	cpsCtrlCtxCancel       context.CancelFunc
 	isConfigCtrlRunning    bool
+	configCtrlCtxCancel    context.CancelFunc
+	subControllerWait      sync.WaitGroup
 	DynamicClient          *dynamic.DynamicClient
 	KubeConfig             *rest.Config
 	EnableLeaderElection   bool
-	cpsCtrlCtxCancel       context.CancelFunc
 }
 
 type crudOperation uint32
@@ -223,11 +225,9 @@ func (r *GatekeeperReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	err := r.Get(ctx, req.NamespacedName, gatekeeper)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
-			if r.isCPSCtrlRunning {
-				r.StopCPSController()
-			}
-
 			logger.Info("The Gatekeeper resource is not found.")
+
+			r.StopSubControllers()
 
 			return ctrl.Result{}, nil
 		}
@@ -251,18 +251,18 @@ func (r *GatekeeperReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return ctrl.Result{RequeueAfter: 5 * time.Second}, nil
 	}
 
-	if err := r.handleCPSController(ctx, gatekeeper); err != nil {
+	if err := r.handleConfigController(ctx); err != nil {
 		if errors.Is(err, errCrdNotReady) {
-			// ConstraintPodStatus CRD is not ready, wait for the CRD is ready
+			// Config CRD is not ready, wait for the CRD is ready
 			requeueTime = time.Second * 3
 		} else {
 			resultErr = err
 		}
 	}
 
-	if err := r.handleConfigController(ctx); err != nil {
+	if err := r.handleCPSController(ctx, gatekeeper); err != nil {
 		if errors.Is(err, errCrdNotReady) {
-			// Config CRD is not ready, wait for the CRD is ready
+			// ConstraintPodStatus CRD is not ready, wait for the CRD is ready
 			requeueTime = time.Second * 3
 		} else {
 			resultErr = err
@@ -296,39 +296,21 @@ func (r *GatekeeperReconciler) SetupWithManager(mgr ctrl.Manager, fromCPSMgrSour
 		Complete(r)
 }
 
-func (r *GatekeeperReconciler) initConfig(ctx context.Context, gatekeeper *operatorv1alpha1.Gatekeeper) error {
-	config := &v1alpha1.Config{}
+func (r *GatekeeperReconciler) StopSubControllers() {
+	log := r.Log.WithName("cleanup")
 
-	err := r.Get(ctx, types.NamespacedName{
-		Namespace: r.Namespace,
-		Name:      "config",
-	}, config)
-	if err != nil {
-		if apierrors.IsNotFound(err) {
-			err = createDefaultConfig(ctx, r.Client, r.Namespace, gatekeeper, r.Scheme)
-			if err != nil {
-				return err
-			}
-
-			r.Log.Info("The Gatekeeper Config resource is created.")
-
-			return nil
-		}
-
-		return err
+	if r.cpsCtrlCtxCancel != nil {
+		log.Info("Stopping the ConstraintPodStatus controller manager.")
+		r.cpsCtrlCtxCancel()
 	}
 
-	// Add the default exempt namespace list
-	// disableDefaultMatches = true, only set the Gatekeeper CR config.matches values and
-	// the default exempt namespaces will not be appended
-	err = setExemptNamespaces(ctx, r.Client, config, gatekeeper, r.Scheme, r.Log)
-	if err != nil {
-		r.Log.V(1).Error(err, "Adding default exempt namespaces has failed")
-
-		return err
+	if r.configCtrlCtxCancel != nil {
+		log.Info("Stopping the Config controller manager.")
+		r.configCtrlCtxCancel()
 	}
 
-	return nil
+	log.Info("The resource controllers are shutting down.")
+	r.subControllerWait.Wait()
 }
 
 func (r *GatekeeperReconciler) deployGatekeeperResources(
