@@ -290,38 +290,37 @@ var _ = Describe("Gatekeeper", func() {
 
 			By("Getting gatekeeper")
 			Eventually(func() error {
-				return K8sClient.Get(ctx, types.NamespacedName{Name: "gatekeeper"},
-					gatekeeper)
-			}, timeout, pollInterval).ShouldNot(HaveOccurred())
+				return K8sClient.Get(ctx, types.NamespacedName{Name: "gatekeeper"}, gatekeeper)
+			}, timeout, pollInterval).Should(Succeed())
 
 			By("Getting Config")
 			config := &gkv1alpha1.Config{}
-			Eventually(func(g Gomega) error {
-				return K8sClient.Get(ctx, types.NamespacedName{Namespace: gatekeeperNamespace, Name: "config"},
-					config)
-			}, 120, 5).ShouldNot(HaveOccurred())
+			Eventually(func(g Gomega) []gkv1alpha1.MatchEntry {
+				g.Expect(
+					K8sClient.Get(ctx, types.NamespacedName{Namespace: gatekeeperNamespace, Name: "config"}, config),
+				).Should(Succeed())
 
-			By("Apply Config has 'shoudnotexist' ns")
-			Eventually(func() error {
-				config.Spec.Match = []gkv1alpha1.MatchEntry{
-					{
-						ExcludedNamespaces: []wildcard.Wildcard{
-							"shoudnotexist",
-						},
-						Processes: []string{
-							"webhook", "sync",
-						},
+				return config.Spec.Match
+			}, 150, 5).Should(HaveLen(2))
+
+			By("Apply Config with 'shouldnotexist' namespace")
+			config.Spec.Match = []gkv1alpha1.MatchEntry{
+				{
+					ExcludedNamespaces: []wildcard.Wildcard{
+						"shouldnotexist",
 					},
-				}
-
-				return K8sClient.Update(ctx, config)
-			}, timeout, pollInterval).ShouldNot(HaveOccurred())
+					Processes: []string{
+						"webhook", "sync",
+					},
+				},
+			}
+			Expect(K8sClient.Update(ctx, config)).Should(Succeed())
 
 			By("The config has the default exempt namespaces and gatekeeper.config.matches")
 			Eventually(func(g Gomega) []gkv1alpha1.MatchEntry {
-				err := K8sClient.Get(ctx, types.NamespacedName{Namespace: gatekeeperNamespace, Name: "config"},
-					config)
-				g.Expect(err).ShouldNot(HaveOccurred())
+				g.Expect(
+					K8sClient.Get(ctx, types.NamespacedName{Namespace: gatekeeperNamespace, Name: "config"}, config),
+				).Should(Succeed())
 
 				return config.Spec.Match
 			}, 150, 5).Should(HaveLen(2))
@@ -329,9 +328,9 @@ var _ = Describe("Gatekeeper", func() {
 			Expect(config.Spec.Match[0].ExcludedNamespaces).Should(ContainElements(defaultNamespaces))
 			Expect(config.Spec.Match[1]).Should(BeComparableTo(gatekeeper.Spec.Config.Matches[0]))
 
-			By("The config should not include 'shoudnotexist' namespace")
-			Expect(config.Spec.Match[0].ExcludedNamespaces).ShouldNot(ContainElement("shoudnotexist"))
-			Expect(config.Spec.Match[1].ExcludedNamespaces).ShouldNot(ContainElement("shoudnotexist"))
+			By("The config should not include 'shouldnotexist' namespace")
+			Expect(config.Spec.Match[0].ExcludedNamespaces).ShouldNot(ContainElement("shouldnotexist"))
+			Expect(config.Spec.Match[1].ExcludedNamespaces).ShouldNot(ContainElement("shouldnotexist"))
 		})
 	})
 	Describe("Overriding CR", Ordered, func() {
@@ -557,7 +556,7 @@ var _ = Describe("Gatekeeper", func() {
 			})
 
 			By("Checking webhook is available", func() {
-				byCheckingValidationEnabled(ctx)
+				byCheckingValidation(ctx, v1alpha1.Enabled)
 			})
 
 			byCheckingFailurePolicy(ctx, &validatingWebhookName, "expected",
@@ -634,17 +633,16 @@ var _ = Describe("Gatekeeper", func() {
 			})
 
 			gatekeeperDeployments(ctx)
-			byCheckingValidationDisabled(ctx)
+			byCheckingValidation(ctx, v1alpha1.Disabled)
 		})
 
 		It("Enables then disables the ValidatingWebhookConfiguration", func(ctx SpecContext) {
 			gatekeeper := emptyGatekeeper()
 			By("First creating Gatekeeper CR with validation enabled", func() {
 				Expect(K8sClient.Create(ctx, gatekeeper)).Should(Succeed())
+				gatekeeperDeployments(ctx)
+				byCheckingValidation(ctx, v1alpha1.Enabled)
 			})
-
-			gatekeeperDeployments(ctx)
-			byCheckingValidationEnabled(ctx)
 
 			By("Getting Gatekeeper CR for updating", func() {
 				err := K8sClient.Get(ctx, gatekeeperName, gatekeeper)
@@ -655,10 +653,8 @@ var _ = Describe("Gatekeeper", func() {
 				webhookMode := v1alpha1.Disabled
 				gatekeeper.Spec.ValidatingWebhook = &webhookMode
 				Expect(K8sClient.Update(ctx, gatekeeper)).Should(Succeed())
+				byCheckingValidation(ctx, webhookMode)
 			})
-
-			gatekeeperDeployments(ctx)
-			byCheckingValidationDisabled(ctx)
 		})
 
 		It("Enables Gatekeeper mutation with default values", func(ctx SpecContext) {
@@ -666,9 +662,8 @@ var _ = Describe("Gatekeeper", func() {
 			webhookMode := v1alpha1.Enabled
 			gatekeeper.Spec.MutatingWebhook = &webhookMode
 			Expect(K8sClient.Create(ctx, gatekeeper)).Should(Succeed())
-			auditDeployment, webhookDeployment := gatekeeperDeployments(ctx)
 
-			byCheckingMutationEnabled(ctx, auditDeployment, webhookDeployment)
+			byCheckingMutation(ctx, webhookMode)
 
 			byCheckingFailurePolicy(ctx, &mutatingWebhookName, "default",
 				util.MutatingWebhookConfigurationKind,
@@ -688,9 +683,8 @@ var _ = Describe("Gatekeeper", func() {
 			webhookMode := v1alpha1.Enabled
 			gatekeeper.Spec.MutatingWebhook = &webhookMode
 			Expect(K8sClient.Create(ctx, gatekeeper)).Should(Succeed())
-			auditDeployment, webhookDeployment := gatekeeperDeployments(ctx)
 
-			byCheckingMutationEnabled(ctx, auditDeployment, webhookDeployment)
+			byCheckingMutation(ctx, webhookMode)
 
 			byCheckingFailurePolicy(ctx, &mutatingWebhookName, "expected",
 				util.MutatingWebhookConfigurationKind,
@@ -709,10 +703,8 @@ var _ = Describe("Gatekeeper", func() {
 				webhookMode := v1alpha1.Disabled
 				gatekeeper.Spec.MutatingWebhook = &webhookMode
 				Expect(K8sClient.Create(ctx, gatekeeper)).Should(Succeed())
+				byCheckingMutation(ctx, webhookMode)
 			})
-
-			auditDeployment, webhookDeployment := gatekeeperDeployments(ctx)
-			byCheckingMutationDisabled(ctx, auditDeployment, webhookDeployment)
 		})
 
 		It("Enables then disables Gatekeeper mutation", func(ctx SpecContext) {
@@ -721,10 +713,8 @@ var _ = Describe("Gatekeeper", func() {
 				webhookMode := v1alpha1.Enabled
 				gatekeeper.Spec.MutatingWebhook = &webhookMode
 				Expect(K8sClient.Create(ctx, gatekeeper)).Should(Succeed())
+				byCheckingMutation(ctx, webhookMode)
 			})
-
-			auditDeployment, webhookDeployment := gatekeeperDeployments(ctx)
-			byCheckingMutationEnabled(ctx, auditDeployment, webhookDeployment)
 
 			By("Getting Gatekeeper CR for updating", func() {
 				err := K8sClient.Get(ctx, gatekeeperName, gatekeeper)
@@ -735,10 +725,8 @@ var _ = Describe("Gatekeeper", func() {
 				webhookMode := v1alpha1.Disabled
 				gatekeeper.Spec.MutatingWebhook = &webhookMode
 				Expect(K8sClient.Update(ctx, gatekeeper)).Should(Succeed())
+				byCheckingMutation(ctx, webhookMode)
 			})
-
-			auditDeployment, webhookDeployment = gatekeeperDeployments(ctx)
-			byCheckingMutationDisabled(ctx, auditDeployment, webhookDeployment)
 		})
 
 		It("Override Webhook operations with Create, Update, Delete, Connect", func(ctx SpecContext) {
@@ -940,110 +928,87 @@ func assertResources(expected, current corev1.ResourceRequirements) {
 	Expect(expected.Requests.Memory().Cmp(*current.Requests.Memory())).To(BeZero())
 }
 
-func byCheckingValidationEnabled(ctx SpecContext) {
-	By("Checking validation is enabled", func() {
+func byCheckingValidation(ctx SpecContext, mode v1alpha1.Mode) {
+	By("Checking validation is "+string(mode), func() {
 		validatingWebhookConfiguration := &admregv1.ValidatingWebhookConfiguration{}
 		Eventually(func() error {
-			return K8sClient.Get(ctx, validatingWebhookName, validatingWebhookConfiguration)
-		}, timeout, pollInterval).ShouldNot(HaveOccurred())
+			err := K8sClient.Get(ctx, validatingWebhookName, validatingWebhookConfiguration)
+			if !mode.ToBool() && apierrors.IsNotFound(err) {
+				return nil
+			}
+
+			return err
+		}, timeout, pollInterval).ShouldNot(HaveOccurred(), "Validation should be "+string(mode))
 	})
 }
 
 type getCRDFunc func(types.NamespacedName, *extv1.CustomResourceDefinition)
 
-func byCheckingMutationEnabled(ctx SpecContext, auditDeployment, webhookDeployment *appsv1.Deployment) {
-	By(fmt.Sprintf(
-		"Checking %s=%s argument is set", controllers.OperationArg, controllers.OperationMutationWebhook,
-	), func() {
-		Eventually(func() bool {
-			return findContainerArgValue(
-				webhookDeployment.Spec.Template.Spec.Containers[0].Args,
-				controllers.OperationMutationStatus,
-			)
-		}, timeout, pollInterval).Should(BeTrue())
-	})
+func byCheckingMutation(ctx SpecContext, mode v1alpha1.Mode) {
+	msgNegation := ""
 
-	By(fmt.Sprintf(
-		"Checking %s=%s argument is set", controllers.OperationArg, controllers.OperationMutationStatus,
-	), func() {
-		Eventually(func() bool {
-			return findContainerArgValue(auditDeployment.Spec.Template.Spec.Containers[0].Args,
-				controllers.OperationMutationStatus)
-		}, timeout, pollInterval).Should(BeTrue())
-	})
-
-	By("Checking MutatingWebhookConfiguration deployed", func() {
-		mutatingWebhookConfiguration := &admregv1.MutatingWebhookConfiguration{}
-		Eventually(func() error {
-			return K8sClient.Get(ctx, mutatingWebhookName, mutatingWebhookConfiguration)
-		}, timeout, pollInterval).ShouldNot(HaveOccurred())
-	})
-
-	crdFn := func(crdName types.NamespacedName, mutatingCRD *extv1.CustomResourceDefinition) {
-		Eventually(func() error {
-			return K8sClient.Get(ctx, crdName, mutatingCRD)
-		}, timeout, pollInterval).ShouldNot(HaveOccurred())
+	if !mode.ToBool() {
+		msgNegation = "not "
 	}
-	byCheckingMutatingCRDs("deployed", crdFn)
-}
 
-func byCheckingValidationDisabled(ctx SpecContext) {
-	By("Checking validation is disabled", func() {
-		validatingWebhookConfiguration := &admregv1.ValidatingWebhookConfiguration{}
-		Eventually(func() bool {
-			err := K8sClient.Get(ctx, validatingWebhookName, validatingWebhookConfiguration)
-
-			return apierrors.IsNotFound(err)
-		}, timeout, pollInterval).Should(BeTrue())
-	})
-}
-
-func byCheckingMutationDisabled(ctx SpecContext, auditDeployment, webhookDeployment *appsv1.Deployment) {
 	By(fmt.Sprintf(
-		"Checking %s=%s argument is not set", controllers.OperationArg, controllers.OperationMutationWebhook,
+		"Checking %s=%s argument is %sset",
+		controllers.OperationArg, controllers.OperationMutationWebhook, msgNegation,
 	), func() {
 		Eventually(func() bool {
+			webhookDeployment := gatekeeperWebhookDeployment(ctx)
+
 			return findContainerArgValue(
 				webhookDeployment.Spec.Template.Spec.Containers[0].Args,
 				controllers.OperationMutationWebhook,
 			)
-		}, timeout, pollInterval).Should(BeFalse(), fmt.Sprintf(
-			"Should not have argument %s=%s", controllers.OperationArg, controllers.OperationMutationWebhook,
+		},
+			timeout, pollInterval).Should(Equal(mode.ToBool()), fmt.Sprintf(
+			"Argument %s=%s should %sbe set",
+			controllers.OperationArg, controllers.OperationMutationWebhook, msgNegation,
 		))
 	})
 
 	By(fmt.Sprintf(
-		"Checking %s=%s argument is not set", controllers.OperationArg, controllers.OperationMutationStatus,
+		"Checking %s=%s argument is %sset",
+		controllers.OperationArg, controllers.OperationMutationStatus, msgNegation,
 	), func() {
 		Eventually(func() bool {
-			auditDeployment = gatekeeperAuditDeployment(ctx)
-			found := findContainerArgValue(auditDeployment.Spec.Template.Spec.Containers[0].Args,
-				controllers.OperationMutationStatus)
+			auditDeployment := gatekeeperAuditDeployment(ctx)
 
-			return found
-		}, timeout, pollInterval).Should(BeFalse(),
-			fmt.Sprintf("Should not have argument %s=%s",
-				controllers.OperationArg, controllers.OperationMutationStatus),
-		)
+			return findContainerArgValue(auditDeployment.Spec.Template.Spec.Containers[0].Args,
+				controllers.OperationMutationStatus)
+		},
+			timeout, pollInterval).Should(Equal(mode.ToBool()), fmt.Sprintf(
+			"Argument %s=%s should %sbe set",
+			controllers.OperationArg, controllers.OperationMutationStatus, msgNegation,
+		))
 	})
 
-	By("Checking MutatingWebhookConfiguration not deployed", func() {
+	By("Checking MutatingWebhookConfiguration is "+msgNegation+"deployed", func() {
 		mutatingWebhookConfiguration := &admregv1.MutatingWebhookConfiguration{}
-		Eventually(func() bool {
+		Eventually(func() error {
 			err := K8sClient.Get(ctx, mutatingWebhookName, mutatingWebhookConfiguration)
+			if !mode.ToBool() && apierrors.IsNotFound(err) {
+				return nil
+			}
 
-			return apierrors.IsNotFound(err)
-		}, timeout, pollInterval).Should(BeTrue(), "MutatingWebhookConfiguration should not exist")
+			return err
+		}, timeout, pollInterval).ShouldNot(HaveOccurred(),
+			"MutatingWebhookConfiguration should "+msgNegation+"be deployed")
 	})
 
 	crdFn := func(crdName types.NamespacedName, mutatingCRD *extv1.CustomResourceDefinition) {
-		Eventually(func() bool {
+		Eventually(func() error {
 			err := K8sClient.Get(ctx, crdName, mutatingCRD)
+			if !mode.ToBool() && apierrors.IsNotFound(err) {
+				return nil
+			}
 
-			return apierrors.IsNotFound(err)
-		}, timeout, pollInterval).Should(BeTrue(), "CRD "+crdName.Name+" should not exist")
+			return err
+		}, timeout, pollInterval).Should(Succeed())
 	}
-	byCheckingMutatingCRDs("not deployed", crdFn)
+	byCheckingMutatingCRDs(msgNegation+"deployed", crdFn)
 }
 
 func byCheckingMutatingCRDs(deployMsg string, f getCRDFunc) {
@@ -1055,7 +1020,7 @@ func byCheckingMutatingCRDs(deployMsg string, f getCRDFunc) {
 			Name: obj.GetName(),
 		}
 
-		By(fmt.Sprintf("Checking %s Mutating CRD %s", obj.GetName(), deployMsg), func() {
+		By(fmt.Sprintf("Checking %s Mutating CRD is %s", obj.GetName(), deployMsg), func() {
 			mutatingAssignCRD := &extv1.CustomResourceDefinition{}
 			f(crdNamespacedName, mutatingAssignCRD)
 		})

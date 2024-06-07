@@ -1,7 +1,7 @@
 apiVersion: constraints.gatekeeper.sh/v1beta1
 kind: Case1Template
 metadata:
-  name: case1-worng
+  name: case1-wrong
 spec:
   match:
     kinds:
