@@ -48,7 +48,7 @@ func (r *DiscoveryStorage) getSyncOnlys(constraintMatchKinds []interface{}) (
 			for _, kind := range kindsInKinds {
 				version, err := r.getAPIVersion(kind.(string), apiGroup.(string), false)
 				if err != nil {
-					r.Log.V(1).Info("getAPIVersion has error but continue")
+					r.Log.V(1).Info(fmt.Sprintf("getAPIVersion has an error. Continuing anyway: %s", err.Error()))
 
 					if finalErr == nil {
 						finalErr = err

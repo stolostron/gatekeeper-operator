@@ -15,6 +15,8 @@ limitations under the License.
 package platform
 
 import (
+	"fmt"
+
 	"k8s.io/client-go/discovery"
 	"k8s.io/client-go/rest"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -76,7 +78,7 @@ func (k8SBasedPlatformVersioner) defaultArgs(
 func (pv k8SBasedPlatformVersioner) getPlatformInfo(
 	client discovery.DiscoveryInterface, cfg *rest.Config,
 ) (PlatformInfo, error) {
-	log.Info("detecting platform version...")
+	log.Info("Detecting platform version...")
 
 	info := PlatformInfo{Name: Kubernetes}
 
@@ -84,16 +86,12 @@ func (pv k8SBasedPlatformVersioner) getPlatformInfo(
 
 	client, err = pv.defaultArgs(client, cfg)
 	if err != nil {
-		log.Info("issue occurred while defaulting client/cfg args")
-
-		return info, err
+		return info, fmt.Errorf("failed to default k8s client/config args: %w", err)
 	}
 
 	k8sVersion, err := client.ServerVersion()
 	if err != nil {
-		log.Info("issue occurred while fetching ServerVersion")
-
-		return info, err
+		return info, fmt.Errorf("failed to fetch ServerVersion: %w", err)
 	}
 
 	info.K8SVersion = k8sVersion.Major + "." + k8sVersion.Minor
@@ -101,9 +99,7 @@ func (pv k8SBasedPlatformVersioner) getPlatformInfo(
 
 	apiList, err := client.ServerGroups()
 	if err != nil {
-		log.Info("issue occurred while fetching ServerGroups")
-
-		return info, err
+		return info, fmt.Errorf("failed to fetch ServerGroups: %w", err)
 	}
 
 	for _, v := range apiList.Groups {

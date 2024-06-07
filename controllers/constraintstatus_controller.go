@@ -92,7 +92,7 @@ func (r *ConstraintPodStatusReconciler) Reconcile(ctx context.Context,
 	}, gatekeeper)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
-			log.Error(err, "Gatekeeper resource is not found")
+			log.Info("Gatekeeper resource is not found: " + err.Error())
 
 			return reconcile.Result{}, nil
 		}

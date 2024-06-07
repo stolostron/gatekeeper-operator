@@ -227,8 +227,12 @@ func (r *GatekeeperReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 				r.StopCPSController()
 			}
 
+			logger.Info("The Gatekeeper resource is not found.")
+
 			return ctrl.Result{}, nil
 		}
+
+		logger.Error(err, "Failed to get Gatekeeper resource. Requeuing.")
 
 		return ctrl.Result{}, err
 	}
@@ -267,7 +271,7 @@ func (r *GatekeeperReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 	err = r.initConfig(ctx, gatekeeper)
 	if err != nil {
-		r.Log.Error(err, "Fail to set the default Config")
+		logger.Error(err, "Fail to set the default Config")
 
 		return ctrl.Result{}, err
 	}
