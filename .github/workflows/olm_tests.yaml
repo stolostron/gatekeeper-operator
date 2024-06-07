@@ -49,6 +49,11 @@ jobs:
         for i in {1..9}; do
           echo "Waiting for gatekeeper-operator-controller deployment creation (${i}/9) ..."
           kubectl -n mygatekeeper get deployment gatekeeper-operator-controller && break
+
+          # Patch any ErrorPreventedResolution status, which would unnecessarily block the deployment for 10 minutes
+          oc get subscription -n mygatekeeper -l operators.coreos.com/gatekeeper-operator.mygatekeeper= -o yaml |
+            yq '.items[0] | .status.conditions[] |= del(select(.reason == "ErrorPreventedResolution"))' | oc apply -f -
+
           sleep 10
         done
         for i in {1..6}; do
