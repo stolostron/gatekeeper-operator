@@ -137,26 +137,26 @@ func main() {
 			ClientSet: kubernetes.NewForConfigOrDie(mgr.GetConfig()),
 		},
 	}).SetupWithManager(mgr, fromCPSMgrSource); err != nil {
-		setupLog.Error(err, "unable to create controller", "controller", "Gatekeeper")
+		setupLog.Error(err, "Unable to create controller", "controller", "Gatekeeper")
 		os.Exit(1)
 	}
 
 	// +kubebuilder:scaffold:builder
 
 	if err := mgr.AddHealthzCheck("healthz", healthz.Ping); err != nil {
-		setupLog.Error(err, "unable to set up health check")
+		setupLog.Error(err, "Unable to set up health check")
 		os.Exit(1)
 	}
 
 	if err := mgr.AddReadyzCheck("readyz", healthz.Ping); err != nil {
-		setupLog.Error(err, "unable to set up ready check")
+		setupLog.Error(err, "Unable to set up ready check")
 		os.Exit(1)
 	}
 
-	setupLog.Info("starting manager")
+	setupLog.Info("Starting manager")
 
 	if err := mgr.Start(ctx); err != nil {
-		setupLog.Error(err, "problem running manager")
+		setupLog.Error(err, "Problem running manager")
 
 		os.Exit(1)
 	}

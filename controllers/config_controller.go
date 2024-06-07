@@ -65,12 +65,12 @@ func (r *ConfigReconciler) Reconcile(ctx context.Context,
 	}, gatekeeper)
 	if err != nil {
 		if apierrors.IsNotFound(err) {
-			r.Log.V(2).Info("Gatekeeper does not exist")
+			log.V(2).Info("Gatekeeper does not exist")
 
 			return reconcile.Result{}, nil
 		}
 
-		r.Log.Error(err, "Failed to get the Gatekeeper CR")
+		log.Error(err, "Failed to get the Gatekeeper CR")
 
 		return reconcile.Result{}, err
 	}
@@ -86,16 +86,16 @@ func (r *ConfigReconciler) Reconcile(ctx context.Context,
 		if apierrors.IsNotFound(err) {
 			err = createDefaultConfig(ctx, r.Client, r.Namespace, gatekeeper, r.Scheme)
 			if err != nil {
-				r.Log.Error(err, "Failed to create the Config")
+				log.Error(err, "Failed to create the Config")
 
 				return reconcile.Result{}, err
 			}
 
-			r.Log.Info("The Config object was deleted. The Config object was recreated")
+			log.Info("The Config object was not found and has been recreated.")
 
 			return reconcile.Result{}, nil
 		} else {
-			r.Log.Error(err, "Failed to get the Config")
+			log.Error(err, "Failed to get the Config")
 
 			return reconcile.Result{}, err
 		}
@@ -103,7 +103,7 @@ func (r *ConfigReconciler) Reconcile(ctx context.Context,
 
 	err = setExemptNamespaces(ctx, r.Client, config, gatekeeper, r.Scheme, r.Log)
 	if err != nil {
-		r.Log.V(1).Error(err, "Adding default exempt namespaces has failed")
+		log.V(1).Error(err, "Adding default exempt namespaces to the Config has failed")
 
 		return reconcile.Result{}, err
 	}
