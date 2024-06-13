@@ -17,7 +17,6 @@ import (
 )
 
 var _ = Describe("Test auditFromCache", Ordered, func() {
-
 	const (
 		case1GatekeeperYaml             string = "../resources/case1_audit_from_cache/gatekeeper.yaml"
 		case1TemplateYaml               string = "../resources/case1_audit_from_cache/template.yaml"
@@ -33,17 +32,19 @@ var _ = Describe("Test auditFromCache", Ordered, func() {
 		case1ConstraintWrongYaml        string = "../resources/case1_audit_from_cache/constraint-wrong.yaml"
 	)
 
-	var constraintGVR = schema.GroupVersionResource{
-		Group:    "constraints.gatekeeper.sh",
-		Version:  "v1beta1",
-		Resource: "case1template",
-	}
+	var (
+		constraintGVR = schema.GroupVersionResource{
+			Group:    "constraints.gatekeeper.sh",
+			Version:  "v1beta1",
+			Resource: "case1template",
+		}
 
-	var templateGVR = schema.GroupVersionResource{
-		Group:    "templates.gatekeeper.sh",
-		Version:  "v1",
-		Resource: "constrainttemplates",
-	}
+		templateGVR = schema.GroupVersionResource{
+			Group:    "templates.gatekeeper.sh",
+			Version:  "v1",
+			Resource: "constrainttemplates",
+		}
+	)
 
 	BeforeAll(func() {
 		if !useExistingCluster() {

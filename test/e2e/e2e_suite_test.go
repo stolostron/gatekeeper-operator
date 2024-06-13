@@ -302,3 +302,29 @@ func LoadConfig(url, kubeconfig, context string) (*rest.Config, error) {
 
 	return nil, fmt.Errorf("could not create a valid kubeconfig")
 }
+
+func DebugDump() {
+	By("Collecting debug information")
+
+	dumpDebug := func(title string, output string) {
+		GinkgoWriter.Printf("\n=== DEBUG: %s:\n%s", title, output)
+	}
+
+	debugCmds := map[string][]string{
+		"Gatekeeper CR":                 {"get", "gatekeeper", "gatekeeper", "-o=yaml"},
+		"All in " + gatekeeperNamespace: {"get", "all", "-n", gatekeeperNamespace},
+		"Controller manager Deployment": {"get", "deployment", controllerManagerName.Name, "-o=yaml"},
+		"Audit Deployment":              {"get", "deployment", auditName.Name, "-o=yaml"},
+		"Validating Webhook": {
+			"get", "validatingwebhookconfiguration", validatingWebhookName.Name, "-o=yaml",
+		},
+		"Mutating Webhook": {
+			"get", "mutatingwebhookconfiguration", mutatingWebhookName.Name, "-o=yaml",
+		},
+	}
+
+	for cmdName, cmd := range debugCmds {
+		out, _ := test.KubectlWithOutput(cmd...)
+		dumpDebug(cmdName, out)
+	}
+}
