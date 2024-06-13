@@ -44,51 +44,17 @@ import (
 	test "github.com/gatekeeper/gatekeeper-operator/test/e2e/util"
 )
 
-const (
-	// Gatekeeper name and namespace
-	gkName                      = "gatekeeper"
-	gatekeeperWithAllValuesFile = "gatekeeper_with_all_values.yaml"
-)
-
-var (
-	globalsInitialized    = false
-	auditName             = types.NamespacedName{}
-	controllerManagerName = types.NamespacedName{}
-	gatekeeperName        = types.NamespacedName{
-		Name: gkName,
-	}
-	validatingWebhookName = types.NamespacedName{}
-	mutatingWebhookName   = types.NamespacedName{}
-)
-
-func initializeGlobals() {
-	auditName = types.NamespacedName{
-		Namespace: gatekeeperNamespace,
-		Name:      "gatekeeper-audit",
-	}
-	controllerManagerName = types.NamespacedName{
-		Namespace: gatekeeperNamespace,
-		Name:      "gatekeeper-controller-manager",
-	}
-	validatingWebhookName = types.NamespacedName{
-		Namespace: gatekeeperNamespace,
-		Name:      "gatekeeper-validating-webhook-configuration",
-	}
-	mutatingWebhookName = types.NamespacedName{
-		Namespace: gatekeeperNamespace,
-		Name:      "gatekeeper-mutating-webhook-configuration",
-	}
-}
-
 var _ = Describe("Gatekeeper", func() {
+
+	const (
+		gatekeeperWithAllValuesFile = "gatekeeper_with_all_values.yaml"
+	)
+
 	BeforeEach(func() {
 		if !useExistingCluster() {
 			Skip("Test requires existing cluster. Set environment variable USE_EXISTING_CLUSTER=true and try again.")
 		}
 
-		if !globalsInitialized {
-			initializeGlobals()
-			globalsInitialized = true
 		}
 	})
 

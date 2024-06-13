@@ -16,34 +16,35 @@ import (
 	. "github.com/gatekeeper/gatekeeper-operator/test/e2e/util"
 )
 
-const (
-	case1GatekeeperYaml             string = "../resources/case1_audit_from_cache/gatekeeper.yaml"
-	case1TemplateYaml               string = "../resources/case1_audit_from_cache/template.yaml"
-	case1ConstraintPodYaml          string = "../resources/case1_audit_from_cache/constraint-pod.yaml"
-	case1ConstraintPod2Yaml         string = "../resources/case1_audit_from_cache/constraint-pod-2.yaml"
-	case1ConstraintIngressYaml      string = "../resources/case1_audit_from_cache/constraint-ingress.yaml"
-	case1ConstraintStorageclassYaml string = "../resources/case1_audit_from_cache/constraint-storageclass.yaml"
-	case1PodYaml                    string = "../resources/case1_audit_from_cache/pod.yaml"
-	allowNamespace                  string = "case1-allow"
-	denyNamespace                   string = "case1-deny"
-	case1ConstraintUpdateYaml       string = "../resources/case1_audit_from_cache/constraint-update.yaml"
-	case1ConstraintUpdateChangeYaml string = "../resources/case1_audit_from_cache/constraint-update-change.yaml"
-	case1ConstraintWrongYaml        string = "../resources/case1_audit_from_cache/constraint-wrong.yaml"
-)
-
-var constraintGVR = schema.GroupVersionResource{
-	Group:    "constraints.gatekeeper.sh",
-	Version:  "v1beta1",
-	Resource: "case1template",
-}
-
-var templateGVR = schema.GroupVersionResource{
-	Group:    "templates.gatekeeper.sh",
-	Version:  "v1",
-	Resource: "constrainttemplates",
-}
-
 var _ = Describe("Test auditFromCache", Ordered, func() {
+
+	const (
+		case1GatekeeperYaml             string = "../resources/case1_audit_from_cache/gatekeeper.yaml"
+		case1TemplateYaml               string = "../resources/case1_audit_from_cache/template.yaml"
+		case1ConstraintPodYaml          string = "../resources/case1_audit_from_cache/constraint-pod.yaml"
+		case1ConstraintPod2Yaml         string = "../resources/case1_audit_from_cache/constraint-pod-2.yaml"
+		case1ConstraintIngressYaml      string = "../resources/case1_audit_from_cache/constraint-ingress.yaml"
+		case1ConstraintStorageclassYaml string = "../resources/case1_audit_from_cache/constraint-storageclass.yaml"
+		case1PodYaml                    string = "../resources/case1_audit_from_cache/pod.yaml"
+		allowNamespace                  string = "case1-allow"
+		denyNamespace                   string = "case1-deny"
+		case1ConstraintUpdateYaml       string = "../resources/case1_audit_from_cache/constraint-update.yaml"
+		case1ConstraintUpdateChangeYaml string = "../resources/case1_audit_from_cache/constraint-update-change.yaml"
+		case1ConstraintWrongYaml        string = "../resources/case1_audit_from_cache/constraint-wrong.yaml"
+	)
+
+	var constraintGVR = schema.GroupVersionResource{
+		Group:    "constraints.gatekeeper.sh",
+		Version:  "v1beta1",
+		Resource: "case1template",
+	}
+
+	var templateGVR = schema.GroupVersionResource{
+		Group:    "templates.gatekeeper.sh",
+		Version:  "v1",
+		Resource: "constrainttemplates",
+	}
+
 	BeforeAll(func() {
 		if !useExistingCluster() {
 			Skip("Test requires existing cluster. Set environment variable USE_EXISTING_CLUSTER=true and try again.")

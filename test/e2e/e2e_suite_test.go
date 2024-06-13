@@ -49,6 +49,20 @@ import (
 // These tests use Ginkgo (BDD-style Go testing framework). Refer to
 // http://onsi.github.io/ginkgo/ to learn more about Ginkgo.
 
+const (
+	gkName = "gatekeeper"
+)
+
+var (
+	gatekeeperName = types.NamespacedName{
+		Name: gkName,
+	}
+	auditName             = types.NamespacedName{}
+	controllerManagerName = types.NamespacedName{}
+	validatingWebhookName = types.NamespacedName{}
+	mutatingWebhookName   = types.NamespacedName{}
+)
+
 var (
 	K8sClient        client.Client
 	testEnv          *envtest.Environment
@@ -64,6 +78,25 @@ func TestE2e(t *testing.T) {
 }
 
 var _ = BeforeSuite(func(ctx SpecContext) {
+	// The namespace is a runtime argument, so the
+	// NamespacedNames need to be set after the tests start
+	auditName = types.NamespacedName{
+		Namespace: gatekeeperNamespace,
+		Name:      "gatekeeper-audit",
+	}
+	controllerManagerName = types.NamespacedName{
+		Namespace: gatekeeperNamespace,
+		Name:      "gatekeeper-controller-manager",
+	}
+	validatingWebhookName = types.NamespacedName{
+		Namespace: gatekeeperNamespace,
+		Name:      "gatekeeper-validating-webhook-configuration",
+	}
+	mutatingWebhookName = types.NamespacedName{
+		Namespace: gatekeeperNamespace,
+		Name:      "gatekeeper-mutating-webhook-configuration",
+	}
+
 	logf.SetLogger(zap.New(zap.WriteTo(GinkgoWriter), zap.UseDevMode(true)))
 
 	By("bootstrapping test environment")
@@ -169,7 +202,8 @@ func unlabelNode(ctx SpecContext, node *corev1.Node) error {
 }
 
 func createAffinityPod(ctx SpecContext) {
-	affinityPod, err := loadAffinityPodFromFile(gatekeeperNamespace)
+	var err error
+	affinityPod, err = loadAffinityPodFromFile(gatekeeperNamespace)
 	Expect(err).ToNot(HaveOccurred())
 	Expect(K8sClient.Create(ctx, affinityPod)).Should(Succeed())
 }
