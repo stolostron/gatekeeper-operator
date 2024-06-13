@@ -45,7 +45,6 @@ import (
 )
 
 var _ = Describe("Gatekeeper", func() {
-
 	const (
 		gatekeeperWithAllValuesFile = "gatekeeper_with_all_values.yaml"
 	)
@@ -54,7 +53,11 @@ var _ = Describe("Gatekeeper", func() {
 		if !useExistingCluster() {
 			Skip("Test requires existing cluster. Set environment variable USE_EXISTING_CLUSTER=true and try again.")
 		}
+	})
 
+	JustAfterEach(func(ctx SpecContext) {
+		if CurrentSpecReport().Failed() {
+			DebugDump()
 		}
 	})
 
@@ -71,7 +74,7 @@ var _ = Describe("Gatekeeper", func() {
 			}
 
 			return apierrors.IsNotFound(err)
-		}, deleteTimeout, pollInterval).Should(BeTrue())
+		}, deleteTimeout, pollInterval).Should(BeTrue(), "Gatekeeper "+gatekeeperName.Name+" should be deleted.")
 
 		Eventually(func() bool {
 			err := K8sClient.Get(ctx, auditName, &appsv1.Deployment{})
@@ -80,7 +83,7 @@ var _ = Describe("Gatekeeper", func() {
 			}
 
 			return apierrors.IsNotFound(err)
-		}, deleteTimeout, pollInterval).Should(BeTrue())
+		}, deleteTimeout, pollInterval).Should(BeTrue(), "Deployment "+auditName.Name+" should be deleted.")
 
 		Eventually(func() bool {
 			err := K8sClient.Get(ctx, controllerManagerName, &appsv1.Deployment{})
@@ -89,12 +92,10 @@ var _ = Describe("Gatekeeper", func() {
 			}
 
 			return apierrors.IsNotFound(err)
-		}, deleteTimeout, pollInterval).Should(BeTrue())
-
-		By("Clean Config surely")
-		_, _ = test.KubectlWithOutput("delete", "config", "config", "-n", gatekeeperNamespace, "--ignore-not-found")
+		}, deleteTimeout, pollInterval).Should(BeTrue(), "Deployment "+controllerManagerName.Name+" should be deleted.")
 
 		By("Clean Config", func() {
+			_, _ = test.KubectlWithOutput("delete", "config", "config", "-n", gatekeeperNamespace, "--ignore-not-found")
 			Eventually(func() bool {
 				err := K8sClient.Get(ctx, types.NamespacedName{
 					Name:      "config",
@@ -105,7 +106,7 @@ var _ = Describe("Gatekeeper", func() {
 				}
 
 				return apierrors.IsNotFound(err) || meta.IsNoMatchError(err)
-			}, deleteTimeout, pollInterval).Should(BeTrue())
+			}, deleteTimeout, pollInterval).Should(BeTrue(), "Gatekeeper Config config should be deleted.")
 		})
 	})
 
