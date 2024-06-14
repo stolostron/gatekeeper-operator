@@ -62,8 +62,7 @@ func (r *GatekeeperReconciler) handleCPSController(ctx context.Context,
 		Metrics: server.Options{
 			BindAddress: "0",
 		},
-		LeaderElection:   r.EnableLeaderElection,
-		LeaderElectionID: "5ff985ccc.constraintstatuspod.gatekeeper.sh",
+		LeaderElection: false,
 		Cache: cacheRuntime.Options{
 			ByObject: map[client.Object]cacheRuntime.ByObject{
 				&gkv1beta1.ConstraintPodStatus{}: {
