@@ -137,8 +137,7 @@ func (r *GatekeeperReconciler) handleConfigController(ctx context.Context) error
 		Metrics: server.Options{
 			BindAddress: "0",
 		},
-		LeaderElection:   r.EnableLeaderElection,
-		LeaderElectionID: "5ff985ccc.config.gatekeeper.sh",
+		LeaderElection: false,
 		Cache: cacheRuntime.Options{
 			ByObject: map[client.Object]cacheRuntime.ByObject{
 				&v1alpha1.Config{}: {
