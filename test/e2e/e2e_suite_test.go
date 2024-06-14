@@ -311,10 +311,18 @@ func DebugDump() {
 	}
 
 	debugCmds := map[string][]string{
-		"Gatekeeper CR":                 {"get", "gatekeeper", "gatekeeper", "-o=yaml"},
-		"All in " + gatekeeperNamespace: {"get", "all", "-n", gatekeeperNamespace},
-		"Controller manager Deployment": {"get", "deployment", controllerManagerName.Name, "-o=yaml"},
-		"Audit Deployment":              {"get", "deployment", auditName.Name, "-o=yaml"},
+		"Gatekeeper CR": {
+			"get", "gatekeeper", "gatekeeper", "-o=yaml",
+		},
+		"All in " + gatekeeperNamespace: {
+			"get", "all", "-n", gatekeeperNamespace,
+		},
+		"Controller manager Deployment": {
+			"get", "all", "-n", gatekeeperNamespace, "-l=gatekeeper.sh/operation=webhook", "-o=yaml",
+		},
+		"Audit Deployment": {
+			"get", "all", "-n", gatekeeperNamespace, "-l=gatekeeper.sh/operation=audit", "-o=yaml",
+		},
 		"Validating Webhook": {
 			"get", "validatingwebhookconfiguration", validatingWebhookName.Name, "-o=yaml",
 		},
