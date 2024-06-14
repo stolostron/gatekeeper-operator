@@ -122,7 +122,7 @@ var _ = Describe("Gatekeeper", func() {
 			_, err := test.KubectlWithOutput("delete", "gatekeeper", "gatekeeper", "--ignore-not-found")
 			Expect(err).ShouldNot(HaveOccurred())
 
-			By("Clean config surely", func() {
+			By("Wait for config to be deleted", func() {
 				Eventually(func() bool {
 					err := K8sClient.Get(ctx, types.NamespacedName{
 						Name:      "config",
