@@ -66,11 +66,22 @@ jobs:
         with:
           args: -no-fail -fmt sonarqube -out gosec.json -stdout -exclude-dir=.go -exclude-dir=test ./...
 
+      - name: Store the GitHub triggering event for the sonarcloud workflow
+        if: |
+          github.repository_owner == 'stolostron'
+        run: |
+          cat <<EOF > event.json
+          ${{ toJSON(github.event) }}
+          EOF
+
       - name: Upload artifacts
+        if: |
+          github.repository_owner == 'stolostron'
         uses: actions/upload-artifact@v4
         with:
           name: artifacts
           path: |
+            event.json
             gosec.json
             coverage_unit.out
 
