@@ -2,7 +2,9 @@ package controllers
 
 import (
 	"context"
+	"reflect"
 
+	"github.com/go-logr/logr"
 	"github.com/open-policy-agent/gatekeeper/v3/apis/config/v1alpha1"
 	"github.com/open-policy-agent/gatekeeper/v3/pkg/wildcard"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -85,6 +87,77 @@ func createDefaultConfig(ctx context.Context, c client.Client, namespace string,
 	return nil
 }
 
+// Reset Config.Spec.Match and append the default exempt namespaces and
+// provided matches from the Gatekeeper CR
+func setExemptNamespaces(
+	ctx context.Context,
+	existingConfig *v1alpha1.Config,
+	gatekeeper *operatorv1alpha1.Gatekeeper,
+	log logr.Logger,
+	c client.Client,
+	scheme *runtime.Scheme,
+) error {
+	// Find OwnerReference
+	ownerRefFound := false
+
+	for _, ownerRef := range existingConfig.GetOwnerReferences() {
+		if ownerRef.UID == gatekeeper.UID {
+			ownerRefFound = true
+
+			break
+		}
+	}
+
+	// The ownerRefFound which is false means the Config resource was not created by gatekeeper-operator
+	if !ownerRefFound && len(existingConfig.Spec.Match) != 0 {
+		log.V(1).Info("The gatekeeper matches already exist. Skip adding DefaultExemptNamespaces")
+
+		return nil
+	}
+
+	// Reset Config Match
+	var newMatch []v1alpha1.MatchEntry
+
+	var configDefault *v1alpha1.Config
+
+	// When it is DisableDefaultMatches = false or nil then append default exempt namespaces
+	if gatekeeper.Spec.Config == nil || !gatekeeper.Spec.Config.DisableDefaultMatches {
+		configDefault = getDefaultConfig("")
+		newMatch = append(newMatch, configDefault.Spec.Match...)
+	}
+
+	// Avoid gatekeeper.Spec.Config nil error
+	if gatekeeper.Spec.Config != nil {
+		// Append matched from Gatekeeper CR spec.config.matches
+		newMatch = append(newMatch, gatekeeper.Spec.Config.Matches...)
+	}
+
+	// When ownerRefFound is false, config will be updated for adding ownerRef
+	if reflect.DeepEqual(existingConfig.Spec.Match, newMatch) && ownerRefFound {
+		log.V(1).Info("No need to Update")
+
+		return nil
+	}
+
+	existingConfig.Spec.Match = newMatch
+
+	// Set OwnerReference
+	if !ownerRefFound {
+		if err := controllerutil.SetOwnerReference(gatekeeper, existingConfig, scheme); err != nil {
+			return err
+		}
+	}
+
+	err := c.Update(ctx, existingConfig, &client.UpdateOptions{})
+	if err != nil {
+		return err
+	}
+
+	log.Info("Updated Config object with excluded namespaces")
+
+	return nil
+}
+
 func (r *GatekeeperReconciler) initConfig(
 	ctx context.Context,
 	gatekeeper *operatorv1alpha1.Gatekeeper,
@@ -95,7 +168,8 @@ func (r *GatekeeperReconciler) initConfig(
 		Resource: "configs",
 	}
 
-	_, err := r.DynamicClient.Resource(configGVR).Get(ctx, "config", metav1.GetOptions{})
+	config, err := r.DynamicClient.Resource(configGVR).
+		Namespace(r.Namespace).Get(ctx, "config", metav1.GetOptions{})
 	if err != nil {
 		if apierrors.IsNotFound(err) {
 			err = createDefaultConfig(ctx, r.Client, r.Namespace, gatekeeper, r.Scheme)
@@ -107,6 +181,21 @@ func (r *GatekeeperReconciler) initConfig(
 
 			return nil
 		}
+
+		return err
+	}
+
+	var updatedConfig *v1alpha1.Config
+
+	err = runtime.DefaultUnstructuredConverter.
+		FromUnstructured(config.Object, &updatedConfig)
+	if err != nil {
+		return err
+	}
+
+	err = setExemptNamespaces(ctx, updatedConfig, gatekeeper, r.Log, r.Client, r.Scheme)
+	if err != nil {
+		r.Log.V(1).Error(err, "Adding default exempt namespaces to the Config has failed")
 
 		return err
 	}
