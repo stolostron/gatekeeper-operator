@@ -299,6 +299,71 @@ var _ = Describe("Gatekeeper", func() {
 			Expect(config.Spec.Match[0].ExcludedNamespaces).ShouldNot(ContainElement("shouldnotexist"))
 			Expect(config.Spec.Match[1].ExcludedNamespaces).ShouldNot(ContainElement("shouldnotexist"))
 		})
+
+		It("Should update the config after gatekeeper is updated", func(ctx SpecContext) {
+			gatekeeper := &v1alpha1.Gatekeeper{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      gkName,
+					Namespace: gatekeeperNamespace,
+				},
+				Spec: v1alpha1.GatekeeperSpec{
+					Config: &v1alpha1.ConfigConfig{
+						Matches: []gkv1alpha1.MatchEntry{
+							{
+								ExcludedNamespaces: []wildcard.Wildcard{
+									"cat-ns", "dog-ns",
+								},
+								Processes: []string{
+									"audit", "webhook", "sync",
+								},
+							},
+						},
+						DisableDefaultMatches: false,
+					},
+				},
+			}
+
+			By("Creating Gatekeeper resource", func() {
+				Expect(K8sClient.Create(ctx, gatekeeper)).Should(Succeed())
+			})
+
+			gatekeeper = &v1alpha1.Gatekeeper{}
+
+			By("The config should be updated")
+			Eventually(func(g Gomega) {
+				err := K8sClient.Get(ctx, types.NamespacedName{Namespace: gatekeeperNamespace, Name: "gatekeeper"},
+					gatekeeper)
+				g.Expect(err).ShouldNot(HaveOccurred())
+
+				gatekeeper.Spec = v1alpha1.GatekeeperSpec{
+					Config: &v1alpha1.ConfigConfig{
+						Matches: []gkv1alpha1.MatchEntry{
+							{
+								ExcludedNamespaces: []wildcard.Wildcard{
+									"cat-ns", "dog-ns",
+								},
+								Processes: []string{
+									"audit", "webhook", "sync",
+								},
+							},
+						},
+						DisableDefaultMatches: true,
+					},
+				}
+
+				err = K8sClient.Update(ctx, gatekeeper)
+				g.Expect(err).ShouldNot(HaveOccurred())
+
+				config := &gkv1alpha1.Config{}
+				err = K8sClient.Get(ctx, types.NamespacedName{Namespace: gatekeeperNamespace, Name: "config"},
+					config)
+				g.Expect(err).ShouldNot(HaveOccurred())
+
+				// Disable adding default namespaces
+				g.Expect(config.Spec.Match).Should(HaveLen(1))
+				g.Expect(config.Spec.Match[0]).Should(BeComparableTo(gatekeeper.Spec.Config.Matches[0]))
+			}, 120, pollInterval).Should(Succeed())
+		})
 	})
 	Describe("Overriding CR", Ordered, func() {
 		It("Creating an empty gatekeeper contains default values", func(ctx SpecContext) {
