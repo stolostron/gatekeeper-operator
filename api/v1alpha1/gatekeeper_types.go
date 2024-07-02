@@ -206,6 +206,11 @@ type WebhookConfig struct {
 
 	// +optional
 	LogLevel *LogLevelMode `json:"logLevel,omitempty"`
+
+	// LogDenies enables the logging of all deny, dry run, and warn failures. The default value is Disabled.
+	// See https://open-policy-agent.github.io/gatekeeper/website/docs/violations/#log-denies
+	// +optional
+	LogDenies *Mode `json:"logDenies,omitempty"`
 }
 
 type ImageConfig struct {

@@ -3,22 +3,5 @@ kind: Gatekeeper
 metadata:
   name: gatekeeper
 spec:
-  audit:
-    replicas: 1
-    emitAuditEvents: Enabled
-    auditEventsInvolvedNamespace: Enabled
-  validatingWebhook: Enabled
   mutatingWebhook: Enabled
-  webhook:
-    replicas: 3
-    emitAdmissionEvents: Enabled
-    admissionEventsInvolvedNamespace: Enabled
-    disabledBuiltins:
-      - http.send
-    logMutations: Enabled
-    mutationAnnotations: Enabled
-  config:
-    matches:
-     - excludedNamespaces: ["gatekeeper-excluded-prefix-match-*", "gatekeeper-excluded-namespace", "*-excluded-suffix-match-namespace"]
-       processes: ["*"]
-    disableDefaultMatches: true
+  validatingWebhook: Enabled

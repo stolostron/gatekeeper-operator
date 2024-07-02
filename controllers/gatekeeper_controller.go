@@ -93,6 +93,7 @@ const (
 	DisabledBuiltinArg                  = "--disable-opa-builtin"
 	LogMutationsArg                     = "--log-mutations"
 	MutationAnnotationsArg              = "--mutation-annotations"
+	LogDenies                           = "--log-denies"
 	admissionFileFmt                    = "admissionregistration.k8s.io_v1_%[1]swebhookconfiguration" +
 		"_gatekeeper-%[1]s-webhook-configuration.yaml"
 	OpenshiftSecretName = "gatekeeper-webhook-server-cert-ocp"
@@ -823,6 +824,10 @@ func webhookOverrides(obj *unstructured.Unstructured, webhook *operatorv1alpha1.
 		if err := setMutationFlags(obj, webhook); err != nil {
 			return err
 		}
+
+		if err := setLogDenies(obj, webhook.LogDenies); err != nil {
+			return err
+		}
 	}
 
 	return nil
@@ -1080,6 +1085,18 @@ func setMutationFlags(obj *unstructured.Unstructured, webhookConfig *operatorv1a
 		return setContainerArg(
 			obj, MutationAnnotationsArg, webhookConfig.MutationAnnotations.ToBoolString(), false,
 		)
+	}
+
+	return nil
+}
+
+// Default is Disabled (false)
+func setLogDenies(obj *unstructured.Unstructured, logDenies *operatorv1alpha1.Mode) error {
+	if logDenies != nil && logDenies.ToBool() {
+		err := setContainerArg(obj, LogDenies, logDenies.ToBoolString(), false)
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

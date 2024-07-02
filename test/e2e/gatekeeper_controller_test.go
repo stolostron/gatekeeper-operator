@@ -527,6 +527,11 @@ var _ = Describe("Gatekeeper", func() {
 				_, found := getContainerArg(webhookContainer.Args, controllers.DisabledBuiltinArg)
 				Expect(found).To(BeTrue())
 			})
+
+			By("Checking default logDenies", func() {
+				_, found := getContainerArg(webhookContainer.Args, controllers.LogDenies)
+				Expect(found).To(BeFalse())
+			})
 		})
 
 		It("Contains the configured values", func(ctx SpecContext) {
@@ -653,6 +658,11 @@ var _ = Describe("Gatekeeper", func() {
 				value, found := getContainerArg(webhookContainer.Args, controllers.DisabledBuiltinArg)
 				Expect(found).To(BeTrue())
 				Expect(value).To(Equal(util.ToArg(controllers.DisabledBuiltinArg, "{http.send}")))
+			})
+
+			By("Checking default logDenies", func() {
+				_, found := getContainerArg(webhookContainer.Args, controllers.LogDenies)
+				Expect(found).To(BeTrue())
 			})
 		})
 
