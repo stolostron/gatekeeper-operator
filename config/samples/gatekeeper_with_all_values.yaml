@@ -24,6 +24,7 @@ spec:
   validatingWebhook: Enabled
   mutatingWebhook: Enabled
   webhook:
+    logDenies: Enabled
     replicas: 2
     logLevel: ERROR
     emitAdmissionEvents: Enabled

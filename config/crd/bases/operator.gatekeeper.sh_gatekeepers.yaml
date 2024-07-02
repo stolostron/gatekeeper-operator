@@ -1231,6 +1231,14 @@ spec:
                     - Ignore
                     - Fail
                     type: string
+                  logDenies:
+                    description: |-
+                      LogDenies enables the logging of all deny, dry run, and warn failures. The default value is Disabled.
+                      See https://open-policy-agent.github.io/gatekeeper/website/docs/violations/#log-denies
+                    enum:
+                    - Enabled
+                    - Disabled
+                    type: string
                   logLevel:
                     description: |-
                       LogLevel specifies the verbosity of the Pod logs. The supported parameter values are DEBUG, INFO,
