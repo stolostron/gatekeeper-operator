@@ -16,10 +16,10 @@ metadata:
         }
       ]
     capabilities: Basic Install
-    olm.skipRange: "<3.15.1"
+    olm.skipRange: "<3.17.0"
     operators.operatorframework.io/builder: operator-sdk-v1.34.1
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
-  name: gatekeeper-operator.v3.15.1
+  name: gatekeeper-operator.v3.17.0
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -147,6 +147,26 @@ spec:
           - mutatingwebhookconfigurations
           verbs:
           - create
+        - apiGroups:
+          - admissionregistration.k8s.io
+          resourceNames:
+          - gatekeeper-mutating-webhook-configuration
+          resources:
+          - mutatingwebhookconfigurations
+          verbs:
+          - delete
+          - get
+          - list
+          - patch
+          - update
+          - watch
+        - apiGroups:
+          - admissionregistration.k8s.io
+          resources:
+          - validatingadmissionpolicies
+          - validatingadmissionpolicybindings
+          verbs:
+          - create
           - delete
           - get
           - list
@@ -159,6 +179,13 @@ spec:
           - validatingwebhookconfigurations
           verbs:
           - create
+        - apiGroups:
+          - admissionregistration.k8s.io
+          resourceNames:
+          - gatekeeper-validating-webhook-configuration
+          resources:
+          - validatingwebhookconfigurations
+          verbs:
           - delete
           - get
           - list
@@ -408,8 +435,8 @@ spec:
                 - /manager
                 env:
                 - name: RELATED_IMAGE_GATEKEEPER
-                  value: quay.io/gatekeeper/gatekeeper:v3.15.1
-                image: quay.io/gatekeeper/gatekeeper-operator:v3.15.1
+                  value: quay.io/gatekeeper/gatekeeper:v3.17.1
+                image: quay.io/gatekeeper/gatekeeper-operator:v3.17.0
                 imagePullPolicy: Always
                 livenessProbe:
                   httpGet:
@@ -547,7 +574,7 @@ spec:
   provider:
     name: Red Hat
   relatedImages:
-  - image: quay.io/gatekeeper/gatekeeper:v3.15.1
+  - image: quay.io/gatekeeper/gatekeeper:v3.17.1
     name: gatekeeper
-  replaces: gatekeeper-operator.v3.14.1
-  version: "3.15.1"
+  replaces: gatekeeper-operator.v3.15.1
+  version: "3.17.0"
