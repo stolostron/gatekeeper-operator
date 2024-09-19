@@ -18,6 +18,26 @@ rules:
   - mutatingwebhookconfigurations
   verbs:
   - create
+- apiGroups:
+  - admissionregistration.k8s.io
+  resourceNames:
+  - gatekeeper-mutating-webhook-configuration
+  resources:
+  - mutatingwebhookconfigurations
+  verbs:
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - admissionregistration.k8s.io
+  resources:
+  - validatingadmissionpolicies
+  - validatingadmissionpolicybindings
+  verbs:
+  - create
   - delete
   - get
   - list
@@ -30,6 +50,13 @@ rules:
   - validatingwebhookconfigurations
   verbs:
   - create
+- apiGroups:
+  - admissionregistration.k8s.io
+  resourceNames:
+  - gatekeeper-validating-webhook-configuration
+  resources:
+  - validatingwebhookconfigurations
+  verbs:
   - delete
   - get
   - list
