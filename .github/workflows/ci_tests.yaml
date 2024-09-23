@@ -70,7 +70,7 @@ jobs:
         if: |
           github.repository_owner == 'stolostron'
         run: |
-          cat <<EOF > event.json
+          cat <<'EOF' > event.json
           ${{ toJSON(github.event) }}
           EOF
 
