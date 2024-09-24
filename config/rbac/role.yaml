@@ -5,6 +5,19 @@ metadata:
   name: manager-role
 rules:
 - apiGroups:
+  - ""
+  resources:
+  - events
+  - namespaces
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
   - '*'
   resources:
   - '*'
@@ -12,12 +25,6 @@ rules:
   - get
   - list
   - watch
-- apiGroups:
-  - admissionregistration.k8s.io
-  resources:
-  - mutatingwebhookconfigurations
-  verbs:
-  - create
 - apiGroups:
   - admissionregistration.k8s.io
   resourceNames:
@@ -34,6 +41,13 @@ rules:
 - apiGroups:
   - admissionregistration.k8s.io
   resources:
+  - mutatingwebhookconfigurations
+  - validatingwebhookconfigurations
+  verbs:
+  - create
+- apiGroups:
+  - admissionregistration.k8s.io
+  resources:
   - validatingadmissionpolicies
   - validatingadmissionpolicybindings
   verbs:
@@ -44,12 +58,6 @@ rules:
   - patch
   - update
   - watch
-- apiGroups:
-  - admissionregistration.k8s.io
-  resources:
-  - validatingwebhookconfigurations
-  verbs:
-  - create
 - apiGroups:
   - admissionregistration.k8s.io
   resourceNames:
@@ -97,31 +105,9 @@ rules:
   - update
 - apiGroups:
   - constraints.gatekeeper.sh
-  resources:
-  - '*'
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - ""
-  resources:
-  - events
-  - namespaces
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
   - expansion.gatekeeper.sh
+  - mutations.gatekeeper.sh
+  - status.gatekeeper.sh
   resources:
   - '*'
   verbs:
@@ -136,18 +122,6 @@ rules:
   - externaldata.gatekeeper.sh
   resources:
   - providers
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - mutations.gatekeeper.sh
-  resources:
-  - '*'
   verbs:
   - create
   - delete
@@ -208,18 +182,6 @@ rules:
   - update
   - watch
 - apiGroups:
-  - status.gatekeeper.sh
-  resources:
-  - '*'
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
   - templates.gatekeeper.sh
   resources:
   - constrainttemplates
@@ -256,9 +218,12 @@ metadata:
   namespace: system
 rules:
 - apiGroups:
-  - apps
+  - ""
   resources:
-  - deployments
+  - resourcequotas
+  - secrets
+  - serviceaccounts
+  - services
   verbs:
   - create
   - delete
@@ -268,12 +233,9 @@ rules:
   - update
   - watch
 - apiGroups:
-  - ""
+  - apps
   resources:
-  - resourcequotas
-  - secrets
-  - serviceaccounts
-  - services
+  - deployments
   verbs:
   - create
   - delete
