@@ -80,7 +80,7 @@ linters-settings:
     check-shadowing: false
   gci:
      sections:
-      - prefix(github.com/gatekeeper/gatekeeper-operator)
+      - prefix(github.com/stolostron/gatekeeper-operator)
   golint:
     # minimal confidence for issues, default is 0.8
     min-confidence: 0.0

@@ -42,8 +42,8 @@ import (
 	logf "sigs.k8s.io/controller-runtime/pkg/log"
 	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 
-	operatorv1alpha1 "github.com/gatekeeper/gatekeeper-operator/api/v1alpha1"
-	test "github.com/gatekeeper/gatekeeper-operator/test/e2e/util"
+	operatorv1alpha1 "github.com/stolostron/gatekeeper-operator/api/v1alpha1"
+	test "github.com/stolostron/gatekeeper-operator/test/e2e/util"
 )
 
 // These tests use Ginkgo (BDD-style Go testing framework). Refer to
