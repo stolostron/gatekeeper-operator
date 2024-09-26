@@ -23,7 +23,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/client-go/kubernetes/scheme"
 
-	"github.com/gatekeeper/gatekeeper-operator/pkg/bindata"
+	"github.com/stolostron/gatekeeper-operator/pkg/bindata"
 )
 
 var staticAssetsDir = "config/gatekeeper-rendered/"

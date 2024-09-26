@@ -20,7 +20,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/metrics/server"
 
-	operatorv1alpha1 "github.com/gatekeeper/gatekeeper-operator/api/v1alpha1"
+	operatorv1alpha1 "github.com/stolostron/gatekeeper-operator/api/v1alpha1"
 )
 
 // Default config data

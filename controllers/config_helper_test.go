@@ -12,7 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
-	operatorv1alpha1 "github.com/gatekeeper/gatekeeper-operator/api/v1alpha1"
+	operatorv1alpha1 "github.com/stolostron/gatekeeper-operator/api/v1alpha1"
 )
 
 func TestAddDefaultExemptNamespaces(t *testing.T) {

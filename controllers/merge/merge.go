@@ -22,7 +22,7 @@ import (
 	"github.com/pkg/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
-	"github.com/gatekeeper/gatekeeper-operator/pkg/util"
+	"github.com/stolostron/gatekeeper-operator/pkg/util"
 )
 
 // RetainClusterObjectFields updates the desired object with values retained

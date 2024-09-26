@@ -1,9 +1,9 @@
 # OPA Gatekeeper Operator
-[![CI-Tests](https://github.com/gatekeeper/gatekeeper-operator/actions/workflows/ci_tests.yaml/badge.svg)](https://github.com/gatekeeper/gatekeeper-operator/actions/workflows/ci_tests.yaml)
-[![OLM-Tests](https://github.com/gatekeeper/gatekeeper-operator/actions/workflows/olm_tests.yaml/badge.svg)](https://github.com/gatekeeper/gatekeeper-operator/actions/workflows/olm_tests.yaml)
-[![Create Release](https://github.com/gatekeeper/gatekeeper-operator/actions/workflows/release.yaml/badge.svg)](https://github.com/gatekeeper/gatekeeper-operator/actions/workflows/release.yaml)
-[![Image](https://github.com/gatekeeper/gatekeeper-operator/actions/workflows/image.yaml/badge.svg)](https://github.com/gatekeeper/gatekeeper-operator/actions/workflows/image.yaml)
-[![Docker Repository on Quay](https://img.shields.io/:Image-Quay-blue.svg)](https://quay.io/repository/gatekeeper/gatekeeper-operator)
+[![CI-Tests](https://github.com/stolostron/gatekeeper-operator/actions/workflows/ci_tests.yaml/badge.svg)](https://github.com/stolostron/gatekeeper-operator/actions/workflows/ci_tests.yaml)
+[![OLM-Tests](https://github.com/stolostron/gatekeeper-operator/actions/workflows/olm_tests.yaml/badge.svg)](https://github.com/stolostron/gatekeeper-operator/actions/workflows/olm_tests.yaml)
+[![Create Release](https://github.com/stolostron/gatekeeper-operator/actions/workflows/release.yaml/badge.svg)](https://github.com/stolostron/gatekeeper-operator/actions/workflows/release.yaml)
+[![Image](https://github.com/stolostron/gatekeeper-operator/actions/workflows/image.yaml/badge.svg)](https://github.com/stolostron/gatekeeper-operator/actions/workflows/image.yaml)
+[![Docker Repository on Quay](https://img.shields.io/:Image-Quay-blue.svg)](https://quay.io/repository/stolostron/gatekeeper-operator)
 
 Operator for OPA Gatekeeper
 
@@ -101,7 +101,7 @@ If you would like to deploy Operator using OLM, you'll need to build and push th
     spec:
       displayName: Gatekeeper Operator Upstream
       image: <index image name>
-      publisher: github.com/gatekeeper/gatekeeper-operator
+      publisher: github.com/stolostron/gatekeeper-operator
       sourceType: grpc
     ---
     apiVersion: operators.coreos.com/v1

@@ -1,4 +1,4 @@
-module github.com/gatekeeper/gatekeeper-operator
+module github.com/stolostron/gatekeeper-operator
 
 go 1.22.0
 

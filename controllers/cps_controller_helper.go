@@ -18,8 +18,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/metrics/server"
 
-	"github.com/gatekeeper/gatekeeper-operator/api/v1alpha1"
-	operatorv1alpha1 "github.com/gatekeeper/gatekeeper-operator/api/v1alpha1"
+	operatorv1alpha1 "github.com/stolostron/gatekeeper-operator/api/v1alpha1"
 )
 
 var setupLog = ctrl.Log.WithName("setup")
@@ -131,7 +130,7 @@ func (r *GatekeeperReconciler) handleCPSController(ctx context.Context,
 		r.ManualReconcileTrigger <- event.GenericEvent{
 			Object: &unstructured.Unstructured{
 				Object: map[string]interface{}{
-					"apiVersion": v1alpha1.GroupVersion.String(),
+					"apiVersion": operatorv1alpha1.GroupVersion.String(),
 					"kind":       "Gatekeeper",
 					"metadata": map[string]interface{}{
 						"name": defaultGatekeeperCrName,
