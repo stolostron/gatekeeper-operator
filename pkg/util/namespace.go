@@ -18,8 +18,8 @@ import (
 	"os"
 	"strings"
 
-	"github.com/gatekeeper/gatekeeper-operator/pkg/platform"
 	"github.com/pkg/errors"
+	"github.com/stolostron/gatekeeper-operator/pkg/platform"
 )
 
 var (

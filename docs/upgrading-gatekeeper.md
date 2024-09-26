@@ -63,7 +63,7 @@ different defaults, etc.
 Also see if git detects that there are untracked files. If so, then Gatekeeper
 has added some new manifests that will need to be version controlled and added
 to the [operator controller's list of Gatekeeper manifests to
-manage](https://github.com/gatekeeper/gatekeeper-operator/blob/44420118530000ff25264adc4229b4490013abed/controllers/gatekeeper_controller.go#L83-L114).
+manage](https://github.com/stolostron/gatekeeper-operator/blob/44420118530000ff25264adc4229b4490013abed/controllers/gatekeeper_controller.go#L83-L114).
 
 Add and commit the changes once you've made a note of any new Gatekeeper
 manifests.
@@ -91,7 +91,7 @@ If Gatekeeper has introduced any new or modified existing RBAC permissions
 required or no longer required for it to run successfully, the operator will
 similarly need to make changes to add or remove the same permissions. This is
 done via updates to the [kubebuilder RBAC markers specified in the operator
-controller](https://github.com/gatekeeper/gatekeeper-operator/blob/44420118530000ff25264adc4229b4490013abed/controllers/gatekeeper_controller.go#L133-L163).
+controller](https://github.com/stolostron/gatekeeper-operator/blob/44420118530000ff25264adc4229b4490013abed/controllers/gatekeeper_controller.go#L133-L163).
 
 Once completed, make sure to update the operator's RBAC manifests by running:
 

@@ -45,7 +45,7 @@ same original command that was used for this operator as shown below:
 # Execute from the root of this repository
 mkdir ../gatekeeper-operator-sdk-${OPERATOR_SDK_VERSION//./-}
 cd ../gatekeeper-operator-sdk-${OPERATOR_SDK_VERSION//./-}
-operator-sdk init --domain=gatekeeper.sh --repo=github.com/gatekeeper/gatekeeper-operator
+operator-sdk init --domain=gatekeeper.sh --repo=github.com/stolostron/gatekeeper-operator
 ```
 
 Feel free to examine the generated source files to assess differences and see

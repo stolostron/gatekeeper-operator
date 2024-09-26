@@ -5,12 +5,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gatekeeper/gatekeeper-operator/api/v1alpha1"
-	operatorv1alpha1 "github.com/gatekeeper/gatekeeper-operator/api/v1alpha1"
 	gkv1alpha1 "github.com/open-policy-agent/gatekeeper/v3/apis/config/v1alpha1"
 	"github.com/open-policy-agent/gatekeeper/v3/apis/status/v1beta1"
 	gkv1beta1 "github.com/open-policy-agent/gatekeeper/v3/apis/status/v1beta1"
 	"github.com/pkg/errors"
+	operatorv1alpha1 "github.com/stolostron/gatekeeper-operator/api/v1alpha1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -135,7 +134,7 @@ func (r *GatekeeperReconciler) handleCPSController(mainCtx context.Context,
 		r.ManualReconcileTrigger <- event.GenericEvent{
 			Object: &unstructured.Unstructured{
 				Object: map[string]interface{}{
-					"apiVersion": v1alpha1.GroupVersion.String(),
+					"apiVersion": operatorv1alpha1.GroupVersion.String(),
 					"kind":       "Gatekeeper",
 					"metadata": map[string]interface{}{
 						"name": defaultGatekeeperCrName,

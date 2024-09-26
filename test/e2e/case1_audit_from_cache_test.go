@@ -3,11 +3,11 @@ package e2e
 import (
 	"time"
 
-	gv1alpha1 "github.com/gatekeeper/gatekeeper-operator/api/v1alpha1"
-	. "github.com/gatekeeper/gatekeeper-operator/test/e2e/util"
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/open-policy-agent/gatekeeper/v3/apis/config/v1alpha1"
+	gv1alpha1 "github.com/stolostron/gatekeeper-operator/api/v1alpha1"
+	. "github.com/stolostron/gatekeeper-operator/test/e2e/util"
 	"golang.org/x/exp/slices"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"

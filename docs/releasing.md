@@ -52,7 +52,7 @@ release of the Gatekeeper Operator using the GitHub Actions release workflow.
 1. Create a PR with the above changes and merge it. If using the `gh` [GitHub
    CLI](https://cli.github.com/) you can create the PR using:
    ```shell
-   gh pr create --repo gatekeeper/gatekeeper-operator --title "Release ${RELEASE_VERSION}" --body ""
+   gh pr create --repo stolostron/gatekeeper-operator --title "Release ${RELEASE_VERSION}" --body ""
    ```
 1. After the PR is merged, fetch the new commits:
     ```shell

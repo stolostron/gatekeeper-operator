@@ -12,7 +12,7 @@ metadata:
 spec:
   displayName: Gatekeeper Operator Upstream
   image: quay.io/gatekeeper/gatekeeper-operator-bundle-index:latest
-  publisher: github.com/gatekeeper/gatekeeper-operator
+  publisher: github.com/stolostron/gatekeeper-operator
   sourceType: grpc
 ---
 apiVersion: operators.coreos.com/v1
