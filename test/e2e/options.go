@@ -20,7 +20,7 @@ import (
 	"flag"
 	"time"
 
-	"github.com/gatekeeper/gatekeeper-operator/pkg/util"
+	"github.com/stolostron/gatekeeper-operator/pkg/util"
 )
 
 var (

@@ -20,7 +20,7 @@ import (
 	. "github.com/onsi/gomega"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
-	"github.com/gatekeeper/gatekeeper-operator/pkg/util"
+	"github.com/stolostron/gatekeeper-operator/pkg/util"
 )
 
 func TestRetainWebhookConfigurationFields(t *testing.T) {

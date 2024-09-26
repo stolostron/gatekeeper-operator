@@ -95,7 +95,7 @@ spec:
     [#opa-gatekeeper](https://openpolicyagent.slack.com/archives/CDTN970AX).
 
     Please report issues on the respective GitHub repositories for either
-    the [Gatekeeper Operator](https://github.com/gatekeeper/gatekeeper-operator/issues) or
+    the [Gatekeeper Operator](https://github.com/stolostron/gatekeeper-operator/issues) or
     [Gatekeeper](https://github.com/open-policy-agent/gatekeeper/issues) itself.
   displayName: Gatekeeper Operator
   icon:
@@ -118,7 +118,7 @@ spec:
   - Gatekeeper
   links:
   - name: Gatekeeper Operator
-    url: https://github.com/gatekeeper/gatekeeper-operator
+    url: https://github.com/stolostron/gatekeeper-operator
   maintainers:
   - email: acm-contact@redhat.com
     name: acm-contact

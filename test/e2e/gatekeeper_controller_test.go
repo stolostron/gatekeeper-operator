@@ -38,10 +38,10 @@ import (
 	"k8s.io/apimachinery/pkg/util/yaml"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/gatekeeper/gatekeeper-operator/api/v1alpha1"
-	"github.com/gatekeeper/gatekeeper-operator/controllers"
-	"github.com/gatekeeper/gatekeeper-operator/pkg/util"
-	test "github.com/gatekeeper/gatekeeper-operator/test/e2e/util"
+	"github.com/stolostron/gatekeeper-operator/api/v1alpha1"
+	"github.com/stolostron/gatekeeper-operator/controllers"
+	"github.com/stolostron/gatekeeper-operator/pkg/util"
+	test "github.com/stolostron/gatekeeper-operator/test/e2e/util"
 )
 
 const (

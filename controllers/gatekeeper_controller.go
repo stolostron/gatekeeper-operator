@@ -44,11 +44,11 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/source"
 
-	"github.com/gatekeeper/gatekeeper-operator/api/v1alpha1"
-	operatorv1alpha1 "github.com/gatekeeper/gatekeeper-operator/api/v1alpha1"
-	"github.com/gatekeeper/gatekeeper-operator/controllers/merge"
-	"github.com/gatekeeper/gatekeeper-operator/pkg/platform"
-	"github.com/gatekeeper/gatekeeper-operator/pkg/util"
+	"github.com/stolostron/gatekeeper-operator/api/v1alpha1"
+	operatorv1alpha1 "github.com/stolostron/gatekeeper-operator/api/v1alpha1"
+	"github.com/stolostron/gatekeeper-operator/controllers/merge"
+	"github.com/stolostron/gatekeeper-operator/pkg/platform"
+	"github.com/stolostron/gatekeeper-operator/pkg/util"
 )
 
 const (
