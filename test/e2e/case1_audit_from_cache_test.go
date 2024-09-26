@@ -12,8 +12,8 @@ import (
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 
-	gv1alpha1 "github.com/gatekeeper/gatekeeper-operator/api/v1alpha1"
-	. "github.com/gatekeeper/gatekeeper-operator/test/e2e/util"
+	gv1alpha1 "github.com/stolostron/gatekeeper-operator/api/v1alpha1"
+	. "github.com/stolostron/gatekeeper-operator/test/e2e/util"
 )
 
 var _ = Describe("Test auditFromCache", Ordered, func() {

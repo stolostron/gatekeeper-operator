@@ -207,7 +207,7 @@ ifeq ($(DIFF), 1)
   GIT_TREESTATE = "dirty"
 endif
 
-VERSION_PKG = "github.com/gatekeeper/gatekeeper-operator/pkg/version"
+VERSION_PKG = "github.com/stolostron/gatekeeper-operator/pkg/version"
 LDFLAGS = "-X $(VERSION_PKG).gitVersion=$(GIT_VERSION) \
            -X $(VERSION_PKG).gitCommit=$(GIT_HASH) \
            -X $(VERSION_PKG).gitTreeState=$(GIT_TREESTATE) \

@@ -17,7 +17,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/predicate"
 	"sigs.k8s.io/controller-runtime/pkg/reconcile"
 
-	operatorv1alpha1 "github.com/gatekeeper/gatekeeper-operator/api/v1alpha1"
+	operatorv1alpha1 "github.com/stolostron/gatekeeper-operator/api/v1alpha1"
 )
 
 type ConfigReconciler struct {
