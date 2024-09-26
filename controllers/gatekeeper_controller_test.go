@@ -26,9 +26,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 
-	operatorv1alpha1 "github.com/gatekeeper/gatekeeper-operator/api/v1alpha1"
-	"github.com/gatekeeper/gatekeeper-operator/pkg/util"
-	test "github.com/gatekeeper/gatekeeper-operator/test/e2e/util"
+	operatorv1alpha1 "github.com/stolostron/gatekeeper-operator/api/v1alpha1"
+	"github.com/stolostron/gatekeeper-operator/pkg/util"
+	test "github.com/stolostron/gatekeeper-operator/test/e2e/util"
 )
 
 var namespace = "gatekeeper-system"

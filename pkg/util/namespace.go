@@ -20,7 +20,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/gatekeeper/gatekeeper-operator/pkg/platform"
+	"github.com/stolostron/gatekeeper-operator/pkg/platform"
 )
 
 var (

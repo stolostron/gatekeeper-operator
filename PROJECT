@@ -5,7 +5,7 @@ plugins:
   manifests.sdk.operatorframework.io/v2: {}
   scorecard.sdk.operatorframework.io/v2: {}
 projectName: gatekeeper-operator
-repo: github.com/gatekeeper/gatekeeper-operator
+repo: github.com/stolostron/gatekeeper-operator
 resources:
 - api:
     crdVersion: v1
@@ -13,6 +13,6 @@ resources:
   domain: gatekeeper.sh
   group: operator
   kind: Gatekeeper
-  path: github.com/gatekeeper/gatekeeper-operator/api/v1alpha1
+  path: github.com/stolostron/gatekeeper-operator/api/v1alpha1
   version: v1alpha1
 version: "3"
