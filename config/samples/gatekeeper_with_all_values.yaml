@@ -21,6 +21,10 @@ spec:
       requests:
         cpu: 100m
         memory: 20Mi
+    containerArguments:
+      - name: log-level
+        value: INFO
+      - name: enable-k8s-native-validation
   validatingWebhook: Enabled
   mutatingWebhook: Enabled
   webhook:
@@ -35,8 +39,8 @@ spec:
     failurePolicy: Ignore
     namespaceSelector:
       matchExpressions:
-      - key: admission.gatekeeper.sh/enabled
-        operator: Exists
+        - key: admission.gatekeeper.sh/enabled
+          operator: Exists
     resources:
       limits:
         cpu: 100m
@@ -46,6 +50,10 @@ spec:
         memory: 20Mi
     disabledBuiltins:
       - http.send
+    containerArguments:
+      - name: log-level
+        value: INFO
+      - name: enable-k8s-native-validation
   nodeSelector:
     region: "EMEA"
   affinity:
@@ -64,7 +72,6 @@ spec:
     other-annotation: "another test"
   config:
     matches:
-     - excludedNamespaces: ["test-*", "my-namespace"]
-       processes: ["*"]
+      - excludedNamespaces: ["test-*", "my-namespace"]
+        processes: ["*"]
     disableDefaultMatches: false
-    

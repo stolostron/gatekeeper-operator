@@ -529,7 +529,7 @@ var _ = Describe("Gatekeeper", func() {
 			})
 
 			By("Checking default logDenies", func() {
-				_, found := getContainerArg(webhookContainer.Args, controllers.LogDenies)
+				_, found := getContainerArg(webhookContainer.Args, controllers.LogDeniesArg)
 				Expect(found).To(BeFalse())
 			})
 		})
@@ -642,6 +642,12 @@ var _ = Describe("Gatekeeper", func() {
 				Expect(value).To(Equal(util.ToArg(controllers.EmitAuditEventsArg, "true")))
 			})
 
+			By("Checking new audit container argument", func() {
+				value, found := getContainerArg(auditContainer.Args, "--enable-k8s-native-validation")
+				Expect(found).To(BeTrue())
+				Expect(value).To(Equal("--enable-k8s-native-validation=true"))
+			})
+
 			By("Checking expected emit admission events", func() {
 				value, found := getContainerArg(webhookContainer.Args, controllers.EmitAdmissionEventsArg)
 				Expect(found).To(BeTrue())
@@ -661,8 +667,14 @@ var _ = Describe("Gatekeeper", func() {
 			})
 
 			By("Checking default logDenies", func() {
-				_, found := getContainerArg(webhookContainer.Args, controllers.LogDenies)
+				_, found := getContainerArg(webhookContainer.Args, controllers.LogDeniesArg)
 				Expect(found).To(BeTrue())
+			})
+
+			By("Checking new webhook container argument", func() {
+				value, found := getContainerArg(webhookContainer.Args, "--enable-k8s-native-validation")
+				Expect(found).To(BeTrue())
+				Expect(value).To(Equal("--enable-k8s-native-validation=true"))
 			})
 		})
 
