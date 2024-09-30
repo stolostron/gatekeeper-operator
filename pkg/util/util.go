@@ -76,6 +76,10 @@ func ToMap(obj interface{}) map[string]interface{} {
 // ToArg Converts a key, value pair into a valid container argument.
 // e.g. '--argName', 'argValue' returns '--argName=argValue'
 func ToArg(name, value string) string {
+	if value == "" {
+		return name + "=true"
+	}
+
 	return name + "=" + value
 }
 

@@ -57,6 +57,52 @@ const (
 	LogLevelError   LogLevelMode = "ERROR"
 )
 
+// Arg represents an argument for the container binary.
+type Arg struct {
+	// Name is the name of the container argument (i.e. the flag without the leading double dashes).
+	//
+	// +kubebuilder:validation:Required
+	// +kubebuilder:validation:MinLength=1
+	Name string `json:"name"`
+
+	// Value is the value of the container argument. An empty value is interpreted as `true` (i.e. the
+	// flag will be passed with no value).
+	//
+	// +optional
+	Value string `json:"value,omitempty"`
+}
+
+type CommonConfig struct {
+	// Replicas is the number of desired pods.
+	//
+	// +optional
+	// +kubebuilder:validation:Minimum:=0
+	Replicas *int32 `json:"replicas,omitempty"`
+
+	// Resources describes the compute resource requirements for the pod.
+	//
+	// +optional
+	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
+
+	// +optional
+	LogLevel *LogLevelMode `json:"logLevel,omitempty"`
+
+	// ContainerArguments is a list of argument names and values to pass to the container. Arguments
+	// provided are ignored if the flag is set previously by configurations from other fields.
+	// Furthermore, this list of flags is deny listed and aren't currently supported:
+	// • port
+	// • prometheus-port
+	// • health-addr
+	// • validating-webhook-configuration-name
+	// • mutating-webhook-configuration-name
+	// • disable-cert-rotation
+	// • client-cert-name
+	// • tls-min-version
+	//
+	// +optional
+	ContainerArguments []Arg `json:"containerArguments,omitempty"`
+}
+
 // +kubebuilder:validation:Enum:=Enabled;Disabled;Automatic
 type AuditFromCacheMode string
 
@@ -67,6 +113,8 @@ const (
 )
 
 type AuditConfig struct {
+	CommonConfig `json:",inline"`
+
 	// AuditInterval configures how often an audit is run on the cluster. The default value is 60s.
 	// See https://open-policy-agent.github.io/gatekeeper/website/docs/performance-tuning/#audit-interval.
 	//
@@ -115,26 +163,14 @@ type AuditConfig struct {
 	// +optional
 	//nolint:lll
 	AuditEventsInvolvedNamespace *Mode `json:"auditEventsInvolvedNamespace,omitempty"`
-
-	// Replicas is the number of desired pods for auditing.
-	//
-	// +optional
-	// +kubebuilder:validation:Minimum:=0
-	Replicas *int32 `json:"replicas,omitempty"`
-
-	// Resources describes the compute resource requirements for the auditing pods.
-	//
-	// +optional
-	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
-
-	// +optional
-	LogLevel *LogLevelMode `json:"logLevel,omitempty"`
 }
 
 // +kubebuilder:validation:Enum:=CONNECT;CREATE;UPDATE;DELETE;*
 type OperationType admregv1.OperationType
 
 type WebhookConfig struct {
+	CommonConfig `json:",inline"`
+
 	// EmitAdmissionEvents enables the emission of all admission violations as Kubernetes events.
 	// The default value is Disabled.
 	// See https://open-policy-agent.github.io/gatekeeper/website/docs/customize-startup/#alpha-emit-admission-and-audit-events.
@@ -193,21 +229,8 @@ type WebhookConfig struct {
 	//nolint:lll
 	MutationAnnotations *Mode `json:"mutationAnnotations,omitempty"`
 
-	// Replicas is the number of desired pods for the admission webhook.
-	//
-	// +optional
-	// +kubebuilder:validation:Minimum:=0
-	Replicas *int32 `json:"replicas,omitempty"`
-
-	// Resources describes the compute resource requirements for the admission webhook pods.
-	//
-	// +optional
-	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
-
-	// +optional
-	LogLevel *LogLevelMode `json:"logLevel,omitempty"`
-
-	// LogDenies enables the logging of all deny, dry run, and warn failures. The default value is Disabled.
+	// LogDenies enables the logging of all deny, dry run, and warn failures. The default value is
+	// Disabled.
 	// See https://open-policy-agent.github.io/gatekeeper/website/docs/violations/#log-denies
 	// +optional
 	LogDenies *Mode `json:"logDenies,omitempty"`

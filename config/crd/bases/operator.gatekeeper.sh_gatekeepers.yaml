@@ -1019,6 +1019,36 @@ spec:
                     format: int64
                     minimum: 0
                     type: integer
+                  containerArguments:
+                    description: |-
+                      ContainerArguments is a list of argument names and values to pass to the container. Arguments
+                      provided are ignored if the flag is set previously by configurations from other fields.
+                      Furthermore, this list of flags is deny listed and aren't currently supported:
+                      • port
+                      • prometheus-port
+                      • health-addr
+                      • validating-webhook-configuration-name
+                      • mutating-webhook-configuration-name
+                      • disable-cert-rotation
+                      • client-cert-name
+                      • tls-min-version
+                    items:
+                      description: Arg represents an argument for the container binary.
+                      properties:
+                        name:
+                          description: Name is the name of the container argument
+                            (i.e. the flag without the leading double dashes).
+                          minLength: 1
+                          type: string
+                        value:
+                          description: |-
+                            Value is the value of the container argument. An empty value is interpreted as `true` (i.e. the
+                            flag will be passed with no value).
+                          type: string
+                      required:
+                      - name
+                      type: object
+                    type: array
                   emitAuditEvents:
                     description: |-
                       EmitAuditEvents enables the emission of all admission violations as Kubernetes events. The
@@ -1040,13 +1070,13 @@ spec:
                     - ERROR
                     type: string
                   replicas:
-                    description: Replicas is the number of desired pods for auditing.
+                    description: Replicas is the number of desired pods.
                     format: int32
                     minimum: 0
                     type: integer
                   resources:
                     description: Resources describes the compute resource requirements
-                      for the auditing pods.
+                      for the pod.
                     properties:
                       claims:
                         description: |-
@@ -1238,6 +1268,36 @@ spec:
                     - Enabled
                     - Disabled
                     type: string
+                  containerArguments:
+                    description: |-
+                      ContainerArguments is a list of argument names and values to pass to the container. Arguments
+                      provided are ignored if the flag is set previously by configurations from other fields.
+                      Furthermore, this list of flags is deny listed and aren't currently supported:
+                      • port
+                      • prometheus-port
+                      • health-addr
+                      • validating-webhook-configuration-name
+                      • mutating-webhook-configuration-name
+                      • disable-cert-rotation
+                      • client-cert-name
+                      • tls-min-version
+                    items:
+                      description: Arg represents an argument for the container binary.
+                      properties:
+                        name:
+                          description: Name is the name of the container argument
+                            (i.e. the flag without the leading double dashes).
+                          minLength: 1
+                          type: string
+                        value:
+                          description: |-
+                            Value is the value of the container argument. An empty value is interpreted as `true` (i.e. the
+                            flag will be passed with no value).
+                          type: string
+                      required:
+                      - name
+                      type: object
+                    type: array
                   disabledBuiltins:
                     description: |-
                       DisabledBuiltins is a list of specific OPA built-in functions to disable. By default, http.send
@@ -1265,7 +1325,8 @@ spec:
                     type: string
                   logDenies:
                     description: |-
-                      LogDenies enables the logging of all deny, dry run, and warn failures. The default value is Disabled.
+                      LogDenies enables the logging of all deny, dry run, and warn failures. The default value is
+                      Disabled.
                       See https://open-policy-agent.github.io/gatekeeper/website/docs/violations/#log-denies
                     enum:
                     - Enabled
@@ -1363,14 +1424,13 @@ spec:
                       type: string
                     type: array
                   replicas:
-                    description: Replicas is the number of desired pods for the admission
-                      webhook.
+                    description: Replicas is the number of desired pods.
                     format: int32
                     minimum: 0
                     type: integer
                   resources:
                     description: Resources describes the compute resource requirements
-                      for the admission webhook pods.
+                      for the pod.
                     properties:
                       claims:
                         description: |-

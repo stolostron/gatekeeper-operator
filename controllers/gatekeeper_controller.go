@@ -21,15 +21,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
+	"slices"
 	"strconv"
-	"strings"
 	"sync"
 	"time"
 
 	"github.com/go-logr/logr"
 	"github.com/pkg/errors"
 	admregv1 "k8s.io/api/admissionregistration/v1"
-	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -92,7 +91,7 @@ const (
 	DisabledBuiltinArg                  = "--disable-opa-builtin"
 	LogMutationsArg                     = "--log-mutations"
 	MutationAnnotationsArg              = "--mutation-annotations"
-	LogDenies                           = "--log-denies"
+	LogDeniesArg                        = "--log-denies"
 	admissionFileFmt                    = "admissionregistration.k8s.io_v1_%[1]swebhookconfiguration" +
 		"_gatekeeper-%[1]s-webhook-configuration.yaml"
 	OpenshiftSecretName = "gatekeeper-webhook-server-cert-ocp"
@@ -132,7 +131,6 @@ var (
 		ValidatingWebhookConfiguration,
 		MutatingWebhookConfiguration,
 	}
-
 	MutatingCRDs = []string{
 		AssignCRDFile,
 		AssignMetadataCRDFile,
@@ -389,7 +387,7 @@ func (r *GatekeeperReconciler) applyAsset(
 		return err
 	}
 
-	err = crOverrides(gatekeeper, asset, obj, r.Namespace, r.isOpenShift(), controllerDeploymentPending)
+	err = crOverrides(r.Log, gatekeeper, asset, obj, r.Namespace, r.isOpenShift(), controllerDeploymentPending)
 	if err != nil {
 		return err
 	}
@@ -611,6 +609,7 @@ var commonContainerOverridesFn = []func(map[string]interface{}, operatorv1alpha1
 
 // crOverrides
 func crOverrides(
+	log logr.Logger,
 	gatekeeper *operatorv1alpha1.Gatekeeper,
 	asset string,
 	obj *unstructured.Unstructured,
@@ -635,7 +634,7 @@ func crOverrides(
 			return err
 		}
 
-		if err := auditOverrides(obj, gatekeeper.Spec.Audit); err != nil {
+		if err := auditOverrides(log, obj, gatekeeper.Spec.Audit); err != nil {
 			return err
 		}
 
@@ -654,7 +653,7 @@ func crOverrides(
 			return err
 		}
 
-		if err := webhookOverrides(obj, gatekeeper.Spec.Webhook); err != nil {
+		if err := webhookOverrides(log, obj, gatekeeper.Spec.Webhook); err != nil {
 			return err
 		}
 
@@ -753,16 +752,8 @@ func commonOverrides(obj *unstructured.Unstructured, spec operatorv1alpha1.Gatek
 	return nil
 }
 
-func auditOverrides(obj *unstructured.Unstructured, audit *operatorv1alpha1.AuditConfig) error {
+func auditOverrides(log logr.Logger, obj *unstructured.Unstructured, audit *operatorv1alpha1.AuditConfig) error {
 	if audit != nil {
-		if err := setReplicas(obj, audit.Replicas); err != nil {
-			return err
-		}
-
-		if err := setLogLevel(obj, audit.LogLevel); err != nil {
-			return err
-		}
-
 		if err := setAuditInterval(obj, audit.AuditInterval); err != nil {
 			return err
 		}
@@ -788,7 +779,7 @@ func auditOverrides(obj *unstructured.Unstructured, audit *operatorv1alpha1.Audi
 			return err
 		}
 
-		if err := setResources(obj, audit.Resources); err != nil {
+		if err := setCommonConfig(log, obj, audit.CommonConfig); err != nil {
 			return err
 		}
 	}
@@ -796,26 +787,14 @@ func auditOverrides(obj *unstructured.Unstructured, audit *operatorv1alpha1.Audi
 	return nil
 }
 
-func webhookOverrides(obj *unstructured.Unstructured, webhook *operatorv1alpha1.WebhookConfig) error {
+func webhookOverrides(log logr.Logger, obj *unstructured.Unstructured, webhook *operatorv1alpha1.WebhookConfig) error {
 	if webhook != nil {
-		if err := setReplicas(obj, webhook.Replicas); err != nil {
-			return err
-		}
-
-		if err := setLogLevel(obj, webhook.LogLevel); err != nil {
-			return err
-		}
-
 		if err := setEmitEvents(obj, EmitAdmissionEventsArg, webhook.EmitAdmissionEvents); err != nil {
 			return err
 		}
 
 		if err := setEventsInvolvedNamespace(obj, AdmissionEventsInvolvedNamespaceArg,
 			webhook.AdmissionEventsInvolvedNamespace); err != nil {
-			return err
-		}
-
-		if err := setResources(obj, webhook.Resources); err != nil {
 			return err
 		}
 
@@ -827,7 +806,11 @@ func webhookOverrides(obj *unstructured.Unstructured, webhook *operatorv1alpha1.
 			return err
 		}
 
-		if err := setLogDenies(obj, webhook.LogDenies); err != nil {
+		if err := setLogDeniesFlag(obj, webhook.LogDenies); err != nil {
+			return err
+		}
+
+		if err := setCommonConfig(log, obj, webhook.CommonConfig); err != nil {
 			return err
 		}
 	}
@@ -962,11 +945,65 @@ func containerOverrides(obj *unstructured.Unstructured, spec operatorv1alpha1.Ga
 	return nil
 }
 
-// setReplicas
-func setReplicas(obj *unstructured.Unstructured, replicas *int32) error {
-	if replicas != nil {
-		if err := unstructured.SetNestedField(obj.Object, int64(*replicas), "spec", "replicas"); err != nil {
+// setCommonConfig takes a deployment and CommonConfig struct and applies the configuration from
+// CommonConfig to the deployment, returning any errors.
+func setCommonConfig(log logr.Logger, obj *unstructured.Unstructured, config operatorv1alpha1.CommonConfig) error {
+	// Set pod replicas
+	if config.Replicas != nil {
+		if err := unstructured.SetNestedField(obj.Object, int64(*config.Replicas), "spec", "replicas"); err != nil {
 			return errors.Wrapf(err, "Failed to set replica value")
+		}
+	}
+
+	// Set container resources
+	if config.Resources != nil {
+		err := setContainerAttrWithFn(obj, func(container map[string]interface{}) error {
+			if err := unstructured.SetNestedField(container, util.ToMap(config.Resources), "resources"); err != nil {
+				return errors.Wrapf(err, "Failed to set container resources")
+			}
+
+			return nil
+		})
+		if err != nil {
+			return err
+		}
+	}
+
+	// Set --log-level flag
+	if config.LogLevel != nil {
+		if err := setContainerArg(obj, LogLevelArg, string(*config.LogLevel)); err != nil {
+			return err
+		}
+	}
+
+	// Set --metrics-backend flag to Prometheus (this flag can be set more than
+	// once for additional metrics providers)
+	if err := setContainerArg(obj, "--metrics-backend", "prometheus"); err != nil {
+		return err
+	}
+
+	// Set container arguments, skipping over any that are deny listed
+	argDenyList := []string{
+		"port",
+		"prometheus-port",
+		"health-addr",
+		"validating-webhook-configuration-name",
+		"mutating-webhook-configuration-name",
+		"disable-cert-rotation",
+		"client-cert-name",
+		"tls-min-version",
+	}
+
+	for _, arg := range config.ContainerArguments {
+		if slices.Contains(argDenyList, arg.Name) {
+			log.Info(fmt.Sprintf("Argument --%s is deny listed and won't be applied.", arg.Name))
+
+			continue
+		}
+
+		err := setContainerArg(obj, "--"+arg.Name, arg.Value)
+		if err != nil {
+			return err
 		}
 	}
 
@@ -1011,13 +1048,14 @@ func openShiftDeploymentOverrides(obj *unstructured.Unstructured) error {
 			return errors.Wrapf(err, "Failed to get container args in OpenShift overrides")
 		}
 
-		hasDisabledCert := false
+		// Clean up if the cert-rotation is set explicitly
+		args = slices.DeleteFunc(args, func(arg string) bool {
+			return arg == "--disable-cert-rotation=false"
+		})
 
-		for _, arg := range args {
-			if strings.Contains(arg, "--disable-cert-rotation") {
-				hasDisabledCert = true
-			}
-		}
+		hasDisabledCert := slices.ContainsFunc(args, func(arg string) bool {
+			return arg == "--disable-cert-rotation" || arg == "--disable-cert-rotation=true"
+		})
 
 		if !hasDisabledCert {
 			args = append(args, "--disable-cert-rotation")
@@ -1063,21 +1101,13 @@ func openShiftDeploymentOverrides(obj *unstructured.Unstructured) error {
 	return nil
 }
 
-func setLogLevel(obj *unstructured.Unstructured, logLevel *operatorv1alpha1.LogLevelMode) error {
-	if logLevel != nil {
-		return setContainerArg(obj, LogLevelArg, string(*logLevel), false)
-	}
-
-	return nil
-}
-
 func setMutationFlags(obj *unstructured.Unstructured, webhookConfig *operatorv1alpha1.WebhookConfig) error {
 	if webhookConfig == nil {
 		return nil
 	}
 
 	if webhookConfig.LogMutations != nil && webhookConfig.LogMutations.ToBool() {
-		err := setContainerArg(obj, LogMutationsArg, webhookConfig.LogMutations.ToBoolString(), false)
+		err := setContainerArg(obj, LogMutationsArg, webhookConfig.LogMutations.ToBoolString())
 		if err != nil {
 			return err
 		}
@@ -1085,7 +1115,7 @@ func setMutationFlags(obj *unstructured.Unstructured, webhookConfig *operatorv1a
 
 	if webhookConfig.MutationAnnotations != nil && webhookConfig.MutationAnnotations.ToBool() {
 		return setContainerArg(
-			obj, MutationAnnotationsArg, webhookConfig.MutationAnnotations.ToBoolString(), false,
+			obj, MutationAnnotationsArg, webhookConfig.MutationAnnotations.ToBoolString(),
 		)
 	}
 
@@ -1093,9 +1123,9 @@ func setMutationFlags(obj *unstructured.Unstructured, webhookConfig *operatorv1a
 }
 
 // Default is Disabled (false)
-func setLogDenies(obj *unstructured.Unstructured, logDenies *operatorv1alpha1.Mode) error {
+func setLogDeniesFlag(obj *unstructured.Unstructured, logDenies *operatorv1alpha1.Mode) error {
 	if logDenies != nil && logDenies.ToBool() {
-		err := setContainerArg(obj, LogDenies, logDenies.ToBoolString(), false)
+		err := setContainerArg(obj, LogDeniesArg, logDenies.ToBoolString())
 		if err != nil {
 			return err
 		}
@@ -1107,7 +1137,7 @@ func setLogDenies(obj *unstructured.Unstructured, logDenies *operatorv1alpha1.Mo
 func setAuditInterval(obj *unstructured.Unstructured, auditInterval *metav1.Duration) error {
 	if auditInterval != nil {
 		return setContainerArg(
-			obj, AuditIntervalArg, fmt.Sprint(auditInterval.Round(time.Second).Seconds()), false,
+			obj, AuditIntervalArg, fmt.Sprint(auditInterval.Round(time.Second).Seconds()),
 		)
 	}
 
@@ -1117,7 +1147,7 @@ func setAuditInterval(obj *unstructured.Unstructured, auditInterval *metav1.Dura
 func setConstraintViolationLimit(obj *unstructured.Unstructured, constraintViolationLimit *uint64) error {
 	if constraintViolationLimit != nil {
 		return setContainerArg(
-			obj, ConstraintViolationLimitArg, strconv.FormatUint(*constraintViolationLimit, 10), false,
+			obj, ConstraintViolationLimitArg, strconv.FormatUint(*constraintViolationLimit, 10),
 		)
 	}
 
@@ -1132,7 +1162,7 @@ func setAuditFromCache(obj *unstructured.Unstructured, auditFromCache *operatorv
 			auditFromCacheValue = "true"
 		}
 
-		return setContainerArg(obj, AuditFromCacheArg, auditFromCacheValue, false)
+		return setContainerArg(obj, AuditFromCacheArg, auditFromCacheValue)
 	}
 
 	return nil
@@ -1140,7 +1170,7 @@ func setAuditFromCache(obj *unstructured.Unstructured, auditFromCache *operatorv
 
 func setAuditChunkSize(obj *unstructured.Unstructured, auditChunkSize *uint64) error {
 	if auditChunkSize != nil {
-		return setContainerArg(obj, AuditChunkSizeArg, strconv.FormatUint(*auditChunkSize, 10), false)
+		return setContainerArg(obj, AuditChunkSizeArg, strconv.FormatUint(*auditChunkSize, 10))
 	}
 
 	return nil
@@ -1150,7 +1180,7 @@ func setEmitEvents(obj *unstructured.Unstructured, argName string, emitEvents *o
 	if emitEvents != nil {
 		emitArgValue := emitEvents.ToBoolString()
 
-		return setContainerArg(obj, argName, emitArgValue, false)
+		return setContainerArg(obj, argName, emitArgValue)
 	}
 
 	return nil
@@ -1162,7 +1192,7 @@ func setEventsInvolvedNamespace(obj *unstructured.Unstructured,
 	if eventsInvolvedNs != nil {
 		emitEventsInvolvedNsArgValue := eventsInvolvedNs.ToBoolString()
 
-		return setContainerArg(obj, argName, emitEventsInvolvedNsArgValue, false)
+		return setContainerArg(obj, argName, emitEventsInvolvedNsArgValue)
 	}
 
 	return nil
@@ -1170,7 +1200,7 @@ func setEventsInvolvedNamespace(obj *unstructured.Unstructured,
 
 func setDisabledBuiltins(obj *unstructured.Unstructured, disabledBuiltins []string) error {
 	for _, b := range disabledBuiltins {
-		if err := setContainerArg(obj, DisabledBuiltinArg, b, true); err != nil {
+		if err := setContainerArg(obj, DisabledBuiltinArg, b); err != nil {
 			return err
 		}
 	}
@@ -1182,18 +1212,18 @@ func setEnableMutation(obj *unstructured.Unstructured, spec operatorv1alpha1.Gat
 	if !mutatingWebhookEnabled(spec.MutatingWebhook) {
 		switch obj.GetName() {
 		case AuditDeploymentName:
-			return unsetContainerArg(obj, OperationArg, OperationMutationStatus, true)
+			return unsetContainerArg(obj, OperationArg, OperationMutationStatus)
 		case WebhookDeploymentName:
-			return unsetContainerArg(obj, OperationArg, OperationMutationWebhook, true)
+			return unsetContainerArg(obj, OperationArg, OperationMutationWebhook)
 		default:
 			return nil
 		}
 	} else {
 		switch obj.GetName() {
 		case AuditDeploymentName:
-			return setContainerArg(obj, OperationArg, OperationMutationStatus, true)
+			return setContainerArg(obj, OperationArg, OperationMutationStatus)
 		case WebhookDeploymentName:
-			return setContainerArg(obj, OperationArg, OperationMutationWebhook, true)
+			return setContainerArg(obj, OperationArg, OperationMutationWebhook)
 		default:
 			return nil
 		}
@@ -1409,20 +1439,6 @@ func setTolerations(obj *unstructured.Unstructured, spec operatorv1alpha1.Gateke
 
 // Container specific setters
 
-func setResources(obj *unstructured.Unstructured, resources *corev1.ResourceRequirements) error {
-	if resources != nil {
-		return setContainerAttrWithFn(obj, func(container map[string]interface{}) error {
-			if err := unstructured.SetNestedField(container, util.ToMap(resources), "resources"); err != nil {
-				return errors.Wrapf(err, "Failed to set container resources")
-			}
-
-			return nil
-		})
-	}
-
-	return nil
-}
-
 func setImage(container map[string]interface{}, spec operatorv1alpha1.GatekeeperSpec) error {
 	image := os.Getenv(GatekeeperImageEnvVar)
 	if image != "" {
@@ -1472,8 +1488,11 @@ func setContainerAttrWithFn(obj *unstructured.Unstructured, containerFn func(map
 	return nil
 }
 
-func setContainerArg(
-	obj *unstructured.Unstructured, argName string, argValue string, isMultiArg bool,
+// updateContainerArg takes an object, container flag argument name and value to
+// set on the object, and a boolean whether the flag should be deleted, and
+// returns any resulting errors.
+func updateContainerArg(
+	obj *unstructured.Unstructured, argName string, argValue string, remove bool,
 ) error {
 	return setContainerAttrWithFn(obj, func(container map[string]interface{}) error {
 		args, found, err := unstructured.NestedStringSlice(container, "args")
@@ -1481,16 +1500,30 @@ func setContainerArg(
 			return errors.Wrapf(err, "Unable to retrieve container arguments for: %s", managerContainer)
 		}
 
-		exists := false
+		// Determine whether this is a flag that can be declared more than once.
+		multiArgFlags := []string{
+			"--operation",
+			"--disable-opa-builtin",
+			"--exempt-namespace",
+			"--exempt-namespace-prefix",
+			"--exempt-namespace-suffix",
+			"--metrics-backend",
+		}
+		isMultiArg := slices.Contains(multiArgFlags, argName)
+
+		index := -1
 		for i, arg := range args {
 			n, v := util.FromArg(arg)
 			if n == argName && (!isMultiArg || isMultiArg && v == argValue) {
-				args[i] = util.ToArg(argName, argValue)
-				exists = true
+				index = i
+
+				break
 			}
 		}
 
-		if !exists {
+		if index != -1 && remove {
+			args = slices.Delete(args, index, index+1)
+		} else if index == -1 && !remove {
 			args = append(args, util.ToArg(argName, argValue))
 		}
 
@@ -1498,33 +1531,20 @@ func setContainerArg(
 	})
 }
 
-func unsetContainerArg(
-	obj *unstructured.Unstructured, argName string, argValue string, isMultiArg bool,
+// setContainerArg takes an object, and container flag argument name and value
+// to set on the object, and returns any resulting errors.
+func setContainerArg(
+	obj *unstructured.Unstructured, argName string, argValue string,
 ) error {
-	return setContainerAttrWithFn(obj, func(container map[string]interface{}) error {
-		args, found, err := unstructured.NestedStringSlice(container, "args")
-		if !found || err != nil {
-			return errors.Wrapf(err, "Unable to retrieve container arguments for: %s", managerContainer)
-		}
-		exists := false
-		index := 0
-		for i, arg := range args {
-			n, v := util.FromArg(arg)
-			if n == argName && (!isMultiArg || isMultiArg && v == argValue) {
-				args[i] = util.ToArg(argName, argValue)
-				index = i
-				exists = true
-			}
-		}
-		if exists {
-			newArgs := make([]string, 0)
-			newArgs = append(newArgs, args[:index]...)
-			newArgs = append(newArgs, args[index+1:]...)
-			args = newArgs
-		}
+	return updateContainerArg(obj, argName, argValue, false)
+}
 
-		return unstructured.SetNestedStringSlice(container, args, "args")
-	})
+// unsetContainerArg takes an object, and container flag argument name and value
+// to unset from the object, and returns any resulting errors.
+func unsetContainerArg(
+	obj *unstructured.Unstructured, argName string, argValue string,
+) error {
+	return updateContainerArg(obj, argName, argValue, true)
 }
 
 func setNamespace(obj *unstructured.Unstructured, asset, namespace string) error {
@@ -1536,7 +1556,7 @@ func setNamespace(obj *unstructured.Unstructured, asset, namespace string) error
 		return err
 	}
 
-	if err := setControllerManagerExceptNamespace(obj, asset, namespace); err != nil {
+	if err := setControllerManagerExemptNamespace(obj, asset, namespace); err != nil {
 		return err
 	}
 
@@ -1567,12 +1587,12 @@ func setClientConfigNamespace(obj *unstructured.Unstructured, asset, namespace s
 	return nil
 }
 
-func setControllerManagerExceptNamespace(obj *unstructured.Unstructured, asset, namespace string) error {
+func setControllerManagerExemptNamespace(obj *unstructured.Unstructured, asset, namespace string) error {
 	if asset != WebhookFile {
 		return nil
 	}
 
-	return setContainerArg(obj, ExemptNamespaceArg, namespace, false)
+	return setContainerArg(obj, ExemptNamespaceArg, namespace)
 }
 
 func setRoleBindingSubjectNamespace(obj *unstructured.Unstructured, asset, namespace string) error {
