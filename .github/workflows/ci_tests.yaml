@@ -40,7 +40,8 @@ jobs:
 
       - name: Verify manifests
         run: |
-          make manifests
+          # The 'release' target calls the 'manifests' target
+          make release
           git diff --exit-code
 
       - name: Verify imported manifests
