@@ -15,8 +15,6 @@ resources:
 - ../crd
 - ../manager
 - ../rbac
-patches:
-- path: manager_auth_proxy_patch.yaml
 labels:
 - includeSelectors: true
   pairs:
