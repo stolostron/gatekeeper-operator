@@ -16,10 +16,10 @@ metadata:
         }
       ]
     capabilities: Basic Install
-    olm.skipRange: "<3.14.1"
+    olm.skipRange: "<3.14.2"
     operators.operatorframework.io/builder: operator-sdk-v1.31.0
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
-  name: gatekeeper-operator.v3.14.1
+  name: gatekeeper-operator.v3.14.2
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -359,8 +359,8 @@ spec:
                 - /manager
                 env:
                 - name: RELATED_IMAGE_GATEKEEPER
-                  value: openpolicyagent/gatekeeper:v3.14.1
-                image: quay.io/gatekeeper/gatekeeper-operator:v3.14.1
+                  value: openpolicyagent/gatekeeper:v3.14.2
+                image: quay.io/gatekeeper/gatekeeper-operator:v3.14.2
                 imagePullPolicy: Always
                 livenessProbe:
                   httpGet:
@@ -496,7 +496,7 @@ spec:
   provider:
     name: Red Hat
   relatedImages:
-  - image: openpolicyagent/gatekeeper:v3.14.1
+  - image: openpolicyagent/gatekeeper:v3.14.2
     name: gatekeeper
   replaces: gatekeeper-operator.v3.14.0
-  version: "3.14.1"
+  version: "3.14.2"
