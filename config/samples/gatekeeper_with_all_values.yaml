@@ -4,7 +4,7 @@ metadata:
   name: gatekeeper
 spec:
   image:
-    image: docker.io/openpolicyagent/gatekeeper:v3.14.1
+    image: docker.io/openpolicyagent/gatekeeper:v3.14.2
     imagePullPolicy: Always
   audit:
     replicas: 1
