@@ -227,6 +227,12 @@ jobs:
           yq '.spec.type = "NodePort"' -i test/bats/tests/mutations/mutate_svc.yaml
 
           test/externaldata/dummy-provider/scripts/generate-tls-certificate.sh
+          (
+            cd test/externaldata/dummy-provider
+            go mod init github.com/open-policy-agent/gatekeeper/test/externaldata/dummy-provider
+            go get github.com/open-policy-agent/frameworks/constraint@v0.0.0-20240801235658-6ec97bae5028
+            sed -i 's/go mod init &&//' Dockerfile
+          )
           docker build -t dummy-provider:test -f test/externaldata/dummy-provider/Dockerfile test/externaldata/dummy-provider
           kind load docker-image --name kind dummy-provider:test
           echo "::endgroup::"
