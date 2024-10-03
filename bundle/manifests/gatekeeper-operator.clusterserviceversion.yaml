@@ -16,10 +16,10 @@ metadata:
         }
       ]
     capabilities: Basic Install
-    olm.skipRange: "<3.15.1"
+    olm.skipRange: "<3.15.2"
     operators.operatorframework.io/builder: operator-sdk-v1.34.1
     operators.operatorframework.io/project_layout: go.kubebuilder.io/v3
-  name: gatekeeper-operator.v3.15.1
+  name: gatekeeper-operator.v3.15.2
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -376,7 +376,7 @@ spec:
                 env:
                 - name: RELATED_IMAGE_GATEKEEPER
                   value: quay.io/gatekeeper/gatekeeper:v3.15.1
-                image: quay.io/gatekeeper/gatekeeper-operator:v3.15.1
+                image: quay.io/gatekeeper/gatekeeper-operator:v3.15.2
                 imagePullPolicy: Always
                 livenessProbe:
                   httpGet:
@@ -516,5 +516,5 @@ spec:
   relatedImages:
   - image: quay.io/gatekeeper/gatekeeper:v3.15.1
     name: gatekeeper
-  replaces: gatekeeper-operator.v3.14.1
-  version: "3.15.1"
+  replaces: gatekeeper-operator.v3.15.1
+  version: "3.15.2"
