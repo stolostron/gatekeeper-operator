@@ -21,13 +21,13 @@ REPLACES_VERSION ?= $(shell cat REPLACES_VERSION)
 GATEKEEPER_VERSION ?= $(shell cat GATEKEEPER_VERSION 2>/dev/null || cat VERSION)
 
 # CHANNELS define the bundle channels used in the bundle.
-CHANNELS ?= stable,$(shell echo $(VERSION) | cut -d '.' -f 1-2)
+CHANNELS ?= $(shell echo $(VERSION) | cut -d '.' -f 1-2)
 ifneq ($(origin CHANNELS), undefined)
   BUNDLE_CHANNELS := --channels=$(CHANNELS)
 endif
 
 # DEFAULT_CHANNEL defines the default channel used in the bundle.
-DEFAULT_CHANNEL ?= stable
+DEFAULT_CHANNEL ?= "3.15"
 ifneq ($(origin DEFAULT_CHANNEL), undefined)
   BUNDLE_DEFAULT_CHANNEL := --default-channel=$(DEFAULT_CHANNEL)
 endif
