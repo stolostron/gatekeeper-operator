@@ -24,7 +24,7 @@ spec:
   - name: output-image
     value: quay.io/redhat-user-workloads/gatekeeper-tenant/gatekeeper-operator-3-17/gatekeeper-operator-bundle-3-17:{{revision}}
   - name: dockerfile
-    value: build/Dockerfile.rhtap
+    value: bundle.Dockerfile
   - name: path-context
     value: .
   pipelineSpec:
