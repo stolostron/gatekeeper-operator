@@ -13,3 +13,8 @@ annotations:
   # Annotations for testing.
   operators.operatorframework.io.test.mediatype.v1: scorecard+v1
   operators.operatorframework.io.test.config.v1: tests/scorecard/
+
+  # Red Hat annotations.
+  com.redhat.delivery.operator.bundle: true
+  com.redhat.openshift.versions: X.Y
+  com.redhat.delivery.backport: false
