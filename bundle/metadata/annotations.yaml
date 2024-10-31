@@ -1,15 +1,31 @@
 annotations:
-  # Core bundle annotations.
-  operators.operatorframework.io.bundle.mediatype.v1: registry+v1
-  operators.operatorframework.io.bundle.manifests.v1: manifests/
-  operators.operatorframework.io.bundle.metadata.v1: metadata/
-  operators.operatorframework.io.bundle.package.v1: gatekeeper-operator
-  operators.operatorframework.io.bundle.channels.v1: "3.15"
+  # Core bundle annotations
   operators.operatorframework.io.bundle.channel.default.v1: "3.15"
+  operators.operatorframework.io.bundle.channels.v1: "3.15"
+  operators.operatorframework.io.bundle.manifests.v1: manifests/
+  operators.operatorframework.io.bundle.mediatype.v1: registry+v1
+  operators.operatorframework.io.bundle.metadata.v1: metadata/
+  operators.operatorframework.io.bundle.package.v1: gatekeeper-operator-product
   operators.operatorframework.io.metrics.builder: operator-sdk-v1.34.1
   operators.operatorframework.io.metrics.mediatype.v1: metrics+v1
   operators.operatorframework.io.metrics.project_layout: go.kubebuilder.io/v3
-
-  # Annotations for testing.
-  operators.operatorframework.io.test.mediatype.v1: scorecard+v1
-  operators.operatorframework.io.test.config.v1: tests/scorecard/
+  # Red Hat annotations
+  com.redhat.component: gatekeeper-operator-bundle-container
+  com.redhat.delivery.backport: false
+  com.redhat.delivery.operator.bundle: true
+  com.redhat.openshift.versions: v4.12
+  # K8s/Openshift annotations
+  io.k8s.display-name: "Gatekeeper Operator"
+  io.k8s.description: "The Gatekeeper Operator installs and configures Open Policy Agent Gatekeeper."
+  io.openshift.expose-services: ""
+  io.openshift.tags: "data,images"
+  # Bundle metadata
+  name: gatekeeper/gatekeeper-operator-bundle
+  description: "The Gatekeeper Operator installs and configures Open Policy Agent Gatekeeper."
+  summary: "Red Hat Gatekeeper Operator"
+  version: v3.15.4
+  release: "0"
+  distribution-scope: public
+  maintainer: "acm-component-maintainers@redhat.com"
+  url: https://github.com/stolostron/gatekeeper-operator
+  vendor: "Red Hat, Inc."
