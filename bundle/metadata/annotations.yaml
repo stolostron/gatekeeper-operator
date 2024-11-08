@@ -16,12 +16,12 @@ annotations:
   com.redhat.openshift.versions: v4.12
   # Bundle metadata
   name: gatekeeper/gatekeeper-operator-bundle
-  description: gatekeeper-operator-bundle
-  io.k8s.description: gatekeeper-operator-bundle
-  summary: "The Gatekeeper Operator installs and configures Open Policy Agent Gatekeeper."
+  description: "The Gatekeeper Operator installs and configures Open Policy Agent Gatekeeper."
+  io.k8s.description: "The Gatekeeper Operator installs and configures Open Policy Agent Gatekeeper."
+  summary: "Red Hat Gatekeeper Operator"
   version: v3.17.0
   release: ""
   distribution-scope: public
   maintainer: "acm-component-maintainers@redhat.com"
   url: https://github.com/stolostron/gatekeeper-operator
-  vendor: "Red Hat"
+  vendor: "Red Hat, Inc."
