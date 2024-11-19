@@ -22,11 +22,12 @@ COPY pkg/ pkg/
 # Build
 RUN CGO_ENABLED=1 GOOS=${GOOS} GOARCH=${GOARCH} go build -mod=readonly -a -ldflags "${LDFLAGS}" -o manager main.go
 
-# Use distroless as minimal base image to package the manager binary
-# Refer to https://github.com/GoogleContainerTools/distroless for more details
+# Copy to base image
 FROM registry.access.redhat.com/ubi9/ubi-minimal:latest
 WORKDIR /
 COPY --from=builder /workspace/manager .
+RUN mkdir licenses/
+COPY LICENSE licenses/
 USER 65532:65532
 
 ENTRYPOINT ["/manager"]
