@@ -187,14 +187,15 @@ update-bindata: go-bindata ## Update bindata.go file.
 	rm -rf ./$(GATEKEEPER_MANIFEST_DIR)-rendered
 	$(MAKE) fmt
 
-GATEKEEPER_IMAGE ?= quay.io/gatekeeper/gatekeeper
+GATEKEEPER_IMG_BASE ?= quay.io/gatekeeper/gatekeeper
+GATEKEEPER_IMG ?= $(GATEKEEPER_IMAGE_BASE):v$(GATEKEEPER_VERSION)
 
 .PHONY: update-gatekeeper-image
 update-gatekeeper-image: ## Update Gatekeeper image in manifests.
 	yq 'select(.kind == "Deployment") \
 		|= .spec.template.spec.containers[] \
 		|= select(.name == "manager").env[] \
-		|= select(.name == "RELATED_IMAGE_GATEKEEPER").value = "$(GATEKEEPER_IMAGE):v$(GATEKEEPER_VERSION)"' \
+		|= select(.name == "RELATED_IMAGE_GATEKEEPER").value = "$(GATEKEEPER_IMG)"' \
 		-i config/manager/manager.yaml
 
 # Set version variables for LDFLAGS
