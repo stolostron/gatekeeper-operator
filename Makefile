@@ -188,7 +188,7 @@ update-bindata: go-bindata ## Update bindata.go file.
 	$(MAKE) fmt
 
 GATEKEEPER_IMG_BASE ?= quay.io/gatekeeper/gatekeeper
-GATEKEEPER_IMG ?= $(GATEKEEPER_IMAGE_BASE):v$(GATEKEEPER_VERSION)
+GATEKEEPER_IMG ?= $(GATEKEEPER_IMG_BASE):v$(GATEKEEPER_VERSION)
 
 .PHONY: update-gatekeeper-image
 update-gatekeeper-image: ## Update Gatekeeper image in manifests.
