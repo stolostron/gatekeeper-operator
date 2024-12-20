@@ -5,7 +5,7 @@ set -e
 # Gatekeeper Operator image
 operator_img="quay.io/redhat-user-workloads/gatekeeper-tenant/gatekeeper-operator-3-17/gatekeeper-3-17@sha256:4afb0caa019880603a8603934808233222a93fd334d14a3acad23750e39c3834"
 # Gatekeeper image
-gatekeeper_img="quay.io/redhat-user-workloads/gatekeeper-tenant/gatekeeper-operator-3-17/gatekeeper-operator-3-17@sha256:a9264d30b0cd8ea03784ae875ebe05e7fc03a9c6abc755aefd30eb41d6126ebb"
+gatekeeper_img="quay.io/redhat-user-workloads/gatekeeper-tenant/gatekeeper-operator-3-17/gatekeeper-operator-3-17@sha256:723fd084c6818799e6a6c9547027f2dc834d5f5dcaf2116949c38a4c1b881d0a"
 
 build_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
 
