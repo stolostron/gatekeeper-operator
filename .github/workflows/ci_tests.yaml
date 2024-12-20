@@ -45,7 +45,10 @@ jobs:
         go-version-file: go.mod
 
     - name: Verify modules
-      run: go mod verify
+      run: |
+        go mod tidy
+        go mod verify
+        git diff --exit-code
 
     - name: Verify format
       run: |
