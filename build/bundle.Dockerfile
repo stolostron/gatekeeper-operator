@@ -29,6 +29,7 @@ LABEL name=gatekeeper/gatekeeper-operator-bundle
 LABEL description="The Gatekeeper Operator installs and configures Open Policy Agent Gatekeeper."
 LABEL summary="Red Hat Gatekeeper Operator"
 LABEL version=v3.17.1
+LABEL release="0"
 LABEL distribution-scope=public
 LABEL maintainer="acm-component-maintainers@redhat.com"
 LABEL url=https://github.com/stolostron/gatekeeper-operator
