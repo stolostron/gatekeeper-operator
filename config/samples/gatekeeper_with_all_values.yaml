@@ -36,6 +36,7 @@ spec:
       - UPDATE
       - CREATE
       - DELETE
+    mutationAnnotations: Disabled
     failurePolicy: Ignore
     namespaceSelector:
       matchExpressions:
