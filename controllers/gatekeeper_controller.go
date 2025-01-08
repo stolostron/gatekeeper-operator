@@ -802,10 +802,6 @@ func webhookOverrides(log logr.Logger, obj *unstructured.Unstructured, webhook *
 			return err
 		}
 
-		if err := setMutationFlags(obj, webhook); err != nil {
-			return err
-		}
-
 		if err := setLogDeniesFlag(obj, webhook.LogDenies); err != nil {
 			return err
 		}
@@ -813,6 +809,10 @@ func webhookOverrides(log logr.Logger, obj *unstructured.Unstructured, webhook *
 		if err := setCommonConfig(log, obj, webhook.CommonConfig); err != nil {
 			return err
 		}
+	}
+
+	if err := setMutationFlags(obj, webhook); err != nil {
+		return err
 	}
 
 	return nil
@@ -1102,24 +1102,20 @@ func openShiftDeploymentOverrides(obj *unstructured.Unstructured) error {
 }
 
 func setMutationFlags(obj *unstructured.Unstructured, webhookConfig *operatorv1alpha1.WebhookConfig) error {
-	if webhookConfig == nil {
-		return nil
-	}
-
-	if webhookConfig.LogMutations != nil && webhookConfig.LogMutations.ToBool() {
+	if webhookConfig != nil && webhookConfig.LogMutations != nil && webhookConfig.LogMutations.ToBool() {
 		err := setContainerArg(obj, LogMutationsArg, webhookConfig.LogMutations.ToBoolString())
 		if err != nil {
 			return err
 		}
 	}
 
-	if webhookConfig.MutationAnnotations != nil && webhookConfig.MutationAnnotations.ToBool() {
-		return setContainerArg(
-			obj, MutationAnnotationsArg, webhookConfig.MutationAnnotations.ToBoolString(),
-		)
+	// Enable MutationAnnotations by default if not set
+	mutationAnnotations := "true"
+	if webhookConfig != nil && webhookConfig.MutationAnnotations != nil {
+		mutationAnnotations = webhookConfig.MutationAnnotations.ToBoolString()
 	}
 
-	return nil
+	return setContainerArg(obj, MutationAnnotationsArg, mutationAnnotations)
 }
 
 // Default is Disabled (false)
