@@ -222,7 +222,7 @@ type WebhookConfig struct {
 	LogMutations *Mode `json:"logMutations,omitempty"`
 
 	// MutationAnnotations adds the gatekeeper.sh/mutation-id and gatekeeper.sh/mutations annotations
-	// to mutated objects. The default value is Disabled.
+	// to mutated objects. The default value is Enabled.
 	// See https://open-policy-agent.github.io/gatekeeper/website/docs/customize-startup#beta-enable-mutation-logging-and-annotations.
 	//
 	// +optional

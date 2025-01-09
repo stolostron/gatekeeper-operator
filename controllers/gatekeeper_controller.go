@@ -1113,10 +1113,12 @@ func setMutationFlags(obj *unstructured.Unstructured, webhookConfig *operatorv1a
 		}
 	}
 
-	if webhookConfig.MutationAnnotations != nil && webhookConfig.MutationAnnotations.ToBool() {
-		return setContainerArg(
-			obj, MutationAnnotationsArg, webhookConfig.MutationAnnotations.ToBoolString(),
-		)
+	if webhookConfig.MutationAnnotations != nil &&
+		!webhookConfig.MutationAnnotations.ToBool() {
+		err := unsetContainerArg(obj, MutationAnnotationsArg, webhookConfig.MutationAnnotations.ToBoolString())
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil
