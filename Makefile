@@ -318,14 +318,15 @@ bundle: operator-sdk manifests kustomize ## Generate bundle manifests and metada
 	$(SED) -i 's/mediatype: \"\"/mediatype: \"image\/svg+xml\"/g' bundle/manifests/gatekeeper-operator.clusterserviceversion.yaml
 	$(SED) -i 's/^  version:.*/  version: "$(VERSION)"/' bundle/manifests/gatekeeper-operator.clusterserviceversion.yaml
 	$(SED) -i '/^    createdAt:.*/d' bundle/manifests/gatekeeper-operator.clusterserviceversion.yaml
-	$(SED) -i 's/$(CHANNELS)/$(CHANNELS)/g' bundle/metadata/annotations.yaml
+	yq '.annotations["operators.operatorframework.io.bundle.channels.v1"] = "$(CHANNELS)"' -i bundle/metadata/annotations.yaml
+	yq '.annotations.version = "v$(VERSION)"' -i bundle/metadata/annotations.yaml
 	$(SED) -i 's/^    olm.skipRange:.*/    olm.skipRange: "<$(VERSION)"/' bundle/manifests/gatekeeper-operator.clusterserviceversion.yaml
   ifneq ($(REPLACES_VERSION), none)
 	  $(SED) -i 's/^  replaces:.*/  replaces: gatekeeper-operator.v$(REPLACES_VERSION)/' bundle/manifests/gatekeeper-operator.clusterserviceversion.yaml
   else
 	  $(SED) -i 's/^  replaces:.*/  # replaces: none/' bundle/manifests/gatekeeper-operator.clusterserviceversion.yaml
   endif
-	awk '/FROM/,/# Core bundle annotations./' build/bundle.Dockerfile | sed '$$d' > build/bundle.Dockerfile.tmp
+	awk '/FROM/,/# Core bundle annotations/' build/bundle.Dockerfile | sed '$$d' > build/bundle.Dockerfile.tmp
 	mv build/bundle.Dockerfile.tmp build/bundle.Dockerfile
 	yq '.annotations' bundle/metadata/annotations.yaml | sed 's/: /=/' | sed 's/^\([^#]\)/LABEL \1/' >> build/bundle.Dockerfile
 	$(OPERATOR_SDK) bundle validate ./bundle
