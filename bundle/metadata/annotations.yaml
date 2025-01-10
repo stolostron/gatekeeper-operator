@@ -1,5 +1,5 @@
 annotations:
-  # Core bundle annotations.
+  # Core bundle annotations
   operators.operatorframework.io.bundle.channel.default.v1: stable
   operators.operatorframework.io.bundle.channels.v1: "stable,3.17"
   operators.operatorframework.io.bundle.manifests.v1: manifests/
@@ -9,17 +9,21 @@ annotations:
   operators.operatorframework.io.metrics.builder: operator-sdk-v1.34.1
   operators.operatorframework.io.metrics.mediatype.v1: metrics+v1
   operators.operatorframework.io.metrics.project_layout: go.kubebuilder.io/v3
-  # Red Hat annotations.
+  # Red Hat annotations
   com.redhat.component: gatekeeper-operator-bundle-container
   com.redhat.delivery.backport: false
   com.redhat.delivery.operator.bundle: true
   com.redhat.openshift.versions: v4.12
+  # K8s/Openshift annotations
+  io.k8s.display-name: "Gatekeeper Operator"
+  io.k8s.description: "The Gatekeeper Operator installs and configures Open Policy Agent Gatekeeper."
+  io.openshift.expose-services: ""
+  io.openshift.tags: "data,images"
   # Bundle metadata
   name: gatekeeper/gatekeeper-operator-bundle
   description: "The Gatekeeper Operator installs and configures Open Policy Agent Gatekeeper."
-  io.k8s.description: "The Gatekeeper Operator installs and configures Open Policy Agent Gatekeeper."
   summary: "Red Hat Gatekeeper Operator"
-  version: v3.17.0
+  version: v3.17.1
   release: ""
   distribution-scope: public
   maintainer: "acm-component-maintainers@redhat.com"
