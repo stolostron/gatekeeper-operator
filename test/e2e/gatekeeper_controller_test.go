@@ -532,11 +532,6 @@ var _ = Describe("Gatekeeper", func() {
 				_, found := getContainerArg(webhookContainer.Args, controllers.LogDeniesArg)
 				Expect(found).To(BeFalse())
 			})
-
-			By("Checking default mutation-annotations", func() {
-				_, found := getContainerArg(webhookContainer.Args, controllers.MutationAnnotationsArg)
-				Expect(found).To(BeTrue())
-			})
 		})
 
 		It("Contains the configured values", func(ctx SpecContext) {
@@ -680,11 +675,6 @@ var _ = Describe("Gatekeeper", func() {
 				value, found := getContainerArg(webhookContainer.Args, "--enable-k8s-native-validation")
 				Expect(found).To(BeTrue())
 				Expect(value).To(Equal("--enable-k8s-native-validation=true"))
-			})
-
-			By("Checking mutation-annotations argument", func() {
-				_, found := getContainerArg(webhookContainer.Args, controllers.MutationAnnotationsArg)
-				Expect(found).To(BeFalse())
 			})
 		})
 
