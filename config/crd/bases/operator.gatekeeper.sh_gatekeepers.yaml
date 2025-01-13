@@ -1354,7 +1354,7 @@ spec:
                   mutationAnnotations:
                     description: |-
                       MutationAnnotations adds the gatekeeper.sh/mutation-id and gatekeeper.sh/mutations annotations
-                      to mutated objects. The default value is Enabled.
+                      to mutated objects. The default value is Disabled.
                       See https://open-policy-agent.github.io/gatekeeper/website/docs/customize-startup#beta-enable-mutation-logging-and-annotations.
                     enum:
                     - Enabled

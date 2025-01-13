@@ -5356,7 +5356,6 @@ spec:
         - --operation=webhook
         - --operation=mutation-webhook
         - --disable-opa-builtin={http.send}
-        - --mutation-annotations=true
         command:
         - /manager
         env:

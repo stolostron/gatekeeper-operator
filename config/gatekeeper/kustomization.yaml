@@ -48,9 +48,6 @@ patches:
     - op: replace
       path: /spec/template/spec/containers/0/resources/limits/cpu
       value: 1000m
-    - op: add
-      path: /spec/template/spec/containers/0/args/-
-      value: "--mutation-annotations=true"
   target:
     kind: Deployment
     name: gatekeeper-controller-manager
