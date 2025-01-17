@@ -2,9 +2,9 @@
 set -o errexit
 
 # desired cluster name; default is "kind"
-KIND_CLUSTER_NAME="${KIND_CLUSTER_NAME:-kind}"
+KIND_NAME="${KIND_NAME:-test-kind}"
 
-reg_name='kind-registry'
+reg_name="${KIND_NAME}-registry"
 reg_port_default='5000'
 reg_port="${REGISTRY_PORT:-${reg_port_default}}"
 
@@ -37,9 +37,9 @@ kind version
 
 KIND_CMD=
 if [[ -z "${KIND_CLUSTER_VERSION}" ]]; then
-  KIND_CMD="kind create cluster --name ${KIND_CLUSTER_NAME} --wait=5m --config=-"
+  KIND_CMD="kind create cluster --name ${KIND_NAME} --wait=5m --config=-"
 else
-  KIND_CMD="kind create cluster --image kindest/node:${KIND_CLUSTER_VERSION} --name ${KIND_CLUSTER_NAME} --wait=5m --config=-"
+  KIND_CMD="kind create cluster --image kindest/node:${KIND_CLUSTER_VERSION} --name ${KIND_NAME} --wait=5m --config=-"
 fi
 
 # create a cluster with the local registry enabled in containerd
@@ -54,7 +54,7 @@ EOF
 
 # connect the registry to the cluster network
 if [ "$(docker inspect -f='{{json .NetworkSettings.Networks.kind}}' "${reg_name}")" = 'null' ]; then
-  docker network connect "${KIND_CLUSTER_NAME}" "${reg_name}"
+  docker network connect kind "${reg_name}"
 fi
 
 # Document the local registry
