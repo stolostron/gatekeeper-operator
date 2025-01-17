@@ -10,18 +10,18 @@ patches:
 - patch: |-
     kind: CatalogSource
     metadata:
-      name: gatekeeper-operator
+      name: gatekeeper-operator-product
     spec:
       image: quay.io/gatekeeper/gatekeeper-operator-bundle-index:latest
   target:
     kind: CatalogSource
-    name: gatekeeper-operator
+    name: gatekeeper-operator-product
 - patch: |-
     kind: Subscription
     metadata:
-      name: gatekeeper-operator-sub
+      name: gatekeeper-operator-product
     spec:
       channel: stable
   target:
     kind: Subscription
-    name: gatekeeper-operator-sub
+    name: gatekeeper-operator-product
