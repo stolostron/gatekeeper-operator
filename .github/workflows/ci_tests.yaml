@@ -108,7 +108,7 @@ jobs:
       - name: Build and Push Test Container Image to KIND node
         run: |
           make docker-build IMG=localhost:5000/gatekeeper-operator:$GITHUB_SHA
-          kind load docker-image localhost:5000/gatekeeper-operator:$GITHUB_SHA
+          make kind-load-image IMG=localhost:5000/gatekeeper-operator:$GITHUB_SHA
 
       - name: E2E Tests
         run: |
@@ -152,7 +152,7 @@ jobs:
       - name: Build and Push Test Container Image to KIND node
         run: |
           make docker-build IMG=localhost:5000/gatekeeper-operator:$GITHUB_SHA
-          kind load docker-image localhost:5000/gatekeeper-operator:$GITHUB_SHA
+          make kind-load-image IMG=localhost:5000/gatekeeper-operator:$GITHUB_SHA
 
       - name: E2E Openshift Tests
         run: |
@@ -202,7 +202,7 @@ jobs:
       - name: Build and Push Test Container Image to KIND node
         run: |
           make docker-build IMG=localhost:5000/gatekeeper-operator:$GITHUB_SHA
-          kind load docker-image localhost:5000/gatekeeper-operator:$GITHUB_SHA
+          make kind-load-image IMG=localhost:5000/gatekeeper-operator:$GITHUB_SHA
 
       - name: Set Up Environment Variables
         run: |
@@ -240,7 +240,7 @@ jobs:
 
           test/externaldata/dummy-provider/scripts/generate-tls-certificate.sh
           docker build -t dummy-provider:test -f test/externaldata/dummy-provider/Dockerfile test/externaldata/dummy-provider
-          kind load docker-image --name kind dummy-provider:test
+          kind load docker-image dummy-provider:test --name test-kind
           echo "::endgroup::"
 
           make test-e2e GATEKEEPER_NAMESPACE=${NAMESPACE} ENABLE_MUTATION_TESTS=1
