@@ -4,7 +4,7 @@ layout:
 plugins:
   manifests.sdk.operatorframework.io/v2: {}
   scorecard.sdk.operatorframework.io/v2: {}
-projectName: gatekeeper-operator
+projectName: gatekeeper-operator-product
 repo: github.com/stolostron/gatekeeper-operator
 resources:
 - api:
