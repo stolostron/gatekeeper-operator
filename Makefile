@@ -442,23 +442,26 @@ test-openshift-setup:
 test-cluster: ## Create a local kind cluster with a registry for testing.
 	KIND_CLUSTER_VERSION=$(KUBERNETES_VERSION) ./scripts/kind-with-registry.sh
 
+.PHONY: kind-load-image
+kind-load-image:
+	kind load docker-image $(IMG) --name $(KIND_NAME)
+
 .PHONY: kind-bootstrap-cluster
-kind-bootstrap-cluster: test-cluster install dev-build
+kind-bootstrap-cluster: test-cluster install dev-build kind-load-image
 	kubectl label ns $(NAMESPACE)  --overwrite pod-security.kubernetes.io/audit=privileged
 	kubectl label ns $(NAMESPACE)  --overwrite pod-security.kubernetes.io/enforce=privileged
 	kubectl label ns $(NAMESPACE)  --overwrite pod-security.kubernetes.io/warn=privileged
-	kind load docker-image $(IMG)
 	$(MAKE) deploy-ci NAMESPACE=$(NAMESPACE) IMG=$(IMG)
 	kubectl -n $(NAMESPACE) wait deployment/gatekeeper-operator-controller --for condition=Available --timeout=90s
 
 CLUSTER_NAME = kind
-KIND_CLUSTER_NAME ?= kind
+KIND_NAME ?= test-kind
 .PHONY: delete-test-cluster
 delete-test-cluster: ## Clean up the local kind cluster and registry.
 	# Stopping and removing the registry container
 	-docker stop $(shell docker inspect -f '{{.Id}}' kind-registry 2>/dev/null || printf "-")
 	-docker rm $(shell docker inspect -f '{{.Id}}' kind-registry 2>/dev/null || printf "-")
-	-kind delete cluster --name "$(KIND_CLUSTER_NAME)"
+	-kind delete cluster --name "$(KIND_NAME)"
 
 # Requires running cluster (for example through 'make test-cluster')
 .PHONY: scorecard
