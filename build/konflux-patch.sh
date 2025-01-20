@@ -7,9 +7,9 @@ operator_img="quay.io/redhat-user-workloads/gatekeeper-tenant/gatekeeper-operato
 # Gatekeeper image
 gatekeeper_img="quay.io/redhat-user-workloads/gatekeeper-tenant/gatekeeper-operator-3-17/gatekeeper-operator-3-17@sha256:a9264d30b0cd8ea03784ae875ebe05e7fc03a9c6abc755aefd30eb41d6126ebb"
 
-build_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
+base_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." >/dev/null 2>&1 && pwd)"
 
-csv_file=${build_dir}/../bundle/manifests/gatekeeper-operator.clusterserviceversion.yaml
+csv_file=${base_dir}/bundle/manifests/gatekeeper-operator-product.clusterserviceversion.yaml
 
 # Patch images in the CSV for:
 # Gatekeeper
