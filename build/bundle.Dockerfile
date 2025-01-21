@@ -18,7 +18,7 @@ LABEL operators.operatorframework.io.metrics.project_layout=go.kubebuilder.io/v3
 LABEL com.redhat.component=gatekeeper-operator-bundle-container
 LABEL com.redhat.delivery.backport=false
 LABEL com.redhat.delivery.operator.bundle=true
-LABEL com.redhat.openshift.versions=v4.12
+LABEL com.redhat.openshift.versions=v4.14
 # K8s/Openshift annotations
 LABEL io.k8s.display-name="Gatekeeper Operator"
 LABEL io.k8s.description="The Gatekeeper Operator installs and configures Open Policy Agent Gatekeeper."
