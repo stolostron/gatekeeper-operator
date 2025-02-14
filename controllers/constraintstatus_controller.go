@@ -171,6 +171,13 @@ func (r *ConstraintPodStatusReconciler) Reconcile(ctx context.Context,
 		}
 	}
 
+	// If namespaceSelector is present in the constraint, Namespace must be added to syncOnly.
+	_, ok, err := unstructured.NestedMap(constraint.Object, "spec", "match", "namespaceSelector")
+	if ok && err == nil {
+		constraintSyncOnlyEntries = append(constraintSyncOnlyEntries,
+			v1alpha1.SyncOnlyEntry{Group: "", Version: "v1", Kind: "Namespace"})
+	}
+
 	r.ConstraintToSyncOnly[request.Name] = constraintSyncOnlyEntries
 
 	uniqSyncOnly := r.getUniqSyncOnly()

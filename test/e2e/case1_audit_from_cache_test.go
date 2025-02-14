@@ -16,9 +16,18 @@ import (
 	. "github.com/stolostron/gatekeeper-operator/test/e2e/util"
 )
 
+var templateGVR = schema.GroupVersionResource{
+	Group:    "templates.gatekeeper.sh",
+	Version:  "v1",
+	Resource: "constrainttemplates",
+}
+
+const (
+	case1GatekeeperYaml string = "../resources/case1_audit_from_cache/gatekeeper.yaml"
+)
+
 var _ = Describe("Test auditFromCache", Ordered, func() {
 	const (
-		case1GatekeeperYaml             string = "../resources/case1_audit_from_cache/gatekeeper.yaml"
 		case1TemplateYaml               string = "../resources/case1_audit_from_cache/template.yaml"
 		case1ConstraintPodYaml          string = "../resources/case1_audit_from_cache/constraint-pod.yaml"
 		case1ConstraintPod2Yaml         string = "../resources/case1_audit_from_cache/constraint-pod-2.yaml"
@@ -32,19 +41,11 @@ var _ = Describe("Test auditFromCache", Ordered, func() {
 		case1ConstraintWrongYaml        string = "../resources/case1_audit_from_cache/constraint-wrong.yaml"
 	)
 
-	var (
-		constraintGVR = schema.GroupVersionResource{
-			Group:    "constraints.gatekeeper.sh",
-			Version:  "v1beta1",
-			Resource: "case1template",
-		}
-
-		templateGVR = schema.GroupVersionResource{
-			Group:    "templates.gatekeeper.sh",
-			Version:  "v1",
-			Resource: "constrainttemplates",
-		}
-	)
+	constraintGVR := schema.GroupVersionResource{
+		Group:    "constraints.gatekeeper.sh",
+		Version:  "v1beta1",
+		Resource: "case1template",
+	}
 
 	BeforeAll(func() {
 		if !useExistingCluster() {
@@ -356,6 +357,90 @@ var _ = Describe("Test auditFromCache", Ordered, func() {
 
 			return apierrors.IsNotFound(err)
 		}, deleteTimeout, pollInterval).Should(BeTrue())
+
+		ctlDeployment := GetWithTimeout(clientHubDynamic, deploymentGVR,
+			"gatekeeper-controller-manager", gatekeeperNamespace, false, 60)
+		Expect(ctlDeployment).Should(BeNil())
+		auditDeployment := GetWithTimeout(clientHubDynamic, deploymentGVR,
+			"gatekeeper-audit", gatekeeperNamespace, false, 60)
+		Expect(auditDeployment).Should(BeNil())
+	})
+})
+
+var _ = Describe("Test auditFromCache with namespaceSelector in constraint", Ordered, func() {
+	const (
+		templateYaml     = "../resources/case1_audit_from_cache/namespaceSelector/template.yaml"
+		podsYaml         = "../resources/case1_audit_from_cache/namespaceSelector/pods.yaml"
+		namespacesYaml   = "../resources/case1_audit_from_cache/namespaceSelector/namespaces.yaml"
+		nsConstraintYaml = "../resources/case1_audit_from_cache/namespaceSelector/constraint.yaml"
+		constraintName   = "case1-namespace-selector"
+	)
+
+	constraintGVR := schema.GroupVersionResource{
+		Group:    "constraints.gatekeeper.sh",
+		Version:  "v1beta1",
+		Resource: "case1namespaceselector",
+	}
+
+	BeforeAll(func() {
+		_, err := KubectlWithOutput("apply", "-f", case1GatekeeperYaml)
+		Expect(err).ShouldNot(HaveOccurred())
+
+		// Need enough time until gatekeeper is up
+		ctlDeployment := GetWithTimeout(clientHubDynamic, deploymentGVR,
+			"gatekeeper-controller-manager", gatekeeperNamespace, true, 150)
+		Expect(ctlDeployment).NotTo(BeNil())
+
+		auditDeployment := GetWithTimeout(clientHubDynamic, deploymentGVR,
+			"gatekeeper-audit", gatekeeperNamespace, true, 150)
+		Expect(auditDeployment).NotTo(BeNil())
+
+		_, err = KubectlWithOutput("apply", "-f", templateYaml)
+		Expect(err).ShouldNot(HaveOccurred())
+		template := GetWithTimeout(clientHubDynamic, templateGVR, "case1namespaceselector", "", true, 60)
+		Expect(template).NotTo(BeNil())
+
+		_, err = KubectlWithOutput("apply", "-f", namespacesYaml)
+		Expect(err).ShouldNot(HaveOccurred())
+
+		_, err = KubectlWithOutput("apply", "-f", podsYaml)
+		Expect(err).ShouldNot(HaveOccurred())
+
+		// Ensure constraint applies after CRD is ready
+		Eventually(func() error {
+			_, err = KubectlWithOutput("apply", "-f", nsConstraintYaml)
+
+			return err
+		}, deleteTimeout, pollInterval).Should(Succeed())
+	})
+
+	It("Should have 2 totalViolations in the constraint without any errors", func(ctx SpecContext) {
+		config := &v1alpha1.Config{}
+
+		Eventually(func(g Gomega) int {
+			err := K8sClient.Get(ctx, types.NamespacedName{Name: "config", Namespace: gatekeeperNamespace}, config)
+			g.Expect(err).ShouldNot(HaveOccurred())
+
+			return slices.IndexFunc(config.Spec.Sync.SyncOnly, func(s v1alpha1.SyncOnlyEntry) bool {
+				return s.Kind == "Namespace"
+			})
+		}, timeout).ShouldNot(Equal(-1), "A Namespace entry should be present in the Config syncOnly")
+
+		Eventually(func() int64 {
+			constraint := GetWithTimeout(clientHubDynamic, constraintGVR, constraintName, "", true, 60)
+			totalViolationsNum, _, _ := unstructured.NestedInt64(constraint.Object, "status", "totalViolations")
+
+			return totalViolationsNum
+		}, deleteTimeout, pollInterval).Should(BeNumerically("==", 2),
+			"Two violations should be reported by the contraint")
+	})
+
+	AfterAll(func() {
+		Kubectl("delete", "-f", podsYaml, "--ignore-not-found")
+		Kubectl("delete", "-f", namespacesYaml, "--ignore-not-found", "--grace-period=1")
+		Kubectl("delete", "-f", nsConstraintYaml, "--ignore-not-found")
+		Kubectl("delete", "-f", templateYaml, "--ignore-not-found")
+		Kubectl("delete", "-f", case1GatekeeperYaml, "--ignore-not-found")
 
 		ctlDeployment := GetWithTimeout(clientHubDynamic, deploymentGVR,
 			"gatekeeper-controller-manager", gatekeeperNamespace, false, 60)
