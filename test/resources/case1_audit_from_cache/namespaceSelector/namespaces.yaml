@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ns1
+  labels:
+    test: good
+spec: {}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ns2
+  labels:
+    test: good
+spec: {}
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ns3
+  labels:
+    test: bad
+spec: {}
