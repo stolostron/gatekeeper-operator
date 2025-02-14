@@ -1,0 +1,12 @@
+apiVersion: constraints.gatekeeper.sh/v1beta1
+kind: Case1NamespaceSelector
+metadata:
+  name: case1-namespace-selector
+spec:
+  match:
+    namespaceSelector:
+      matchLabels:
+        test: good
+    kinds:
+      - apiGroups: [""]
+        kinds: ["Pod"]
