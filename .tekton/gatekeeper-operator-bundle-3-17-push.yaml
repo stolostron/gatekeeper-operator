@@ -26,8 +26,10 @@ spec:
       value: build/bundle.Dockerfile.rhtap
     - name: path-context
       value: .
+    - name: build-source-image
+      value: "true"
     - name: hermetic
-      value: true
+      value: "true"
   pipelineSpec:
     description: |
       This pipeline is ideal for building container images from a Containerfile while reducing network traffic.
