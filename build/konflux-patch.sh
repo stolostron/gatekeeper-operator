@@ -3,9 +3,9 @@
 set -e
 
 # Gatekeeper Operator image
-operator_img="quay.io/redhat-user-workloads/gatekeeper-tenant/gatekeeper-operator-3-17/gatekeeper-3-17@sha256:246108e18b0a9a621b1d0cef1898605116e249f4f504a667d0556973535a045b"
+operator_img="registry.redhat.io/gatekeeper/gatekeeper-rhel9-operator@sha256:46791e9cee5ccd3a6c89286106765e76209c4f82ad515a54722b0b755cd5e7a1"
 # Gatekeeper image
-gatekeeper_img="quay.io/redhat-user-workloads/gatekeeper-tenant/gatekeeper-operator-3-17/gatekeeper-operator-3-17@sha256:46791e9cee5ccd3a6c89286106765e76209c4f82ad515a54722b0b755cd5e7a1"
+gatekeeper_img="registry.redhat.io/gatekeeper/gatekeeper-rhel9@sha256:246108e18b0a9a621b1d0cef1898605116e249f4f504a667d0556973535a045b"
 
 base_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." >/dev/null 2>&1 && pwd)"
 
