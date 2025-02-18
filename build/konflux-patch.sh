@@ -3,7 +3,7 @@
 set -e
 
 # Gatekeeper Operator image
-operator_img="registry.redhat.io/gatekeeper/gatekeeper-rhel9-operator@sha256:46791e9cee5ccd3a6c89286106765e76209c4f82ad515a54722b0b755cd5e7a1"
+operator_img="registry.redhat.io/gatekeeper/gatekeeper-rhel9-operator@sha256:829322a72c05adb57417bf7f647ce746218d0b8b84dec363a09cfc349ac1c2fe"
 # Gatekeeper image
 gatekeeper_img="registry.redhat.io/gatekeeper/gatekeeper-rhel9@sha256:246108e18b0a9a621b1d0cef1898605116e249f4f504a667d0556973535a045b"
 
