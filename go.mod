@@ -1,6 +1,6 @@
 module github.com/stolostron/gatekeeper-operator
 
-go 1.22.0
+go 1.23.6
 
 require (
 	github.com/go-bindata/go-bindata v3.1.2+incompatible

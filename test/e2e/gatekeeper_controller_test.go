@@ -985,6 +985,7 @@ func assertResources(expected, current corev1.ResourceRequirements) {
 func byCheckingValidation(ctx SpecContext, mode v1alpha1.Mode) {
 	By("Checking validation is "+string(mode), func() {
 		validatingWebhookConfiguration := &admregv1.ValidatingWebhookConfiguration{}
+
 		Eventually(func() error {
 			err := K8sClient.Get(ctx, validatingWebhookName, validatingWebhookConfiguration)
 			if !mode.ToBool() && apierrors.IsNotFound(err) {
@@ -1041,6 +1042,7 @@ func byCheckingMutation(ctx SpecContext, mode v1alpha1.Mode) {
 
 	By("Checking MutatingWebhookConfiguration is "+msgNegation+"deployed", func() {
 		mutatingWebhookConfiguration := &admregv1.MutatingWebhookConfiguration{}
+
 		Eventually(func() error {
 			err := K8sClient.Get(ctx, mutatingWebhookName, mutatingWebhookConfiguration)
 			if !mode.ToBool() && apierrors.IsNotFound(err) {
