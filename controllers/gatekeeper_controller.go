@@ -1512,6 +1512,7 @@ func updateContainerArg(
 		isMultiArg := slices.Contains(multiArgFlags, argName)
 
 		index := -1
+
 		for i, arg := range args {
 			n, v := util.FromArg(arg)
 			if n == argName && (!isMultiArg || isMultiArg && v == argValue) {
