@@ -43,6 +43,7 @@ linters:
     - goerr113
     - golint # replaced by revive
     - gomnd
+    - mnd
     - gomoddirectives
     - gosec
     - ifshort
@@ -55,6 +56,7 @@ linters:
     - nilnil # New linter to consider
     - nonamedreturns # New linter to consider
     - paralleltest
+    - perfsprint
     - prealloc
     - revive
     - scopelint

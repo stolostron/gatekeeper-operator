@@ -1463,6 +1463,7 @@ func setContainerArg(
 		}
 
 		exists := false
+
 		for i, arg := range args {
 			n, v := util.FromArg(arg)
 			if n == argName && (!isMultiArg || isMultiArg && v == argValue) {
@@ -1487,8 +1488,10 @@ func unsetContainerArg(
 		if !found || err != nil {
 			return errors.Wrapf(err, "Unable to retrieve container arguments for: %s", managerContainer)
 		}
+
 		exists := false
 		index := 0
+
 		for i, arg := range args {
 			n, v := util.FromArg(arg)
 			if n == argName && (!isMultiArg || isMultiArg && v == argValue) {
@@ -1497,6 +1500,7 @@ func unsetContainerArg(
 				exists = true
 			}
 		}
+
 		if exists {
 			newArgs := make([]string, 0)
 			newArgs = append(newArgs, args[:index]...)
