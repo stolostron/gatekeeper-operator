@@ -93,16 +93,20 @@ func retainSecretFields(desiredObj, clusterObj *unstructured.Unstructured) error
 func retainWebhookConfigurationFields(desiredObj, clusterObj *unstructured.Unstructured) error {
 	// Retain each webhook's CABundle
 	clusterWebhooks, ok, err := unstructured.NestedSlice(clusterObj.Object, "webhooks")
-	if err != nil {
+
+	switch {
+	case err != nil:
 		return errors.Wrapf(err, "Error retrieving webhooks from cluster object %s", clusterObj.GetKind())
-	} else if ok && len(clusterWebhooks) == 0 {
+
+	case ok && len(clusterWebhooks) == 0:
 		err = unstructured.SetNestedSlice(desiredObj.Object, nil, "webhooks")
 		if err != nil {
 			return errors.Wrapf(err, "Error setting webhooks for desired object %s", desiredObj.GetKind())
 		}
 
 		return nil
-	} else if !ok {
+
+	case !ok:
 		return nil
 	}
 

@@ -808,6 +808,7 @@ func assertFailurePolicy(
 			current, found, err := unstructured.NestedString(webhook, "failurePolicy")
 			g.Expect(err).ToNot(HaveOccurred())
 			g.Expect(found).To(BeTrue())
+
 			if expected == nil {
 				g.Expect(test.DefaultDeployment.FailurePolicy).To(BeEquivalentTo(current))
 			} else {
@@ -890,6 +891,7 @@ func assertNamespaceSelector(
 		if webhook["name"] == webhookName {
 			current, found, err := unstructured.NestedFieldCopy(webhook, "namespaceSelector")
 			g.Expect(err).ToNot(HaveOccurred())
+
 			if expected == nil {
 				// ValidatingWebhookConfiguration and
 				// MutatingWebhookConfiguration have the same defaults.

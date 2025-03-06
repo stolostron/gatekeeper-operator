@@ -1,5 +1,5 @@
 # Build the manager binary
-FROM registry.ci.openshift.org/stolostron/builder:go1.21-linux as builder
+FROM registry.ci.openshift.org/stolostron/builder:go1.23-linux as builder
 
 ARG GOOS
 ARG GOARCH
