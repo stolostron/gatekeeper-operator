@@ -1806,7 +1806,7 @@ spec:
         env:
         - name: RELATED_IMAGE_GATEKEEPER
           value: quay.io/gatekeeper/gatekeeper:v3.15.1
-        image: quay.io/gatekeeper/gatekeeper-operator:v3.15.3
+        image: quay.io/gatekeeper/gatekeeper-operator:v3.15.4
         imagePullPolicy: Always
         livenessProbe:
           httpGet:

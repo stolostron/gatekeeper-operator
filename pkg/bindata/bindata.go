@@ -84,7 +84,6 @@ func (fi bindataFileInfo) Sys() interface{} {
 var _configGatekeeperRenderedAdmissionregistrationK8sIo_v1_mutatingwebhookconfiguration_gatekeeperMutatingWebhookConfigurationYaml = []byte(`apiVersion: admissionregistration.k8s.io/v1
 kind: MutatingWebhookConfiguration
 metadata:
-  creationTimestamp: null
   labels:
     gatekeeper.sh/system: "yes"
   name: gatekeeper-mutating-webhook-configuration
@@ -140,7 +139,6 @@ func configGatekeeperRenderedAdmissionregistrationK8sIo_v1_mutatingwebhookconfig
 var _configGatekeeperRenderedAdmissionregistrationK8sIo_v1_validatingwebhookconfiguration_gatekeeperValidatingWebhookConfigurationYaml = []byte(`apiVersion: admissionregistration.k8s.io/v1
 kind: ValidatingWebhookConfiguration
 metadata:
-  creationTimestamp: null
   labels:
     gatekeeper.sh/system: "yes"
   name: gatekeeper-validating-webhook-configuration
@@ -241,8 +239,7 @@ var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_assi
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.10.0
-  creationTimestamp: null
+    controller-gen.kubebuilder.io/version: v0.14.0
   labels:
     gatekeeper.sh/system: "yes"
   name: assign.mutations.gatekeeper.sh
@@ -262,14 +259,19 @@ spec:
         description: Assign is the Schema for the assign API.
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           metadata:
             properties:
@@ -281,13 +283,14 @@ spec:
             description: AssignSpec defines the desired state of Assign.
             properties:
               applyTo:
-                description: ApplyTo lists the specific groups, versions and kinds
-                  a mutation will be applied to. This is necessary because every mutation
-                  implies part of an object schema and object schemas are associated
-                  with specific GVKs.
+                description: |-
+                  ApplyTo lists the specific groups, versions and kinds a mutation will be applied to.
+                  This is necessary because every mutation implies part of an object schema and object
+                  schemas are associated with specific GVKs.
                 items:
-                  description: ApplyTo determines what GVKs items the mutation should
-                    apply to. Globs are not allowed.
+                  description: |-
+                    ApplyTo determines what GVKs items the mutation should apply to.
+                    Globs are not allowed.
                   properties:
                     groups:
                       items:
@@ -308,37 +311,40 @@ spec:
                   ` + "`" + `spec.containers[name: main]` + "`" + `.'
                 type: string
               match:
-                description: Match allows the user to limit which resources get mutated.
-                  Individual match criteria are AND-ed together. An undefined match
-                  criteria matches everything.
+                description: |-
+                  Match allows the user to limit which resources get mutated.
+                  Individual match criteria are AND-ed together. An undefined
+                  match criteria matches everything.
                 properties:
                   excludedNamespaces:
-                    description: 'ExcludedNamespaces is a list of namespace names.
-                      If defined, a constraint only applies to resources not in a
-                      listed namespace. ExcludedNamespaces also supports a prefix
-                      or suffix based glob.  For example, ` + "`" + `excludedNamespaces: [kube-*]` + "`" + `
-                      matches both ` + "`" + `kube-system` + "`" + ` and ` + "`" + `kube-public` + "`" + `, and ` + "`" + `excludedNamespaces:
-                      [*-system]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and ` + "`" + `gatekeeper-system` + "`" + `.'
+                    description: |-
+                      ExcludedNamespaces is a list of namespace names. If defined, a
+                      constraint only applies to resources not in a listed namespace.
+                      ExcludedNamespaces also supports a prefix or suffix based glob.  For example,
+                      ` + "`" + `excludedNamespaces: [kube-*]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and
+                      ` + "`" + `kube-public` + "`" + `, and ` + "`" + `excludedNamespaces: [*-system]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and
+                      ` + "`" + `gatekeeper-system` + "`" + `.
                     items:
-                      description: 'A string that supports globbing at its front or
-                        end. Ex: "kube-*" will match "kube-system" or "kube-public",
-                        "*-system" will match "kube-system" or "gatekeeper-system".  The
-                        asterisk is required for wildcard matching.'
+                      description: |-
+                        A string that supports globbing at its front or end. Ex: "kube-*" will match "kube-system" or
+                        "kube-public", "*-system" will match "kube-system" or "gatekeeper-system".  The asterisk is
+                        required for wildcard matching.
                       pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                       type: string
                     type: array
                   kinds:
                     items:
-                      description: Kinds accepts a list of objects with apiGroups
-                        and kinds fields that list the groups/kinds of objects to
-                        which the mutation will apply. If multiple groups/kinds objects
-                        are specified, only one match is needed for the resource to
-                        be in scope.
+                      description: |-
+                        Kinds accepts a list of objects with apiGroups and kinds fields
+                        that list the groups/kinds of objects to which the mutation will apply.
+                        If multiple groups/kinds objects are specified,
+                        only one match is needed for the resource to be in scope.
                       properties:
                         apiGroups:
-                          description: APIGroups is the API groups the resources belong
-                            to. '*' is all groups. If '*' is present, the length of
-                            the slice must be one. Required.
+                          description: |-
+                            APIGroups is the API groups the resources belong to. '*' is all groups.
+                            If '*' is present, the length of the slice must be one.
+                            Required.
                           items:
                             type: string
                           type: array
@@ -349,36 +355,37 @@ spec:
                       type: object
                     type: array
                   labelSelector:
-                    description: 'LabelSelector is the combination of two optional
-                      fields: ` + "`" + `matchLabels` + "`" + ` and ` + "`" + `matchExpressions` + "`" + `.  These two fields
-                      provide different methods of selecting or excluding k8s objects
-                      based on the label keys and values included in object metadata.  All
-                      selection expressions from both sections are ANDed to determine
-                      if an object meets the cumulative requirements of the selector.'
+                    description: |-
+                      LabelSelector is the combination of two optional fields: ` + "`" + `matchLabels` + "`" + `
+                      and ` + "`" + `matchExpressions` + "`" + `.  These two fields provide different methods of
+                      selecting or excluding k8s objects based on the label keys and values
+                      included in object metadata.  All selection expressions from both
+                      sections are ANDed to determine if an object meets the cumulative
+                      requirements of the selector.
                     properties:
                       matchExpressions:
                         description: matchExpressions is a list of label selector
                           requirements. The requirements are ANDed.
                         items:
-                          description: A label selector requirement is a selector
-                            that contains values, a key, and an operator that relates
-                            the key and values.
+                          description: |-
+                            A label selector requirement is a selector that contains values, a key, and an operator that
+                            relates the key and values.
                           properties:
                             key:
                               description: key is the label key that the selector
                                 applies to.
                               type: string
                             operator:
-                              description: operator represents a key's relationship
-                                to a set of values. Valid operators are In, NotIn,
-                                Exists and DoesNotExist.
+                              description: |-
+                                operator represents a key's relationship to a set of values.
+                                Valid operators are In, NotIn, Exists and DoesNotExist.
                               type: string
                             values:
-                              description: values is an array of string values. If
-                                the operator is In or NotIn, the values array must
-                                be non-empty. If the operator is Exists or DoesNotExist,
-                                the values array must be empty. This array is replaced
-                                during a strategic merge patch.
+                              description: |-
+                                values is an array of string values. If the operator is In or NotIn,
+                                the values array must be non-empty. If the operator is Exists or DoesNotExist,
+                                the values array must be empty. This array is replaced during a strategic
+                                merge patch.
                               items:
                                 type: string
                               type: array
@@ -390,49 +397,48 @@ spec:
                       matchLabels:
                         additionalProperties:
                           type: string
-                        description: matchLabels is a map of {key,value} pairs. A
-                          single {key,value} in the matchLabels map is equivalent
-                          to an element of matchExpressions, whose key field is "key",
-                          the operator is "In", and the values array contains only
-                          "value". The requirements are ANDed.
+                        description: |-
+                          matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+                          map is equivalent to an element of matchExpressions, whose key field is "key", the
+                          operator is "In", and the values array contains only "value". The requirements are ANDed.
                         type: object
                     type: object
+                    x-kubernetes-map-type: atomic
                   name:
-                    description: 'Name is the name of an object.  If defined, it will
-                      match against objects with the specified name.  Name also supports
-                      a prefix or suffix glob.  For example, ` + "`" + `name: pod-*` + "`" + ` would match
-                      both ` + "`" + `pod-a` + "`" + ` and ` + "`" + `pod-b` + "`" + `, and ` + "`" + `name: *-pod` + "`" + ` would match both
-                      ` + "`" + `a-pod` + "`" + ` and ` + "`" + `b-pod` + "`" + `.'
+                    description: |-
+                      Name is the name of an object.  If defined, it will match against objects with the specified
+                      name.  Name also supports a prefix or suffix glob.  For example, ` + "`" + `name: pod-*` + "`" + ` would match
+                      both ` + "`" + `pod-a` + "`" + ` and ` + "`" + `pod-b` + "`" + `, and ` + "`" + `name: *-pod` + "`" + ` would match both ` + "`" + `a-pod` + "`" + ` and ` + "`" + `b-pod` + "`" + `.
                     pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                     type: string
                   namespaceSelector:
-                    description: NamespaceSelector is a label selector against an
-                      object's containing namespace or the object itself, if the object
-                      is a namespace.
+                    description: |-
+                      NamespaceSelector is a label selector against an object's containing
+                      namespace or the object itself, if the object is a namespace.
                     properties:
                       matchExpressions:
                         description: matchExpressions is a list of label selector
                           requirements. The requirements are ANDed.
                         items:
-                          description: A label selector requirement is a selector
-                            that contains values, a key, and an operator that relates
-                            the key and values.
+                          description: |-
+                            A label selector requirement is a selector that contains values, a key, and an operator that
+                            relates the key and values.
                           properties:
                             key:
                               description: key is the label key that the selector
                                 applies to.
                               type: string
                             operator:
-                              description: operator represents a key's relationship
-                                to a set of values. Valid operators are In, NotIn,
-                                Exists and DoesNotExist.
+                              description: |-
+                                operator represents a key's relationship to a set of values.
+                                Valid operators are In, NotIn, Exists and DoesNotExist.
                               type: string
                             values:
-                              description: values is an array of string values. If
-                                the operator is In or NotIn, the values array must
-                                be non-empty. If the operator is Exists or DoesNotExist,
-                                the values array must be empty. This array is replaced
-                                during a strategic merge patch.
+                              description: |-
+                                values is an array of string values. If the operator is In or NotIn,
+                                the values array must be non-empty. If the operator is Exists or DoesNotExist,
+                                the values array must be empty. This array is replaced during a strategic
+                                merge patch.
                               items:
                                 type: string
                               type: array
@@ -444,37 +450,39 @@ spec:
                       matchLabels:
                         additionalProperties:
                           type: string
-                        description: matchLabels is a map of {key,value} pairs. A
-                          single {key,value} in the matchLabels map is equivalent
-                          to an element of matchExpressions, whose key field is "key",
-                          the operator is "In", and the values array contains only
-                          "value". The requirements are ANDed.
+                        description: |-
+                          matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+                          map is equivalent to an element of matchExpressions, whose key field is "key", the
+                          operator is "In", and the values array contains only "value". The requirements are ANDed.
                         type: object
                     type: object
+                    x-kubernetes-map-type: atomic
                   namespaces:
-                    description: 'Namespaces is a list of namespace names. If defined,
-                      a constraint only applies to resources in a listed namespace.  Namespaces
-                      also supports a prefix or suffix based glob.  For example, ` + "`" + `namespaces:
-                      [kube-*]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and ` + "`" + `kube-public` + "`" + `, and
-                      ` + "`" + `namespaces: [*-system]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and ` + "`" + `gatekeeper-system` + "`" + `.'
+                    description: |-
+                      Namespaces is a list of namespace names. If defined, a constraint only
+                      applies to resources in a listed namespace.  Namespaces also supports a
+                      prefix or suffix based glob.  For example, ` + "`" + `namespaces: [kube-*]` + "`" + ` matches both
+                      ` + "`" + `kube-system` + "`" + ` and ` + "`" + `kube-public` + "`" + `, and ` + "`" + `namespaces: [*-system]` + "`" + ` matches both
+                      ` + "`" + `kube-system` + "`" + ` and ` + "`" + `gatekeeper-system` + "`" + `.
                     items:
-                      description: 'A string that supports globbing at its front or
-                        end. Ex: "kube-*" will match "kube-system" or "kube-public",
-                        "*-system" will match "kube-system" or "gatekeeper-system".  The
-                        asterisk is required for wildcard matching.'
+                      description: |-
+                        A string that supports globbing at its front or end. Ex: "kube-*" will match "kube-system" or
+                        "kube-public", "*-system" will match "kube-system" or "gatekeeper-system".  The asterisk is
+                        required for wildcard matching.
                       pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                       type: string
                     type: array
                   scope:
-                    description: Scope determines if cluster-scoped and/or namespaced-scoped
-                      resources are matched.  Accepts ` + "`" + `*` + "`" + `, ` + "`" + `Cluster` + "`" + `, or ` + "`" + `Namespaced` + "`" + `.
-                      (defaults to ` + "`" + `*` + "`" + `)
+                    description: |-
+                      Scope determines if cluster-scoped and/or namespaced-scoped resources
+                      are matched.  Accepts ` + "`" + `*` + "`" + `, ` + "`" + `Cluster` + "`" + `, or ` + "`" + `Namespaced` + "`" + `. (defaults to ` + "`" + `*` + "`" + `)
                     type: string
                   source:
-                    description: Source determines whether generated or original resources
-                      are matched. Accepts ` + "`" + `Generated` + "`" + `|` + "`" + `Original` + "`" + `|` + "`" + `All` + "`" + ` (defaults
-                      to ` + "`" + `All` + "`" + `). A value of ` + "`" + `Generated` + "`" + ` will only match generated
-                      resources, while ` + "`" + `Original` + "`" + ` will only match regular resources.
+                    description: |-
+                      Source determines whether generated or original resources are matched.
+                      Accepts ` + "`" + `Generated` + "`" + `|` + "`" + `Original` + "`" + `|` + "`" + `All` + "`" + ` (defaults to ` + "`" + `All` + "`" + `). A value of
+                      ` + "`" + `Generated` + "`" + ` will only match generated resources, while ` + "`" + `Original` + "`" + ` will only
+                      match regular resources.
                     enum:
                     - All
                     - Generated
@@ -493,22 +501,23 @@ spec:
                         properties:
                           dataSource:
                             default: ValueAtLocation
-                            description: DataSource specifies where to extract the
-                              data that will be sent to the external data provider
-                              as parameters.
+                            description: |-
+                              DataSource specifies where to extract the data that will be sent
+                              to the external data provider as parameters.
                             enum:
                             - ValueAtLocation
                             - Username
                             type: string
                           default:
-                            description: Default specifies the default value to use
-                              when the external data provider returns an error and
-                              the failure policy is set to "UseDefault".
+                            description: |-
+                              Default specifies the default value to use when the external data
+                              provider returns an error and the failure policy is set to "UseDefault".
                             type: string
                           failurePolicy:
                             default: Fail
-                            description: FailurePolicy specifies the policy to apply
-                              when the external data provider returns an error.
+                            description: |-
+                              FailurePolicy specifies the policy to apply when the external data
+                              provider returns an error.
                             enum:
                             - UseDefault
                             - Ignore
@@ -536,15 +545,18 @@ spec:
                     type: object
                   pathTests:
                     items:
-                      description: "PathTest allows the user to customize how the
-                        mutation works if parent paths are missing. It traverses the
-                        list in order. All sub paths are tested against the provided
-                        condition, if the test fails, the mutation is not applied.
-                        All ` + "`" + `subPath` + "`" + ` entries must be a prefix of ` + "`" + `location` + "`" + `. Any
+                      description: |-
+                        PathTest allows the user to customize how the mutation works if parent
+                        paths are missing. It traverses the list in order. All sub paths are
+                        tested against the provided condition, if the test fails, the mutation is
+                        not applied. All ` + "`" + `subPath` + "`" + ` entries must be a prefix of ` + "`" + `location` + "`" + `. Any
                         glob characters will take on the same value as was used to
-                        expand the matching glob in ` + "`" + `location` + "`" + `. \n Available Tests:
-                        * MustExist    - the path must exist or do not mutate * MustNotExist
-                        - the path must not exist or do not mutate."
+                        expand the matching glob in ` + "`" + `location` + "`" + `.
+
+
+                        Available Tests:
+                        * MustExist    - the path must exist or do not mutate
+                        * MustNotExist - the path must not exist or do not mutate.
                       properties:
                         condition:
                           description: Condition describes whether the path either
@@ -577,9 +589,9 @@ spec:
                           message:
                             type: string
                           type:
-                            description: Type indicates a specific class of error
-                              for use by controller code. If not present, the error
-                              should be treated as not matching any known type.
+                            description: |-
+                              Type indicates a specific class of error for use by controller code.
+                              If not present, the error should be treated as not matching any known type.
                             type: string
                         required:
                         - message
@@ -588,9 +600,10 @@ spec:
                     id:
                       type: string
                     mutatorUID:
-                      description: Storing the mutator UID allows us to detect drift,
-                        such as when a mutator has been recreated after its CRD was
-                        deleted out from under it, interrupting the watch
+                      description: |-
+                        Storing the mutator UID allows us to detect drift, such as
+                        when a mutator has been recreated after its CRD was deleted
+                        out from under it, interrupting the watch
                       type: string
                     observedGeneration:
                       format: int64
@@ -613,14 +626,19 @@ spec:
         description: Assign is the Schema for the assign API.
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           metadata:
             type: object
@@ -628,13 +646,14 @@ spec:
             description: AssignSpec defines the desired state of Assign.
             properties:
               applyTo:
-                description: ApplyTo lists the specific groups, versions and kinds
-                  a mutation will be applied to. This is necessary because every mutation
-                  implies part of an object schema and object schemas are associated
-                  with specific GVKs.
+                description: |-
+                  ApplyTo lists the specific groups, versions and kinds a mutation will be applied to.
+                  This is necessary because every mutation implies part of an object schema and object
+                  schemas are associated with specific GVKs.
                 items:
-                  description: ApplyTo determines what GVKs items the mutation should
-                    apply to. Globs are not allowed.
+                  description: |-
+                    ApplyTo determines what GVKs items the mutation should apply to.
+                    Globs are not allowed.
                   properties:
                     groups:
                       items:
@@ -655,37 +674,40 @@ spec:
                   ` + "`" + `spec.containers[name: main]` + "`" + `.'
                 type: string
               match:
-                description: Match allows the user to limit which resources get mutated.
-                  Individual match criteria are AND-ed together. An undefined match
-                  criteria matches everything.
+                description: |-
+                  Match allows the user to limit which resources get mutated.
+                  Individual match criteria are AND-ed together. An undefined
+                  match criteria matches everything.
                 properties:
                   excludedNamespaces:
-                    description: 'ExcludedNamespaces is a list of namespace names.
-                      If defined, a constraint only applies to resources not in a
-                      listed namespace. ExcludedNamespaces also supports a prefix
-                      or suffix based glob.  For example, ` + "`" + `excludedNamespaces: [kube-*]` + "`" + `
-                      matches both ` + "`" + `kube-system` + "`" + ` and ` + "`" + `kube-public` + "`" + `, and ` + "`" + `excludedNamespaces:
-                      [*-system]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and ` + "`" + `gatekeeper-system` + "`" + `.'
+                    description: |-
+                      ExcludedNamespaces is a list of namespace names. If defined, a
+                      constraint only applies to resources not in a listed namespace.
+                      ExcludedNamespaces also supports a prefix or suffix based glob.  For example,
+                      ` + "`" + `excludedNamespaces: [kube-*]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and
+                      ` + "`" + `kube-public` + "`" + `, and ` + "`" + `excludedNamespaces: [*-system]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and
+                      ` + "`" + `gatekeeper-system` + "`" + `.
                     items:
-                      description: 'A string that supports globbing at its front or
-                        end. Ex: "kube-*" will match "kube-system" or "kube-public",
-                        "*-system" will match "kube-system" or "gatekeeper-system".  The
-                        asterisk is required for wildcard matching.'
+                      description: |-
+                        A string that supports globbing at its front or end. Ex: "kube-*" will match "kube-system" or
+                        "kube-public", "*-system" will match "kube-system" or "gatekeeper-system".  The asterisk is
+                        required for wildcard matching.
                       pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                       type: string
                     type: array
                   kinds:
                     items:
-                      description: Kinds accepts a list of objects with apiGroups
-                        and kinds fields that list the groups/kinds of objects to
-                        which the mutation will apply. If multiple groups/kinds objects
-                        are specified, only one match is needed for the resource to
-                        be in scope.
+                      description: |-
+                        Kinds accepts a list of objects with apiGroups and kinds fields
+                        that list the groups/kinds of objects to which the mutation will apply.
+                        If multiple groups/kinds objects are specified,
+                        only one match is needed for the resource to be in scope.
                       properties:
                         apiGroups:
-                          description: APIGroups is the API groups the resources belong
-                            to. '*' is all groups. If '*' is present, the length of
-                            the slice must be one. Required.
+                          description: |-
+                            APIGroups is the API groups the resources belong to. '*' is all groups.
+                            If '*' is present, the length of the slice must be one.
+                            Required.
                           items:
                             type: string
                           type: array
@@ -696,36 +718,37 @@ spec:
                       type: object
                     type: array
                   labelSelector:
-                    description: 'LabelSelector is the combination of two optional
-                      fields: ` + "`" + `matchLabels` + "`" + ` and ` + "`" + `matchExpressions` + "`" + `.  These two fields
-                      provide different methods of selecting or excluding k8s objects
-                      based on the label keys and values included in object metadata.  All
-                      selection expressions from both sections are ANDed to determine
-                      if an object meets the cumulative requirements of the selector.'
+                    description: |-
+                      LabelSelector is the combination of two optional fields: ` + "`" + `matchLabels` + "`" + `
+                      and ` + "`" + `matchExpressions` + "`" + `.  These two fields provide different methods of
+                      selecting or excluding k8s objects based on the label keys and values
+                      included in object metadata.  All selection expressions from both
+                      sections are ANDed to determine if an object meets the cumulative
+                      requirements of the selector.
                     properties:
                       matchExpressions:
                         description: matchExpressions is a list of label selector
                           requirements. The requirements are ANDed.
                         items:
-                          description: A label selector requirement is a selector
-                            that contains values, a key, and an operator that relates
-                            the key and values.
+                          description: |-
+                            A label selector requirement is a selector that contains values, a key, and an operator that
+                            relates the key and values.
                           properties:
                             key:
                               description: key is the label key that the selector
                                 applies to.
                               type: string
                             operator:
-                              description: operator represents a key's relationship
-                                to a set of values. Valid operators are In, NotIn,
-                                Exists and DoesNotExist.
+                              description: |-
+                                operator represents a key's relationship to a set of values.
+                                Valid operators are In, NotIn, Exists and DoesNotExist.
                               type: string
                             values:
-                              description: values is an array of string values. If
-                                the operator is In or NotIn, the values array must
-                                be non-empty. If the operator is Exists or DoesNotExist,
-                                the values array must be empty. This array is replaced
-                                during a strategic merge patch.
+                              description: |-
+                                values is an array of string values. If the operator is In or NotIn,
+                                the values array must be non-empty. If the operator is Exists or DoesNotExist,
+                                the values array must be empty. This array is replaced during a strategic
+                                merge patch.
                               items:
                                 type: string
                               type: array
@@ -737,49 +760,48 @@ spec:
                       matchLabels:
                         additionalProperties:
                           type: string
-                        description: matchLabels is a map of {key,value} pairs. A
-                          single {key,value} in the matchLabels map is equivalent
-                          to an element of matchExpressions, whose key field is "key",
-                          the operator is "In", and the values array contains only
-                          "value". The requirements are ANDed.
+                        description: |-
+                          matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+                          map is equivalent to an element of matchExpressions, whose key field is "key", the
+                          operator is "In", and the values array contains only "value". The requirements are ANDed.
                         type: object
                     type: object
+                    x-kubernetes-map-type: atomic
                   name:
-                    description: 'Name is the name of an object.  If defined, it will
-                      match against objects with the specified name.  Name also supports
-                      a prefix or suffix glob.  For example, ` + "`" + `name: pod-*` + "`" + ` would match
-                      both ` + "`" + `pod-a` + "`" + ` and ` + "`" + `pod-b` + "`" + `, and ` + "`" + `name: *-pod` + "`" + ` would match both
-                      ` + "`" + `a-pod` + "`" + ` and ` + "`" + `b-pod` + "`" + `.'
+                    description: |-
+                      Name is the name of an object.  If defined, it will match against objects with the specified
+                      name.  Name also supports a prefix or suffix glob.  For example, ` + "`" + `name: pod-*` + "`" + ` would match
+                      both ` + "`" + `pod-a` + "`" + ` and ` + "`" + `pod-b` + "`" + `, and ` + "`" + `name: *-pod` + "`" + ` would match both ` + "`" + `a-pod` + "`" + ` and ` + "`" + `b-pod` + "`" + `.
                     pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                     type: string
                   namespaceSelector:
-                    description: NamespaceSelector is a label selector against an
-                      object's containing namespace or the object itself, if the object
-                      is a namespace.
+                    description: |-
+                      NamespaceSelector is a label selector against an object's containing
+                      namespace or the object itself, if the object is a namespace.
                     properties:
                       matchExpressions:
                         description: matchExpressions is a list of label selector
                           requirements. The requirements are ANDed.
                         items:
-                          description: A label selector requirement is a selector
-                            that contains values, a key, and an operator that relates
-                            the key and values.
+                          description: |-
+                            A label selector requirement is a selector that contains values, a key, and an operator that
+                            relates the key and values.
                           properties:
                             key:
                               description: key is the label key that the selector
                                 applies to.
                               type: string
                             operator:
-                              description: operator represents a key's relationship
-                                to a set of values. Valid operators are In, NotIn,
-                                Exists and DoesNotExist.
+                              description: |-
+                                operator represents a key's relationship to a set of values.
+                                Valid operators are In, NotIn, Exists and DoesNotExist.
                               type: string
                             values:
-                              description: values is an array of string values. If
-                                the operator is In or NotIn, the values array must
-                                be non-empty. If the operator is Exists or DoesNotExist,
-                                the values array must be empty. This array is replaced
-                                during a strategic merge patch.
+                              description: |-
+                                values is an array of string values. If the operator is In or NotIn,
+                                the values array must be non-empty. If the operator is Exists or DoesNotExist,
+                                the values array must be empty. This array is replaced during a strategic
+                                merge patch.
                               items:
                                 type: string
                               type: array
@@ -791,37 +813,39 @@ spec:
                       matchLabels:
                         additionalProperties:
                           type: string
-                        description: matchLabels is a map of {key,value} pairs. A
-                          single {key,value} in the matchLabels map is equivalent
-                          to an element of matchExpressions, whose key field is "key",
-                          the operator is "In", and the values array contains only
-                          "value". The requirements are ANDed.
+                        description: |-
+                          matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+                          map is equivalent to an element of matchExpressions, whose key field is "key", the
+                          operator is "In", and the values array contains only "value". The requirements are ANDed.
                         type: object
                     type: object
+                    x-kubernetes-map-type: atomic
                   namespaces:
-                    description: 'Namespaces is a list of namespace names. If defined,
-                      a constraint only applies to resources in a listed namespace.  Namespaces
-                      also supports a prefix or suffix based glob.  For example, ` + "`" + `namespaces:
-                      [kube-*]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and ` + "`" + `kube-public` + "`" + `, and
-                      ` + "`" + `namespaces: [*-system]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and ` + "`" + `gatekeeper-system` + "`" + `.'
+                    description: |-
+                      Namespaces is a list of namespace names. If defined, a constraint only
+                      applies to resources in a listed namespace.  Namespaces also supports a
+                      prefix or suffix based glob.  For example, ` + "`" + `namespaces: [kube-*]` + "`" + ` matches both
+                      ` + "`" + `kube-system` + "`" + ` and ` + "`" + `kube-public` + "`" + `, and ` + "`" + `namespaces: [*-system]` + "`" + ` matches both
+                      ` + "`" + `kube-system` + "`" + ` and ` + "`" + `gatekeeper-system` + "`" + `.
                     items:
-                      description: 'A string that supports globbing at its front or
-                        end. Ex: "kube-*" will match "kube-system" or "kube-public",
-                        "*-system" will match "kube-system" or "gatekeeper-system".  The
-                        asterisk is required for wildcard matching.'
+                      description: |-
+                        A string that supports globbing at its front or end. Ex: "kube-*" will match "kube-system" or
+                        "kube-public", "*-system" will match "kube-system" or "gatekeeper-system".  The asterisk is
+                        required for wildcard matching.
                       pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                       type: string
                     type: array
                   scope:
-                    description: Scope determines if cluster-scoped and/or namespaced-scoped
-                      resources are matched.  Accepts ` + "`" + `*` + "`" + `, ` + "`" + `Cluster` + "`" + `, or ` + "`" + `Namespaced` + "`" + `.
-                      (defaults to ` + "`" + `*` + "`" + `)
+                    description: |-
+                      Scope determines if cluster-scoped and/or namespaced-scoped resources
+                      are matched.  Accepts ` + "`" + `*` + "`" + `, ` + "`" + `Cluster` + "`" + `, or ` + "`" + `Namespaced` + "`" + `. (defaults to ` + "`" + `*` + "`" + `)
                     type: string
                   source:
-                    description: Source determines whether generated or original resources
-                      are matched. Accepts ` + "`" + `Generated` + "`" + `|` + "`" + `Original` + "`" + `|` + "`" + `All` + "`" + ` (defaults
-                      to ` + "`" + `All` + "`" + `). A value of ` + "`" + `Generated` + "`" + ` will only match generated
-                      resources, while ` + "`" + `Original` + "`" + ` will only match regular resources.
+                    description: |-
+                      Source determines whether generated or original resources are matched.
+                      Accepts ` + "`" + `Generated` + "`" + `|` + "`" + `Original` + "`" + `|` + "`" + `All` + "`" + ` (defaults to ` + "`" + `All` + "`" + `). A value of
+                      ` + "`" + `Generated` + "`" + ` will only match generated resources, while ` + "`" + `Original` + "`" + ` will only
+                      match regular resources.
                     enum:
                     - All
                     - Generated
@@ -840,22 +864,23 @@ spec:
                         properties:
                           dataSource:
                             default: ValueAtLocation
-                            description: DataSource specifies where to extract the
-                              data that will be sent to the external data provider
-                              as parameters.
+                            description: |-
+                              DataSource specifies where to extract the data that will be sent
+                              to the external data provider as parameters.
                             enum:
                             - ValueAtLocation
                             - Username
                             type: string
                           default:
-                            description: Default specifies the default value to use
-                              when the external data provider returns an error and
-                              the failure policy is set to "UseDefault".
+                            description: |-
+                              Default specifies the default value to use when the external data
+                              provider returns an error and the failure policy is set to "UseDefault".
                             type: string
                           failurePolicy:
                             default: Fail
-                            description: FailurePolicy specifies the policy to apply
-                              when the external data provider returns an error.
+                            description: |-
+                              FailurePolicy specifies the policy to apply when the external data
+                              provider returns an error.
                             enum:
                             - UseDefault
                             - Ignore
@@ -883,15 +908,18 @@ spec:
                     type: object
                   pathTests:
                     items:
-                      description: "PathTest allows the user to customize how the
-                        mutation works if parent paths are missing. It traverses the
-                        list in order. All sub paths are tested against the provided
-                        condition, if the test fails, the mutation is not applied.
-                        All ` + "`" + `subPath` + "`" + ` entries must be a prefix of ` + "`" + `location` + "`" + `. Any
+                      description: |-
+                        PathTest allows the user to customize how the mutation works if parent
+                        paths are missing. It traverses the list in order. All sub paths are
+                        tested against the provided condition, if the test fails, the mutation is
+                        not applied. All ` + "`" + `subPath` + "`" + ` entries must be a prefix of ` + "`" + `location` + "`" + `. Any
                         glob characters will take on the same value as was used to
-                        expand the matching glob in ` + "`" + `location` + "`" + `. \n Available Tests:
-                        * MustExist    - the path must exist or do not mutate * MustNotExist
-                        - the path must not exist or do not mutate."
+                        expand the matching glob in ` + "`" + `location` + "`" + `.
+
+
+                        Available Tests:
+                        * MustExist    - the path must exist or do not mutate
+                        * MustNotExist - the path must not exist or do not mutate.
                       properties:
                         condition:
                           description: Condition describes whether the path either
@@ -924,9 +952,9 @@ spec:
                           message:
                             type: string
                           type:
-                            description: Type indicates a specific class of error
-                              for use by controller code. If not present, the error
-                              should be treated as not matching any known type.
+                            description: |-
+                              Type indicates a specific class of error for use by controller code.
+                              If not present, the error should be treated as not matching any known type.
                             type: string
                         required:
                         - message
@@ -935,9 +963,10 @@ spec:
                     id:
                       type: string
                     mutatorUID:
-                      description: Storing the mutator UID allows us to detect drift,
-                        such as when a mutator has been recreated after its CRD was
-                        deleted out from under it, interrupting the watch
+                      description: |-
+                        Storing the mutator UID allows us to detect drift, such as
+                        when a mutator has been recreated after its CRD was deleted
+                        out from under it, interrupting the watch
                       type: string
                     observedGeneration:
                       format: int64
@@ -960,14 +989,19 @@ spec:
         description: Assign is the Schema for the assign API.
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           metadata:
             type: object
@@ -975,13 +1009,14 @@ spec:
             description: AssignSpec defines the desired state of Assign.
             properties:
               applyTo:
-                description: ApplyTo lists the specific groups, versions and kinds
-                  a mutation will be applied to. This is necessary because every mutation
-                  implies part of an object schema and object schemas are associated
-                  with specific GVKs.
+                description: |-
+                  ApplyTo lists the specific groups, versions and kinds a mutation will be applied to.
+                  This is necessary because every mutation implies part of an object schema and object
+                  schemas are associated with specific GVKs.
                 items:
-                  description: ApplyTo determines what GVKs items the mutation should
-                    apply to. Globs are not allowed.
+                  description: |-
+                    ApplyTo determines what GVKs items the mutation should apply to.
+                    Globs are not allowed.
                   properties:
                     groups:
                       items:
@@ -1002,37 +1037,40 @@ spec:
                   ` + "`" + `spec.containers[name: main]` + "`" + `.'
                 type: string
               match:
-                description: Match allows the user to limit which resources get mutated.
-                  Individual match criteria are AND-ed together. An undefined match
-                  criteria matches everything.
+                description: |-
+                  Match allows the user to limit which resources get mutated.
+                  Individual match criteria are AND-ed together. An undefined
+                  match criteria matches everything.
                 properties:
                   excludedNamespaces:
-                    description: 'ExcludedNamespaces is a list of namespace names.
-                      If defined, a constraint only applies to resources not in a
-                      listed namespace. ExcludedNamespaces also supports a prefix
-                      or suffix based glob.  For example, ` + "`" + `excludedNamespaces: [kube-*]` + "`" + `
-                      matches both ` + "`" + `kube-system` + "`" + ` and ` + "`" + `kube-public` + "`" + `, and ` + "`" + `excludedNamespaces:
-                      [*-system]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and ` + "`" + `gatekeeper-system` + "`" + `.'
+                    description: |-
+                      ExcludedNamespaces is a list of namespace names. If defined, a
+                      constraint only applies to resources not in a listed namespace.
+                      ExcludedNamespaces also supports a prefix or suffix based glob.  For example,
+                      ` + "`" + `excludedNamespaces: [kube-*]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and
+                      ` + "`" + `kube-public` + "`" + `, and ` + "`" + `excludedNamespaces: [*-system]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and
+                      ` + "`" + `gatekeeper-system` + "`" + `.
                     items:
-                      description: 'A string that supports globbing at its front or
-                        end. Ex: "kube-*" will match "kube-system" or "kube-public",
-                        "*-system" will match "kube-system" or "gatekeeper-system".  The
-                        asterisk is required for wildcard matching.'
+                      description: |-
+                        A string that supports globbing at its front or end. Ex: "kube-*" will match "kube-system" or
+                        "kube-public", "*-system" will match "kube-system" or "gatekeeper-system".  The asterisk is
+                        required for wildcard matching.
                       pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                       type: string
                     type: array
                   kinds:
                     items:
-                      description: Kinds accepts a list of objects with apiGroups
-                        and kinds fields that list the groups/kinds of objects to
-                        which the mutation will apply. If multiple groups/kinds objects
-                        are specified, only one match is needed for the resource to
-                        be in scope.
+                      description: |-
+                        Kinds accepts a list of objects with apiGroups and kinds fields
+                        that list the groups/kinds of objects to which the mutation will apply.
+                        If multiple groups/kinds objects are specified,
+                        only one match is needed for the resource to be in scope.
                       properties:
                         apiGroups:
-                          description: APIGroups is the API groups the resources belong
-                            to. '*' is all groups. If '*' is present, the length of
-                            the slice must be one. Required.
+                          description: |-
+                            APIGroups is the API groups the resources belong to. '*' is all groups.
+                            If '*' is present, the length of the slice must be one.
+                            Required.
                           items:
                             type: string
                           type: array
@@ -1043,36 +1081,37 @@ spec:
                       type: object
                     type: array
                   labelSelector:
-                    description: 'LabelSelector is the combination of two optional
-                      fields: ` + "`" + `matchLabels` + "`" + ` and ` + "`" + `matchExpressions` + "`" + `.  These two fields
-                      provide different methods of selecting or excluding k8s objects
-                      based on the label keys and values included in object metadata.  All
-                      selection expressions from both sections are ANDed to determine
-                      if an object meets the cumulative requirements of the selector.'
+                    description: |-
+                      LabelSelector is the combination of two optional fields: ` + "`" + `matchLabels` + "`" + `
+                      and ` + "`" + `matchExpressions` + "`" + `.  These two fields provide different methods of
+                      selecting or excluding k8s objects based on the label keys and values
+                      included in object metadata.  All selection expressions from both
+                      sections are ANDed to determine if an object meets the cumulative
+                      requirements of the selector.
                     properties:
                       matchExpressions:
                         description: matchExpressions is a list of label selector
                           requirements. The requirements are ANDed.
                         items:
-                          description: A label selector requirement is a selector
-                            that contains values, a key, and an operator that relates
-                            the key and values.
+                          description: |-
+                            A label selector requirement is a selector that contains values, a key, and an operator that
+                            relates the key and values.
                           properties:
                             key:
                               description: key is the label key that the selector
                                 applies to.
                               type: string
                             operator:
-                              description: operator represents a key's relationship
-                                to a set of values. Valid operators are In, NotIn,
-                                Exists and DoesNotExist.
+                              description: |-
+                                operator represents a key's relationship to a set of values.
+                                Valid operators are In, NotIn, Exists and DoesNotExist.
                               type: string
                             values:
-                              description: values is an array of string values. If
-                                the operator is In or NotIn, the values array must
-                                be non-empty. If the operator is Exists or DoesNotExist,
-                                the values array must be empty. This array is replaced
-                                during a strategic merge patch.
+                              description: |-
+                                values is an array of string values. If the operator is In or NotIn,
+                                the values array must be non-empty. If the operator is Exists or DoesNotExist,
+                                the values array must be empty. This array is replaced during a strategic
+                                merge patch.
                               items:
                                 type: string
                               type: array
@@ -1084,49 +1123,48 @@ spec:
                       matchLabels:
                         additionalProperties:
                           type: string
-                        description: matchLabels is a map of {key,value} pairs. A
-                          single {key,value} in the matchLabels map is equivalent
-                          to an element of matchExpressions, whose key field is "key",
-                          the operator is "In", and the values array contains only
-                          "value". The requirements are ANDed.
+                        description: |-
+                          matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+                          map is equivalent to an element of matchExpressions, whose key field is "key", the
+                          operator is "In", and the values array contains only "value". The requirements are ANDed.
                         type: object
                     type: object
+                    x-kubernetes-map-type: atomic
                   name:
-                    description: 'Name is the name of an object.  If defined, it will
-                      match against objects with the specified name.  Name also supports
-                      a prefix or suffix glob.  For example, ` + "`" + `name: pod-*` + "`" + ` would match
-                      both ` + "`" + `pod-a` + "`" + ` and ` + "`" + `pod-b` + "`" + `, and ` + "`" + `name: *-pod` + "`" + ` would match both
-                      ` + "`" + `a-pod` + "`" + ` and ` + "`" + `b-pod` + "`" + `.'
+                    description: |-
+                      Name is the name of an object.  If defined, it will match against objects with the specified
+                      name.  Name also supports a prefix or suffix glob.  For example, ` + "`" + `name: pod-*` + "`" + ` would match
+                      both ` + "`" + `pod-a` + "`" + ` and ` + "`" + `pod-b` + "`" + `, and ` + "`" + `name: *-pod` + "`" + ` would match both ` + "`" + `a-pod` + "`" + ` and ` + "`" + `b-pod` + "`" + `.
                     pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                     type: string
                   namespaceSelector:
-                    description: NamespaceSelector is a label selector against an
-                      object's containing namespace or the object itself, if the object
-                      is a namespace.
+                    description: |-
+                      NamespaceSelector is a label selector against an object's containing
+                      namespace or the object itself, if the object is a namespace.
                     properties:
                       matchExpressions:
                         description: matchExpressions is a list of label selector
                           requirements. The requirements are ANDed.
                         items:
-                          description: A label selector requirement is a selector
-                            that contains values, a key, and an operator that relates
-                            the key and values.
+                          description: |-
+                            A label selector requirement is a selector that contains values, a key, and an operator that
+                            relates the key and values.
                           properties:
                             key:
                               description: key is the label key that the selector
                                 applies to.
                               type: string
                             operator:
-                              description: operator represents a key's relationship
-                                to a set of values. Valid operators are In, NotIn,
-                                Exists and DoesNotExist.
+                              description: |-
+                                operator represents a key's relationship to a set of values.
+                                Valid operators are In, NotIn, Exists and DoesNotExist.
                               type: string
                             values:
-                              description: values is an array of string values. If
-                                the operator is In or NotIn, the values array must
-                                be non-empty. If the operator is Exists or DoesNotExist,
-                                the values array must be empty. This array is replaced
-                                during a strategic merge patch.
+                              description: |-
+                                values is an array of string values. If the operator is In or NotIn,
+                                the values array must be non-empty. If the operator is Exists or DoesNotExist,
+                                the values array must be empty. This array is replaced during a strategic
+                                merge patch.
                               items:
                                 type: string
                               type: array
@@ -1138,37 +1176,39 @@ spec:
                       matchLabels:
                         additionalProperties:
                           type: string
-                        description: matchLabels is a map of {key,value} pairs. A
-                          single {key,value} in the matchLabels map is equivalent
-                          to an element of matchExpressions, whose key field is "key",
-                          the operator is "In", and the values array contains only
-                          "value". The requirements are ANDed.
+                        description: |-
+                          matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+                          map is equivalent to an element of matchExpressions, whose key field is "key", the
+                          operator is "In", and the values array contains only "value". The requirements are ANDed.
                         type: object
                     type: object
+                    x-kubernetes-map-type: atomic
                   namespaces:
-                    description: 'Namespaces is a list of namespace names. If defined,
-                      a constraint only applies to resources in a listed namespace.  Namespaces
-                      also supports a prefix or suffix based glob.  For example, ` + "`" + `namespaces:
-                      [kube-*]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and ` + "`" + `kube-public` + "`" + `, and
-                      ` + "`" + `namespaces: [*-system]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and ` + "`" + `gatekeeper-system` + "`" + `.'
+                    description: |-
+                      Namespaces is a list of namespace names. If defined, a constraint only
+                      applies to resources in a listed namespace.  Namespaces also supports a
+                      prefix or suffix based glob.  For example, ` + "`" + `namespaces: [kube-*]` + "`" + ` matches both
+                      ` + "`" + `kube-system` + "`" + ` and ` + "`" + `kube-public` + "`" + `, and ` + "`" + `namespaces: [*-system]` + "`" + ` matches both
+                      ` + "`" + `kube-system` + "`" + ` and ` + "`" + `gatekeeper-system` + "`" + `.
                     items:
-                      description: 'A string that supports globbing at its front or
-                        end. Ex: "kube-*" will match "kube-system" or "kube-public",
-                        "*-system" will match "kube-system" or "gatekeeper-system".  The
-                        asterisk is required for wildcard matching.'
+                      description: |-
+                        A string that supports globbing at its front or end. Ex: "kube-*" will match "kube-system" or
+                        "kube-public", "*-system" will match "kube-system" or "gatekeeper-system".  The asterisk is
+                        required for wildcard matching.
                       pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                       type: string
                     type: array
                   scope:
-                    description: Scope determines if cluster-scoped and/or namespaced-scoped
-                      resources are matched.  Accepts ` + "`" + `*` + "`" + `, ` + "`" + `Cluster` + "`" + `, or ` + "`" + `Namespaced` + "`" + `.
-                      (defaults to ` + "`" + `*` + "`" + `)
+                    description: |-
+                      Scope determines if cluster-scoped and/or namespaced-scoped resources
+                      are matched.  Accepts ` + "`" + `*` + "`" + `, ` + "`" + `Cluster` + "`" + `, or ` + "`" + `Namespaced` + "`" + `. (defaults to ` + "`" + `*` + "`" + `)
                     type: string
                   source:
-                    description: Source determines whether generated or original resources
-                      are matched. Accepts ` + "`" + `Generated` + "`" + `|` + "`" + `Original` + "`" + `|` + "`" + `All` + "`" + ` (defaults
-                      to ` + "`" + `All` + "`" + `). A value of ` + "`" + `Generated` + "`" + ` will only match generated
-                      resources, while ` + "`" + `Original` + "`" + ` will only match regular resources.
+                    description: |-
+                      Source determines whether generated or original resources are matched.
+                      Accepts ` + "`" + `Generated` + "`" + `|` + "`" + `Original` + "`" + `|` + "`" + `All` + "`" + ` (defaults to ` + "`" + `All` + "`" + `). A value of
+                      ` + "`" + `Generated` + "`" + ` will only match generated resources, while ` + "`" + `Original` + "`" + ` will only
+                      match regular resources.
                     enum:
                     - All
                     - Generated
@@ -1187,22 +1227,23 @@ spec:
                         properties:
                           dataSource:
                             default: ValueAtLocation
-                            description: DataSource specifies where to extract the
-                              data that will be sent to the external data provider
-                              as parameters.
+                            description: |-
+                              DataSource specifies where to extract the data that will be sent
+                              to the external data provider as parameters.
                             enum:
                             - ValueAtLocation
                             - Username
                             type: string
                           default:
-                            description: Default specifies the default value to use
-                              when the external data provider returns an error and
-                              the failure policy is set to "UseDefault".
+                            description: |-
+                              Default specifies the default value to use when the external data
+                              provider returns an error and the failure policy is set to "UseDefault".
                             type: string
                           failurePolicy:
                             default: Fail
-                            description: FailurePolicy specifies the policy to apply
-                              when the external data provider returns an error.
+                            description: |-
+                              FailurePolicy specifies the policy to apply when the external data
+                              provider returns an error.
                             enum:
                             - UseDefault
                             - Ignore
@@ -1230,15 +1271,18 @@ spec:
                     type: object
                   pathTests:
                     items:
-                      description: "PathTest allows the user to customize how the
-                        mutation works if parent paths are missing. It traverses the
-                        list in order. All sub paths are tested against the provided
-                        condition, if the test fails, the mutation is not applied.
-                        All ` + "`" + `subPath` + "`" + ` entries must be a prefix of ` + "`" + `location` + "`" + `. Any
+                      description: |-
+                        PathTest allows the user to customize how the mutation works if parent
+                        paths are missing. It traverses the list in order. All sub paths are
+                        tested against the provided condition, if the test fails, the mutation is
+                        not applied. All ` + "`" + `subPath` + "`" + ` entries must be a prefix of ` + "`" + `location` + "`" + `. Any
                         glob characters will take on the same value as was used to
-                        expand the matching glob in ` + "`" + `location` + "`" + `. \n Available Tests:
-                        * MustExist    - the path must exist or do not mutate * MustNotExist
-                        - the path must not exist or do not mutate."
+                        expand the matching glob in ` + "`" + `location` + "`" + `.
+
+
+                        Available Tests:
+                        * MustExist    - the path must exist or do not mutate
+                        * MustNotExist - the path must not exist or do not mutate.
                       properties:
                         condition:
                           description: Condition describes whether the path either
@@ -1271,9 +1315,9 @@ spec:
                           message:
                             type: string
                           type:
-                            description: Type indicates a specific class of error
-                              for use by controller code. If not present, the error
-                              should be treated as not matching any known type.
+                            description: |-
+                              Type indicates a specific class of error for use by controller code.
+                              If not present, the error should be treated as not matching any known type.
                             type: string
                         required:
                         - message
@@ -1282,9 +1326,10 @@ spec:
                     id:
                       type: string
                     mutatorUID:
-                      description: Storing the mutator UID allows us to detect drift,
-                        such as when a mutator has been recreated after its CRD was
-                        deleted out from under it, interrupting the watch
+                      description: |-
+                        Storing the mutator UID allows us to detect drift, such as
+                        when a mutator has been recreated after its CRD was deleted
+                        out from under it, interrupting the watch
                       type: string
                     observedGeneration:
                       format: int64
@@ -1322,8 +1367,7 @@ var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_assi
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.10.0
-  creationTimestamp: null
+    controller-gen.kubebuilder.io/version: v0.14.0
   labels:
     gatekeeper.sh/system: "yes"
   name: assignimage.mutations.gatekeeper.sh
@@ -1343,14 +1387,19 @@ spec:
         description: AssignImage is the Schema for the assignimage API.
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           metadata:
             properties:
@@ -1362,13 +1411,14 @@ spec:
             description: AssignImageSpec defines the desired state of AssignImage.
             properties:
               applyTo:
-                description: ApplyTo lists the specific groups, versions and kinds
-                  a mutation will be applied to. This is necessary because every mutation
-                  implies part of an object schema and object schemas are associated
-                  with specific GVKs.
+                description: |-
+                  ApplyTo lists the specific groups, versions and kinds a mutation will be applied to.
+                  This is necessary because every mutation implies part of an object schema and object
+                  schemas are associated with specific GVKs.
                 items:
-                  description: ApplyTo determines what GVKs items the mutation should
-                    apply to. Globs are not allowed.
+                  description: |-
+                    ApplyTo determines what GVKs items the mutation should apply to.
+                    Globs are not allowed.
                   properties:
                     groups:
                       items:
@@ -1389,37 +1439,40 @@ spec:
                   ` + "`" + `spec.containers[name: main].image` + "`" + `.'
                 type: string
               match:
-                description: Match allows the user to limit which resources get mutated.
-                  Individual match criteria are AND-ed together. An undefined match
-                  criteria matches everything.
+                description: |-
+                  Match allows the user to limit which resources get mutated.
+                  Individual match criteria are AND-ed together. An undefined
+                  match criteria matches everything.
                 properties:
                   excludedNamespaces:
-                    description: 'ExcludedNamespaces is a list of namespace names.
-                      If defined, a constraint only applies to resources not in a
-                      listed namespace. ExcludedNamespaces also supports a prefix
-                      or suffix based glob.  For example, ` + "`" + `excludedNamespaces: [kube-*]` + "`" + `
-                      matches both ` + "`" + `kube-system` + "`" + ` and ` + "`" + `kube-public` + "`" + `, and ` + "`" + `excludedNamespaces:
-                      [*-system]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and ` + "`" + `gatekeeper-system` + "`" + `.'
+                    description: |-
+                      ExcludedNamespaces is a list of namespace names. If defined, a
+                      constraint only applies to resources not in a listed namespace.
+                      ExcludedNamespaces also supports a prefix or suffix based glob.  For example,
+                      ` + "`" + `excludedNamespaces: [kube-*]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and
+                      ` + "`" + `kube-public` + "`" + `, and ` + "`" + `excludedNamespaces: [*-system]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and
+                      ` + "`" + `gatekeeper-system` + "`" + `.
                     items:
-                      description: 'A string that supports globbing at its front or
-                        end. Ex: "kube-*" will match "kube-system" or "kube-public",
-                        "*-system" will match "kube-system" or "gatekeeper-system".  The
-                        asterisk is required for wildcard matching.'
+                      description: |-
+                        A string that supports globbing at its front or end. Ex: "kube-*" will match "kube-system" or
+                        "kube-public", "*-system" will match "kube-system" or "gatekeeper-system".  The asterisk is
+                        required for wildcard matching.
                       pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                       type: string
                     type: array
                   kinds:
                     items:
-                      description: Kinds accepts a list of objects with apiGroups
-                        and kinds fields that list the groups/kinds of objects to
-                        which the mutation will apply. If multiple groups/kinds objects
-                        are specified, only one match is needed for the resource to
-                        be in scope.
+                      description: |-
+                        Kinds accepts a list of objects with apiGroups and kinds fields
+                        that list the groups/kinds of objects to which the mutation will apply.
+                        If multiple groups/kinds objects are specified,
+                        only one match is needed for the resource to be in scope.
                       properties:
                         apiGroups:
-                          description: APIGroups is the API groups the resources belong
-                            to. '*' is all groups. If '*' is present, the length of
-                            the slice must be one. Required.
+                          description: |-
+                            APIGroups is the API groups the resources belong to. '*' is all groups.
+                            If '*' is present, the length of the slice must be one.
+                            Required.
                           items:
                             type: string
                           type: array
@@ -1430,36 +1483,37 @@ spec:
                       type: object
                     type: array
                   labelSelector:
-                    description: 'LabelSelector is the combination of two optional
-                      fields: ` + "`" + `matchLabels` + "`" + ` and ` + "`" + `matchExpressions` + "`" + `.  These two fields
-                      provide different methods of selecting or excluding k8s objects
-                      based on the label keys and values included in object metadata.  All
-                      selection expressions from both sections are ANDed to determine
-                      if an object meets the cumulative requirements of the selector.'
+                    description: |-
+                      LabelSelector is the combination of two optional fields: ` + "`" + `matchLabels` + "`" + `
+                      and ` + "`" + `matchExpressions` + "`" + `.  These two fields provide different methods of
+                      selecting or excluding k8s objects based on the label keys and values
+                      included in object metadata.  All selection expressions from both
+                      sections are ANDed to determine if an object meets the cumulative
+                      requirements of the selector.
                     properties:
                       matchExpressions:
                         description: matchExpressions is a list of label selector
                           requirements. The requirements are ANDed.
                         items:
-                          description: A label selector requirement is a selector
-                            that contains values, a key, and an operator that relates
-                            the key and values.
+                          description: |-
+                            A label selector requirement is a selector that contains values, a key, and an operator that
+                            relates the key and values.
                           properties:
                             key:
                               description: key is the label key that the selector
                                 applies to.
                               type: string
                             operator:
-                              description: operator represents a key's relationship
-                                to a set of values. Valid operators are In, NotIn,
-                                Exists and DoesNotExist.
+                              description: |-
+                                operator represents a key's relationship to a set of values.
+                                Valid operators are In, NotIn, Exists and DoesNotExist.
                               type: string
                             values:
-                              description: values is an array of string values. If
-                                the operator is In or NotIn, the values array must
-                                be non-empty. If the operator is Exists or DoesNotExist,
-                                the values array must be empty. This array is replaced
-                                during a strategic merge patch.
+                              description: |-
+                                values is an array of string values. If the operator is In or NotIn,
+                                the values array must be non-empty. If the operator is Exists or DoesNotExist,
+                                the values array must be empty. This array is replaced during a strategic
+                                merge patch.
                               items:
                                 type: string
                               type: array
@@ -1471,49 +1525,48 @@ spec:
                       matchLabels:
                         additionalProperties:
                           type: string
-                        description: matchLabels is a map of {key,value} pairs. A
-                          single {key,value} in the matchLabels map is equivalent
-                          to an element of matchExpressions, whose key field is "key",
-                          the operator is "In", and the values array contains only
-                          "value". The requirements are ANDed.
+                        description: |-
+                          matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+                          map is equivalent to an element of matchExpressions, whose key field is "key", the
+                          operator is "In", and the values array contains only "value". The requirements are ANDed.
                         type: object
                     type: object
+                    x-kubernetes-map-type: atomic
                   name:
-                    description: 'Name is the name of an object.  If defined, it will
-                      match against objects with the specified name.  Name also supports
-                      a prefix or suffix glob.  For example, ` + "`" + `name: pod-*` + "`" + ` would match
-                      both ` + "`" + `pod-a` + "`" + ` and ` + "`" + `pod-b` + "`" + `, and ` + "`" + `name: *-pod` + "`" + ` would match both
-                      ` + "`" + `a-pod` + "`" + ` and ` + "`" + `b-pod` + "`" + `.'
+                    description: |-
+                      Name is the name of an object.  If defined, it will match against objects with the specified
+                      name.  Name also supports a prefix or suffix glob.  For example, ` + "`" + `name: pod-*` + "`" + ` would match
+                      both ` + "`" + `pod-a` + "`" + ` and ` + "`" + `pod-b` + "`" + `, and ` + "`" + `name: *-pod` + "`" + ` would match both ` + "`" + `a-pod` + "`" + ` and ` + "`" + `b-pod` + "`" + `.
                     pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                     type: string
                   namespaceSelector:
-                    description: NamespaceSelector is a label selector against an
-                      object's containing namespace or the object itself, if the object
-                      is a namespace.
+                    description: |-
+                      NamespaceSelector is a label selector against an object's containing
+                      namespace or the object itself, if the object is a namespace.
                     properties:
                       matchExpressions:
                         description: matchExpressions is a list of label selector
                           requirements. The requirements are ANDed.
                         items:
-                          description: A label selector requirement is a selector
-                            that contains values, a key, and an operator that relates
-                            the key and values.
+                          description: |-
+                            A label selector requirement is a selector that contains values, a key, and an operator that
+                            relates the key and values.
                           properties:
                             key:
                               description: key is the label key that the selector
                                 applies to.
                               type: string
                             operator:
-                              description: operator represents a key's relationship
-                                to a set of values. Valid operators are In, NotIn,
-                                Exists and DoesNotExist.
+                              description: |-
+                                operator represents a key's relationship to a set of values.
+                                Valid operators are In, NotIn, Exists and DoesNotExist.
                               type: string
                             values:
-                              description: values is an array of string values. If
-                                the operator is In or NotIn, the values array must
-                                be non-empty. If the operator is Exists or DoesNotExist,
-                                the values array must be empty. This array is replaced
-                                during a strategic merge patch.
+                              description: |-
+                                values is an array of string values. If the operator is In or NotIn,
+                                the values array must be non-empty. If the operator is Exists or DoesNotExist,
+                                the values array must be empty. This array is replaced during a strategic
+                                merge patch.
                               items:
                                 type: string
                               type: array
@@ -1525,37 +1578,39 @@ spec:
                       matchLabels:
                         additionalProperties:
                           type: string
-                        description: matchLabels is a map of {key,value} pairs. A
-                          single {key,value} in the matchLabels map is equivalent
-                          to an element of matchExpressions, whose key field is "key",
-                          the operator is "In", and the values array contains only
-                          "value". The requirements are ANDed.
+                        description: |-
+                          matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+                          map is equivalent to an element of matchExpressions, whose key field is "key", the
+                          operator is "In", and the values array contains only "value". The requirements are ANDed.
                         type: object
                     type: object
+                    x-kubernetes-map-type: atomic
                   namespaces:
-                    description: 'Namespaces is a list of namespace names. If defined,
-                      a constraint only applies to resources in a listed namespace.  Namespaces
-                      also supports a prefix or suffix based glob.  For example, ` + "`" + `namespaces:
-                      [kube-*]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and ` + "`" + `kube-public` + "`" + `, and
-                      ` + "`" + `namespaces: [*-system]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and ` + "`" + `gatekeeper-system` + "`" + `.'
+                    description: |-
+                      Namespaces is a list of namespace names. If defined, a constraint only
+                      applies to resources in a listed namespace.  Namespaces also supports a
+                      prefix or suffix based glob.  For example, ` + "`" + `namespaces: [kube-*]` + "`" + ` matches both
+                      ` + "`" + `kube-system` + "`" + ` and ` + "`" + `kube-public` + "`" + `, and ` + "`" + `namespaces: [*-system]` + "`" + ` matches both
+                      ` + "`" + `kube-system` + "`" + ` and ` + "`" + `gatekeeper-system` + "`" + `.
                     items:
-                      description: 'A string that supports globbing at its front or
-                        end. Ex: "kube-*" will match "kube-system" or "kube-public",
-                        "*-system" will match "kube-system" or "gatekeeper-system".  The
-                        asterisk is required for wildcard matching.'
+                      description: |-
+                        A string that supports globbing at its front or end. Ex: "kube-*" will match "kube-system" or
+                        "kube-public", "*-system" will match "kube-system" or "gatekeeper-system".  The asterisk is
+                        required for wildcard matching.
                       pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                       type: string
                     type: array
                   scope:
-                    description: Scope determines if cluster-scoped and/or namespaced-scoped
-                      resources are matched.  Accepts ` + "`" + `*` + "`" + `, ` + "`" + `Cluster` + "`" + `, or ` + "`" + `Namespaced` + "`" + `.
-                      (defaults to ` + "`" + `*` + "`" + `)
+                    description: |-
+                      Scope determines if cluster-scoped and/or namespaced-scoped resources
+                      are matched.  Accepts ` + "`" + `*` + "`" + `, ` + "`" + `Cluster` + "`" + `, or ` + "`" + `Namespaced` + "`" + `. (defaults to ` + "`" + `*` + "`" + `)
                     type: string
                   source:
-                    description: Source determines whether generated or original resources
-                      are matched. Accepts ` + "`" + `Generated` + "`" + `|` + "`" + `Original` + "`" + `|` + "`" + `All` + "`" + ` (defaults
-                      to ` + "`" + `All` + "`" + `). A value of ` + "`" + `Generated` + "`" + ` will only match generated
-                      resources, while ` + "`" + `Original` + "`" + ` will only match regular resources.
+                    description: |-
+                      Source determines whether generated or original resources are matched.
+                      Accepts ` + "`" + `Generated` + "`" + `|` + "`" + `Original` + "`" + `|` + "`" + `All` + "`" + ` (defaults to ` + "`" + `All` + "`" + `). A value of
+                      ` + "`" + `Generated` + "`" + ` will only match generated resources, while ` + "`" + `Original` + "`" + ` will only
+                      match regular resources.
                     enum:
                     - All
                     - Generated
@@ -1566,28 +1621,33 @@ spec:
                 description: Parameters define the behavior of the mutator.
                 properties:
                   assignDomain:
-                    description: AssignDomain sets the domain component on an image
-                      string. The trailing slash should not be included.
+                    description: |-
+                      AssignDomain sets the domain component on an image string. The trailing
+                      slash should not be included.
                     type: string
                   assignPath:
                     description: AssignPath sets the domain component on an image
                       string.
                     type: string
                   assignTag:
-                    description: AssignImage sets the image component on an image
-                      string. It must start with a ` + "`" + `:` + "`" + ` or ` + "`" + `@` + "`" + `.
+                    description: |-
+                      AssignImage sets the image component on an image string. It must start
+                      with a ` + "`" + `:` + "`" + ` or ` + "`" + `@` + "`" + `.
                     type: string
                   pathTests:
                     items:
-                      description: "PathTest allows the user to customize how the
-                        mutation works if parent paths are missing. It traverses the
-                        list in order. All sub paths are tested against the provided
-                        condition, if the test fails, the mutation is not applied.
-                        All ` + "`" + `subPath` + "`" + ` entries must be a prefix of ` + "`" + `location` + "`" + `. Any
+                      description: |-
+                        PathTest allows the user to customize how the mutation works if parent
+                        paths are missing. It traverses the list in order. All sub paths are
+                        tested against the provided condition, if the test fails, the mutation is
+                        not applied. All ` + "`" + `subPath` + "`" + ` entries must be a prefix of ` + "`" + `location` + "`" + `. Any
                         glob characters will take on the same value as was used to
-                        expand the matching glob in ` + "`" + `location` + "`" + `. \n Available Tests:
-                        * MustExist    - the path must exist or do not mutate * MustNotExist
-                        - the path must not exist or do not mutate."
+                        expand the matching glob in ` + "`" + `location` + "`" + `.
+
+
+                        Available Tests:
+                        * MustExist    - the path must exist or do not mutate
+                        * MustNotExist - the path must not exist or do not mutate.
                       properties:
                         condition:
                           description: Condition describes whether the path either
@@ -1620,9 +1680,9 @@ spec:
                           message:
                             type: string
                           type:
-                            description: Type indicates a specific class of error
-                              for use by controller code. If not present, the error
-                              should be treated as not matching any known type.
+                            description: |-
+                              Type indicates a specific class of error for use by controller code.
+                              If not present, the error should be treated as not matching any known type.
                             type: string
                         required:
                         - message
@@ -1631,9 +1691,10 @@ spec:
                     id:
                       type: string
                     mutatorUID:
-                      description: Storing the mutator UID allows us to detect drift,
-                        such as when a mutator has been recreated after its CRD was
-                        deleted out from under it, interrupting the watch
+                      description: |-
+                        Storing the mutator UID allows us to detect drift, such as
+                        when a mutator has been recreated after its CRD was deleted
+                        out from under it, interrupting the watch
                       type: string
                     observedGeneration:
                       format: int64
@@ -1671,8 +1732,7 @@ var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_assi
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.10.0
-  creationTimestamp: null
+    controller-gen.kubebuilder.io/version: v0.14.0
   labels:
     gatekeeper.sh/system: "yes"
   name: assignmetadata.mutations.gatekeeper.sh
@@ -1692,14 +1752,19 @@ spec:
         description: AssignMetadata is the Schema for the assignmetadata API.
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           metadata:
             properties:
@@ -1716,32 +1781,34 @@ spec:
                 description: Match selects which objects are in scope.
                 properties:
                   excludedNamespaces:
-                    description: 'ExcludedNamespaces is a list of namespace names.
-                      If defined, a constraint only applies to resources not in a
-                      listed namespace. ExcludedNamespaces also supports a prefix
-                      or suffix based glob.  For example, ` + "`" + `excludedNamespaces: [kube-*]` + "`" + `
-                      matches both ` + "`" + `kube-system` + "`" + ` and ` + "`" + `kube-public` + "`" + `, and ` + "`" + `excludedNamespaces:
-                      [*-system]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and ` + "`" + `gatekeeper-system` + "`" + `.'
+                    description: |-
+                      ExcludedNamespaces is a list of namespace names. If defined, a
+                      constraint only applies to resources not in a listed namespace.
+                      ExcludedNamespaces also supports a prefix or suffix based glob.  For example,
+                      ` + "`" + `excludedNamespaces: [kube-*]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and
+                      ` + "`" + `kube-public` + "`" + `, and ` + "`" + `excludedNamespaces: [*-system]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and
+                      ` + "`" + `gatekeeper-system` + "`" + `.
                     items:
-                      description: 'A string that supports globbing at its front or
-                        end. Ex: "kube-*" will match "kube-system" or "kube-public",
-                        "*-system" will match "kube-system" or "gatekeeper-system".  The
-                        asterisk is required for wildcard matching.'
+                      description: |-
+                        A string that supports globbing at its front or end. Ex: "kube-*" will match "kube-system" or
+                        "kube-public", "*-system" will match "kube-system" or "gatekeeper-system".  The asterisk is
+                        required for wildcard matching.
                       pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                       type: string
                     type: array
                   kinds:
                     items:
-                      description: Kinds accepts a list of objects with apiGroups
-                        and kinds fields that list the groups/kinds of objects to
-                        which the mutation will apply. If multiple groups/kinds objects
-                        are specified, only one match is needed for the resource to
-                        be in scope.
+                      description: |-
+                        Kinds accepts a list of objects with apiGroups and kinds fields
+                        that list the groups/kinds of objects to which the mutation will apply.
+                        If multiple groups/kinds objects are specified,
+                        only one match is needed for the resource to be in scope.
                       properties:
                         apiGroups:
-                          description: APIGroups is the API groups the resources belong
-                            to. '*' is all groups. If '*' is present, the length of
-                            the slice must be one. Required.
+                          description: |-
+                            APIGroups is the API groups the resources belong to. '*' is all groups.
+                            If '*' is present, the length of the slice must be one.
+                            Required.
                           items:
                             type: string
                           type: array
@@ -1752,36 +1819,37 @@ spec:
                       type: object
                     type: array
                   labelSelector:
-                    description: 'LabelSelector is the combination of two optional
-                      fields: ` + "`" + `matchLabels` + "`" + ` and ` + "`" + `matchExpressions` + "`" + `.  These two fields
-                      provide different methods of selecting or excluding k8s objects
-                      based on the label keys and values included in object metadata.  All
-                      selection expressions from both sections are ANDed to determine
-                      if an object meets the cumulative requirements of the selector.'
+                    description: |-
+                      LabelSelector is the combination of two optional fields: ` + "`" + `matchLabels` + "`" + `
+                      and ` + "`" + `matchExpressions` + "`" + `.  These two fields provide different methods of
+                      selecting or excluding k8s objects based on the label keys and values
+                      included in object metadata.  All selection expressions from both
+                      sections are ANDed to determine if an object meets the cumulative
+                      requirements of the selector.
                     properties:
                       matchExpressions:
                         description: matchExpressions is a list of label selector
                           requirements. The requirements are ANDed.
                         items:
-                          description: A label selector requirement is a selector
-                            that contains values, a key, and an operator that relates
-                            the key and values.
+                          description: |-
+                            A label selector requirement is a selector that contains values, a key, and an operator that
+                            relates the key and values.
                           properties:
                             key:
                               description: key is the label key that the selector
                                 applies to.
                               type: string
                             operator:
-                              description: operator represents a key's relationship
-                                to a set of values. Valid operators are In, NotIn,
-                                Exists and DoesNotExist.
+                              description: |-
+                                operator represents a key's relationship to a set of values.
+                                Valid operators are In, NotIn, Exists and DoesNotExist.
                               type: string
                             values:
-                              description: values is an array of string values. If
-                                the operator is In or NotIn, the values array must
-                                be non-empty. If the operator is Exists or DoesNotExist,
-                                the values array must be empty. This array is replaced
-                                during a strategic merge patch.
+                              description: |-
+                                values is an array of string values. If the operator is In or NotIn,
+                                the values array must be non-empty. If the operator is Exists or DoesNotExist,
+                                the values array must be empty. This array is replaced during a strategic
+                                merge patch.
                               items:
                                 type: string
                               type: array
@@ -1793,49 +1861,48 @@ spec:
                       matchLabels:
                         additionalProperties:
                           type: string
-                        description: matchLabels is a map of {key,value} pairs. A
-                          single {key,value} in the matchLabels map is equivalent
-                          to an element of matchExpressions, whose key field is "key",
-                          the operator is "In", and the values array contains only
-                          "value". The requirements are ANDed.
+                        description: |-
+                          matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+                          map is equivalent to an element of matchExpressions, whose key field is "key", the
+                          operator is "In", and the values array contains only "value". The requirements are ANDed.
                         type: object
                     type: object
+                    x-kubernetes-map-type: atomic
                   name:
-                    description: 'Name is the name of an object.  If defined, it will
-                      match against objects with the specified name.  Name also supports
-                      a prefix or suffix glob.  For example, ` + "`" + `name: pod-*` + "`" + ` would match
-                      both ` + "`" + `pod-a` + "`" + ` and ` + "`" + `pod-b` + "`" + `, and ` + "`" + `name: *-pod` + "`" + ` would match both
-                      ` + "`" + `a-pod` + "`" + ` and ` + "`" + `b-pod` + "`" + `.'
+                    description: |-
+                      Name is the name of an object.  If defined, it will match against objects with the specified
+                      name.  Name also supports a prefix or suffix glob.  For example, ` + "`" + `name: pod-*` + "`" + ` would match
+                      both ` + "`" + `pod-a` + "`" + ` and ` + "`" + `pod-b` + "`" + `, and ` + "`" + `name: *-pod` + "`" + ` would match both ` + "`" + `a-pod` + "`" + ` and ` + "`" + `b-pod` + "`" + `.
                     pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                     type: string
                   namespaceSelector:
-                    description: NamespaceSelector is a label selector against an
-                      object's containing namespace or the object itself, if the object
-                      is a namespace.
+                    description: |-
+                      NamespaceSelector is a label selector against an object's containing
+                      namespace or the object itself, if the object is a namespace.
                     properties:
                       matchExpressions:
                         description: matchExpressions is a list of label selector
                           requirements. The requirements are ANDed.
                         items:
-                          description: A label selector requirement is a selector
-                            that contains values, a key, and an operator that relates
-                            the key and values.
+                          description: |-
+                            A label selector requirement is a selector that contains values, a key, and an operator that
+                            relates the key and values.
                           properties:
                             key:
                               description: key is the label key that the selector
                                 applies to.
                               type: string
                             operator:
-                              description: operator represents a key's relationship
-                                to a set of values. Valid operators are In, NotIn,
-                                Exists and DoesNotExist.
+                              description: |-
+                                operator represents a key's relationship to a set of values.
+                                Valid operators are In, NotIn, Exists and DoesNotExist.
                               type: string
                             values:
-                              description: values is an array of string values. If
-                                the operator is In or NotIn, the values array must
-                                be non-empty. If the operator is Exists or DoesNotExist,
-                                the values array must be empty. This array is replaced
-                                during a strategic merge patch.
+                              description: |-
+                                values is an array of string values. If the operator is In or NotIn,
+                                the values array must be non-empty. If the operator is Exists or DoesNotExist,
+                                the values array must be empty. This array is replaced during a strategic
+                                merge patch.
                               items:
                                 type: string
                               type: array
@@ -1847,37 +1914,39 @@ spec:
                       matchLabels:
                         additionalProperties:
                           type: string
-                        description: matchLabels is a map of {key,value} pairs. A
-                          single {key,value} in the matchLabels map is equivalent
-                          to an element of matchExpressions, whose key field is "key",
-                          the operator is "In", and the values array contains only
-                          "value". The requirements are ANDed.
+                        description: |-
+                          matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+                          map is equivalent to an element of matchExpressions, whose key field is "key", the
+                          operator is "In", and the values array contains only "value". The requirements are ANDed.
                         type: object
                     type: object
+                    x-kubernetes-map-type: atomic
                   namespaces:
-                    description: 'Namespaces is a list of namespace names. If defined,
-                      a constraint only applies to resources in a listed namespace.  Namespaces
-                      also supports a prefix or suffix based glob.  For example, ` + "`" + `namespaces:
-                      [kube-*]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and ` + "`" + `kube-public` + "`" + `, and
-                      ` + "`" + `namespaces: [*-system]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and ` + "`" + `gatekeeper-system` + "`" + `.'
+                    description: |-
+                      Namespaces is a list of namespace names. If defined, a constraint only
+                      applies to resources in a listed namespace.  Namespaces also supports a
+                      prefix or suffix based glob.  For example, ` + "`" + `namespaces: [kube-*]` + "`" + ` matches both
+                      ` + "`" + `kube-system` + "`" + ` and ` + "`" + `kube-public` + "`" + `, and ` + "`" + `namespaces: [*-system]` + "`" + ` matches both
+                      ` + "`" + `kube-system` + "`" + ` and ` + "`" + `gatekeeper-system` + "`" + `.
                     items:
-                      description: 'A string that supports globbing at its front or
-                        end. Ex: "kube-*" will match "kube-system" or "kube-public",
-                        "*-system" will match "kube-system" or "gatekeeper-system".  The
-                        asterisk is required for wildcard matching.'
+                      description: |-
+                        A string that supports globbing at its front or end. Ex: "kube-*" will match "kube-system" or
+                        "kube-public", "*-system" will match "kube-system" or "gatekeeper-system".  The asterisk is
+                        required for wildcard matching.
                       pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                       type: string
                     type: array
                   scope:
-                    description: Scope determines if cluster-scoped and/or namespaced-scoped
-                      resources are matched.  Accepts ` + "`" + `*` + "`" + `, ` + "`" + `Cluster` + "`" + `, or ` + "`" + `Namespaced` + "`" + `.
-                      (defaults to ` + "`" + `*` + "`" + `)
+                    description: |-
+                      Scope determines if cluster-scoped and/or namespaced-scoped resources
+                      are matched.  Accepts ` + "`" + `*` + "`" + `, ` + "`" + `Cluster` + "`" + `, or ` + "`" + `Namespaced` + "`" + `. (defaults to ` + "`" + `*` + "`" + `)
                     type: string
                   source:
-                    description: Source determines whether generated or original resources
-                      are matched. Accepts ` + "`" + `Generated` + "`" + `|` + "`" + `Original` + "`" + `|` + "`" + `All` + "`" + ` (defaults
-                      to ` + "`" + `All` + "`" + `). A value of ` + "`" + `Generated` + "`" + ` will only match generated
-                      resources, while ` + "`" + `Original` + "`" + ` will only match regular resources.
+                    description: |-
+                      Source determines whether generated or original resources are matched.
+                      Accepts ` + "`" + `Generated` + "`" + `|` + "`" + `Original` + "`" + `|` + "`" + `All` + "`" + ` (defaults to ` + "`" + `All` + "`" + `). A value of
+                      ` + "`" + `Generated` + "`" + ` will only match generated resources, while ` + "`" + `Original` + "`" + ` will only
+                      match regular resources.
                     enum:
                     - All
                     - Generated
@@ -1895,22 +1964,23 @@ spec:
                         properties:
                           dataSource:
                             default: ValueAtLocation
-                            description: DataSource specifies where to extract the
-                              data that will be sent to the external data provider
-                              as parameters.
+                            description: |-
+                              DataSource specifies where to extract the data that will be sent
+                              to the external data provider as parameters.
                             enum:
                             - ValueAtLocation
                             - Username
                             type: string
                           default:
-                            description: Default specifies the default value to use
-                              when the external data provider returns an error and
-                              the failure policy is set to "UseDefault".
+                            description: |-
+                              Default specifies the default value to use when the external data
+                              provider returns an error and the failure policy is set to "UseDefault".
                             type: string
                           failurePolicy:
                             default: Fail
-                            description: FailurePolicy specifies the policy to apply
-                              when the external data provider returns an error.
+                            description: |-
+                              FailurePolicy specifies the policy to apply when the external data
+                              provider returns an error.
                             enum:
                             - UseDefault
                             - Ignore
@@ -1942,9 +2012,9 @@ spec:
             description: AssignMetadataStatus defines the observed state of AssignMetadata.
             properties:
               byPod:
-                description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
-                  of cluster Important: Run "make" to regenerate code after modifying
-                  this file'
+                description: |-
+                  INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
+                  Important: Run "make" to regenerate code after modifying this file
                 items:
                   description: MutatorPodStatusStatus defines the observed state of
                     MutatorPodStatus.
@@ -1959,9 +2029,9 @@ spec:
                           message:
                             type: string
                           type:
-                            description: Type indicates a specific class of error
-                              for use by controller code. If not present, the error
-                              should be treated as not matching any known type.
+                            description: |-
+                              Type indicates a specific class of error for use by controller code.
+                              If not present, the error should be treated as not matching any known type.
                             type: string
                         required:
                         - message
@@ -1970,9 +2040,10 @@ spec:
                     id:
                       type: string
                     mutatorUID:
-                      description: Storing the mutator UID allows us to detect drift,
-                        such as when a mutator has been recreated after its CRD was
-                        deleted out from under it, interrupting the watch
+                      description: |-
+                        Storing the mutator UID allows us to detect drift, such as
+                        when a mutator has been recreated after its CRD was deleted
+                        out from under it, interrupting the watch
                       type: string
                     observedGeneration:
                       format: int64
@@ -1995,14 +2066,19 @@ spec:
         description: AssignMetadata is the Schema for the assignmetadata API.
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           metadata:
             type: object
@@ -2015,32 +2091,34 @@ spec:
                 description: Match selects which objects are in scope.
                 properties:
                   excludedNamespaces:
-                    description: 'ExcludedNamespaces is a list of namespace names.
-                      If defined, a constraint only applies to resources not in a
-                      listed namespace. ExcludedNamespaces also supports a prefix
-                      or suffix based glob.  For example, ` + "`" + `excludedNamespaces: [kube-*]` + "`" + `
-                      matches both ` + "`" + `kube-system` + "`" + ` and ` + "`" + `kube-public` + "`" + `, and ` + "`" + `excludedNamespaces:
-                      [*-system]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and ` + "`" + `gatekeeper-system` + "`" + `.'
+                    description: |-
+                      ExcludedNamespaces is a list of namespace names. If defined, a
+                      constraint only applies to resources not in a listed namespace.
+                      ExcludedNamespaces also supports a prefix or suffix based glob.  For example,
+                      ` + "`" + `excludedNamespaces: [kube-*]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and
+                      ` + "`" + `kube-public` + "`" + `, and ` + "`" + `excludedNamespaces: [*-system]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and
+                      ` + "`" + `gatekeeper-system` + "`" + `.
                     items:
-                      description: 'A string that supports globbing at its front or
-                        end. Ex: "kube-*" will match "kube-system" or "kube-public",
-                        "*-system" will match "kube-system" or "gatekeeper-system".  The
-                        asterisk is required for wildcard matching.'
+                      description: |-
+                        A string that supports globbing at its front or end. Ex: "kube-*" will match "kube-system" or
+                        "kube-public", "*-system" will match "kube-system" or "gatekeeper-system".  The asterisk is
+                        required for wildcard matching.
                       pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                       type: string
                     type: array
                   kinds:
                     items:
-                      description: Kinds accepts a list of objects with apiGroups
-                        and kinds fields that list the groups/kinds of objects to
-                        which the mutation will apply. If multiple groups/kinds objects
-                        are specified, only one match is needed for the resource to
-                        be in scope.
+                      description: |-
+                        Kinds accepts a list of objects with apiGroups and kinds fields
+                        that list the groups/kinds of objects to which the mutation will apply.
+                        If multiple groups/kinds objects are specified,
+                        only one match is needed for the resource to be in scope.
                       properties:
                         apiGroups:
-                          description: APIGroups is the API groups the resources belong
-                            to. '*' is all groups. If '*' is present, the length of
-                            the slice must be one. Required.
+                          description: |-
+                            APIGroups is the API groups the resources belong to. '*' is all groups.
+                            If '*' is present, the length of the slice must be one.
+                            Required.
                           items:
                             type: string
                           type: array
@@ -2051,36 +2129,37 @@ spec:
                       type: object
                     type: array
                   labelSelector:
-                    description: 'LabelSelector is the combination of two optional
-                      fields: ` + "`" + `matchLabels` + "`" + ` and ` + "`" + `matchExpressions` + "`" + `.  These two fields
-                      provide different methods of selecting or excluding k8s objects
-                      based on the label keys and values included in object metadata.  All
-                      selection expressions from both sections are ANDed to determine
-                      if an object meets the cumulative requirements of the selector.'
+                    description: |-
+                      LabelSelector is the combination of two optional fields: ` + "`" + `matchLabels` + "`" + `
+                      and ` + "`" + `matchExpressions` + "`" + `.  These two fields provide different methods of
+                      selecting or excluding k8s objects based on the label keys and values
+                      included in object metadata.  All selection expressions from both
+                      sections are ANDed to determine if an object meets the cumulative
+                      requirements of the selector.
                     properties:
                       matchExpressions:
                         description: matchExpressions is a list of label selector
                           requirements. The requirements are ANDed.
                         items:
-                          description: A label selector requirement is a selector
-                            that contains values, a key, and an operator that relates
-                            the key and values.
+                          description: |-
+                            A label selector requirement is a selector that contains values, a key, and an operator that
+                            relates the key and values.
                           properties:
                             key:
                               description: key is the label key that the selector
                                 applies to.
                               type: string
                             operator:
-                              description: operator represents a key's relationship
-                                to a set of values. Valid operators are In, NotIn,
-                                Exists and DoesNotExist.
+                              description: |-
+                                operator represents a key's relationship to a set of values.
+                                Valid operators are In, NotIn, Exists and DoesNotExist.
                               type: string
                             values:
-                              description: values is an array of string values. If
-                                the operator is In or NotIn, the values array must
-                                be non-empty. If the operator is Exists or DoesNotExist,
-                                the values array must be empty. This array is replaced
-                                during a strategic merge patch.
+                              description: |-
+                                values is an array of string values. If the operator is In or NotIn,
+                                the values array must be non-empty. If the operator is Exists or DoesNotExist,
+                                the values array must be empty. This array is replaced during a strategic
+                                merge patch.
                               items:
                                 type: string
                               type: array
@@ -2092,49 +2171,48 @@ spec:
                       matchLabels:
                         additionalProperties:
                           type: string
-                        description: matchLabels is a map of {key,value} pairs. A
-                          single {key,value} in the matchLabels map is equivalent
-                          to an element of matchExpressions, whose key field is "key",
-                          the operator is "In", and the values array contains only
-                          "value". The requirements are ANDed.
+                        description: |-
+                          matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+                          map is equivalent to an element of matchExpressions, whose key field is "key", the
+                          operator is "In", and the values array contains only "value". The requirements are ANDed.
                         type: object
                     type: object
+                    x-kubernetes-map-type: atomic
                   name:
-                    description: 'Name is the name of an object.  If defined, it will
-                      match against objects with the specified name.  Name also supports
-                      a prefix or suffix glob.  For example, ` + "`" + `name: pod-*` + "`" + ` would match
-                      both ` + "`" + `pod-a` + "`" + ` and ` + "`" + `pod-b` + "`" + `, and ` + "`" + `name: *-pod` + "`" + ` would match both
-                      ` + "`" + `a-pod` + "`" + ` and ` + "`" + `b-pod` + "`" + `.'
+                    description: |-
+                      Name is the name of an object.  If defined, it will match against objects with the specified
+                      name.  Name also supports a prefix or suffix glob.  For example, ` + "`" + `name: pod-*` + "`" + ` would match
+                      both ` + "`" + `pod-a` + "`" + ` and ` + "`" + `pod-b` + "`" + `, and ` + "`" + `name: *-pod` + "`" + ` would match both ` + "`" + `a-pod` + "`" + ` and ` + "`" + `b-pod` + "`" + `.
                     pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                     type: string
                   namespaceSelector:
-                    description: NamespaceSelector is a label selector against an
-                      object's containing namespace or the object itself, if the object
-                      is a namespace.
+                    description: |-
+                      NamespaceSelector is a label selector against an object's containing
+                      namespace or the object itself, if the object is a namespace.
                     properties:
                       matchExpressions:
                         description: matchExpressions is a list of label selector
                           requirements. The requirements are ANDed.
                         items:
-                          description: A label selector requirement is a selector
-                            that contains values, a key, and an operator that relates
-                            the key and values.
+                          description: |-
+                            A label selector requirement is a selector that contains values, a key, and an operator that
+                            relates the key and values.
                           properties:
                             key:
                               description: key is the label key that the selector
                                 applies to.
                               type: string
                             operator:
-                              description: operator represents a key's relationship
-                                to a set of values. Valid operators are In, NotIn,
-                                Exists and DoesNotExist.
+                              description: |-
+                                operator represents a key's relationship to a set of values.
+                                Valid operators are In, NotIn, Exists and DoesNotExist.
                               type: string
                             values:
-                              description: values is an array of string values. If
-                                the operator is In or NotIn, the values array must
-                                be non-empty. If the operator is Exists or DoesNotExist,
-                                the values array must be empty. This array is replaced
-                                during a strategic merge patch.
+                              description: |-
+                                values is an array of string values. If the operator is In or NotIn,
+                                the values array must be non-empty. If the operator is Exists or DoesNotExist,
+                                the values array must be empty. This array is replaced during a strategic
+                                merge patch.
                               items:
                                 type: string
                               type: array
@@ -2146,37 +2224,39 @@ spec:
                       matchLabels:
                         additionalProperties:
                           type: string
-                        description: matchLabels is a map of {key,value} pairs. A
-                          single {key,value} in the matchLabels map is equivalent
-                          to an element of matchExpressions, whose key field is "key",
-                          the operator is "In", and the values array contains only
-                          "value". The requirements are ANDed.
+                        description: |-
+                          matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+                          map is equivalent to an element of matchExpressions, whose key field is "key", the
+                          operator is "In", and the values array contains only "value". The requirements are ANDed.
                         type: object
                     type: object
+                    x-kubernetes-map-type: atomic
                   namespaces:
-                    description: 'Namespaces is a list of namespace names. If defined,
-                      a constraint only applies to resources in a listed namespace.  Namespaces
-                      also supports a prefix or suffix based glob.  For example, ` + "`" + `namespaces:
-                      [kube-*]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and ` + "`" + `kube-public` + "`" + `, and
-                      ` + "`" + `namespaces: [*-system]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and ` + "`" + `gatekeeper-system` + "`" + `.'
+                    description: |-
+                      Namespaces is a list of namespace names. If defined, a constraint only
+                      applies to resources in a listed namespace.  Namespaces also supports a
+                      prefix or suffix based glob.  For example, ` + "`" + `namespaces: [kube-*]` + "`" + ` matches both
+                      ` + "`" + `kube-system` + "`" + ` and ` + "`" + `kube-public` + "`" + `, and ` + "`" + `namespaces: [*-system]` + "`" + ` matches both
+                      ` + "`" + `kube-system` + "`" + ` and ` + "`" + `gatekeeper-system` + "`" + `.
                     items:
-                      description: 'A string that supports globbing at its front or
-                        end. Ex: "kube-*" will match "kube-system" or "kube-public",
-                        "*-system" will match "kube-system" or "gatekeeper-system".  The
-                        asterisk is required for wildcard matching.'
+                      description: |-
+                        A string that supports globbing at its front or end. Ex: "kube-*" will match "kube-system" or
+                        "kube-public", "*-system" will match "kube-system" or "gatekeeper-system".  The asterisk is
+                        required for wildcard matching.
                       pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                       type: string
                     type: array
                   scope:
-                    description: Scope determines if cluster-scoped and/or namespaced-scoped
-                      resources are matched.  Accepts ` + "`" + `*` + "`" + `, ` + "`" + `Cluster` + "`" + `, or ` + "`" + `Namespaced` + "`" + `.
-                      (defaults to ` + "`" + `*` + "`" + `)
+                    description: |-
+                      Scope determines if cluster-scoped and/or namespaced-scoped resources
+                      are matched.  Accepts ` + "`" + `*` + "`" + `, ` + "`" + `Cluster` + "`" + `, or ` + "`" + `Namespaced` + "`" + `. (defaults to ` + "`" + `*` + "`" + `)
                     type: string
                   source:
-                    description: Source determines whether generated or original resources
-                      are matched. Accepts ` + "`" + `Generated` + "`" + `|` + "`" + `Original` + "`" + `|` + "`" + `All` + "`" + ` (defaults
-                      to ` + "`" + `All` + "`" + `). A value of ` + "`" + `Generated` + "`" + ` will only match generated
-                      resources, while ` + "`" + `Original` + "`" + ` will only match regular resources.
+                    description: |-
+                      Source determines whether generated or original resources are matched.
+                      Accepts ` + "`" + `Generated` + "`" + `|` + "`" + `Original` + "`" + `|` + "`" + `All` + "`" + ` (defaults to ` + "`" + `All` + "`" + `). A value of
+                      ` + "`" + `Generated` + "`" + ` will only match generated resources, while ` + "`" + `Original` + "`" + ` will only
+                      match regular resources.
                     enum:
                     - All
                     - Generated
@@ -2194,22 +2274,23 @@ spec:
                         properties:
                           dataSource:
                             default: ValueAtLocation
-                            description: DataSource specifies where to extract the
-                              data that will be sent to the external data provider
-                              as parameters.
+                            description: |-
+                              DataSource specifies where to extract the data that will be sent
+                              to the external data provider as parameters.
                             enum:
                             - ValueAtLocation
                             - Username
                             type: string
                           default:
-                            description: Default specifies the default value to use
-                              when the external data provider returns an error and
-                              the failure policy is set to "UseDefault".
+                            description: |-
+                              Default specifies the default value to use when the external data
+                              provider returns an error and the failure policy is set to "UseDefault".
                             type: string
                           failurePolicy:
                             default: Fail
-                            description: FailurePolicy specifies the policy to apply
-                              when the external data provider returns an error.
+                            description: |-
+                              FailurePolicy specifies the policy to apply when the external data
+                              provider returns an error.
                             enum:
                             - UseDefault
                             - Ignore
@@ -2241,9 +2322,9 @@ spec:
             description: AssignMetadataStatus defines the observed state of AssignMetadata.
             properties:
               byPod:
-                description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
-                  of cluster Important: Run "make" to regenerate code after modifying
-                  this file'
+                description: |-
+                  INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
+                  Important: Run "make" to regenerate code after modifying this file
                 items:
                   description: MutatorPodStatusStatus defines the observed state of
                     MutatorPodStatus.
@@ -2258,9 +2339,9 @@ spec:
                           message:
                             type: string
                           type:
-                            description: Type indicates a specific class of error
-                              for use by controller code. If not present, the error
-                              should be treated as not matching any known type.
+                            description: |-
+                              Type indicates a specific class of error for use by controller code.
+                              If not present, the error should be treated as not matching any known type.
                             type: string
                         required:
                         - message
@@ -2269,9 +2350,10 @@ spec:
                     id:
                       type: string
                     mutatorUID:
-                      description: Storing the mutator UID allows us to detect drift,
-                        such as when a mutator has been recreated after its CRD was
-                        deleted out from under it, interrupting the watch
+                      description: |-
+                        Storing the mutator UID allows us to detect drift, such as
+                        when a mutator has been recreated after its CRD was deleted
+                        out from under it, interrupting the watch
                       type: string
                     observedGeneration:
                       format: int64
@@ -2294,14 +2376,19 @@ spec:
         description: AssignMetadata is the Schema for the assignmetadata API.
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           metadata:
             type: object
@@ -2314,32 +2401,34 @@ spec:
                 description: Match selects which objects are in scope.
                 properties:
                   excludedNamespaces:
-                    description: 'ExcludedNamespaces is a list of namespace names.
-                      If defined, a constraint only applies to resources not in a
-                      listed namespace. ExcludedNamespaces also supports a prefix
-                      or suffix based glob.  For example, ` + "`" + `excludedNamespaces: [kube-*]` + "`" + `
-                      matches both ` + "`" + `kube-system` + "`" + ` and ` + "`" + `kube-public` + "`" + `, and ` + "`" + `excludedNamespaces:
-                      [*-system]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and ` + "`" + `gatekeeper-system` + "`" + `.'
+                    description: |-
+                      ExcludedNamespaces is a list of namespace names. If defined, a
+                      constraint only applies to resources not in a listed namespace.
+                      ExcludedNamespaces also supports a prefix or suffix based glob.  For example,
+                      ` + "`" + `excludedNamespaces: [kube-*]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and
+                      ` + "`" + `kube-public` + "`" + `, and ` + "`" + `excludedNamespaces: [*-system]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and
+                      ` + "`" + `gatekeeper-system` + "`" + `.
                     items:
-                      description: 'A string that supports globbing at its front or
-                        end. Ex: "kube-*" will match "kube-system" or "kube-public",
-                        "*-system" will match "kube-system" or "gatekeeper-system".  The
-                        asterisk is required for wildcard matching.'
+                      description: |-
+                        A string that supports globbing at its front or end. Ex: "kube-*" will match "kube-system" or
+                        "kube-public", "*-system" will match "kube-system" or "gatekeeper-system".  The asterisk is
+                        required for wildcard matching.
                       pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                       type: string
                     type: array
                   kinds:
                     items:
-                      description: Kinds accepts a list of objects with apiGroups
-                        and kinds fields that list the groups/kinds of objects to
-                        which the mutation will apply. If multiple groups/kinds objects
-                        are specified, only one match is needed for the resource to
-                        be in scope.
+                      description: |-
+                        Kinds accepts a list of objects with apiGroups and kinds fields
+                        that list the groups/kinds of objects to which the mutation will apply.
+                        If multiple groups/kinds objects are specified,
+                        only one match is needed for the resource to be in scope.
                       properties:
                         apiGroups:
-                          description: APIGroups is the API groups the resources belong
-                            to. '*' is all groups. If '*' is present, the length of
-                            the slice must be one. Required.
+                          description: |-
+                            APIGroups is the API groups the resources belong to. '*' is all groups.
+                            If '*' is present, the length of the slice must be one.
+                            Required.
                           items:
                             type: string
                           type: array
@@ -2350,36 +2439,37 @@ spec:
                       type: object
                     type: array
                   labelSelector:
-                    description: 'LabelSelector is the combination of two optional
-                      fields: ` + "`" + `matchLabels` + "`" + ` and ` + "`" + `matchExpressions` + "`" + `.  These two fields
-                      provide different methods of selecting or excluding k8s objects
-                      based on the label keys and values included in object metadata.  All
-                      selection expressions from both sections are ANDed to determine
-                      if an object meets the cumulative requirements of the selector.'
+                    description: |-
+                      LabelSelector is the combination of two optional fields: ` + "`" + `matchLabels` + "`" + `
+                      and ` + "`" + `matchExpressions` + "`" + `.  These two fields provide different methods of
+                      selecting or excluding k8s objects based on the label keys and values
+                      included in object metadata.  All selection expressions from both
+                      sections are ANDed to determine if an object meets the cumulative
+                      requirements of the selector.
                     properties:
                       matchExpressions:
                         description: matchExpressions is a list of label selector
                           requirements. The requirements are ANDed.
                         items:
-                          description: A label selector requirement is a selector
-                            that contains values, a key, and an operator that relates
-                            the key and values.
+                          description: |-
+                            A label selector requirement is a selector that contains values, a key, and an operator that
+                            relates the key and values.
                           properties:
                             key:
                               description: key is the label key that the selector
                                 applies to.
                               type: string
                             operator:
-                              description: operator represents a key's relationship
-                                to a set of values. Valid operators are In, NotIn,
-                                Exists and DoesNotExist.
+                              description: |-
+                                operator represents a key's relationship to a set of values.
+                                Valid operators are In, NotIn, Exists and DoesNotExist.
                               type: string
                             values:
-                              description: values is an array of string values. If
-                                the operator is In or NotIn, the values array must
-                                be non-empty. If the operator is Exists or DoesNotExist,
-                                the values array must be empty. This array is replaced
-                                during a strategic merge patch.
+                              description: |-
+                                values is an array of string values. If the operator is In or NotIn,
+                                the values array must be non-empty. If the operator is Exists or DoesNotExist,
+                                the values array must be empty. This array is replaced during a strategic
+                                merge patch.
                               items:
                                 type: string
                               type: array
@@ -2391,49 +2481,48 @@ spec:
                       matchLabels:
                         additionalProperties:
                           type: string
-                        description: matchLabels is a map of {key,value} pairs. A
-                          single {key,value} in the matchLabels map is equivalent
-                          to an element of matchExpressions, whose key field is "key",
-                          the operator is "In", and the values array contains only
-                          "value". The requirements are ANDed.
+                        description: |-
+                          matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+                          map is equivalent to an element of matchExpressions, whose key field is "key", the
+                          operator is "In", and the values array contains only "value". The requirements are ANDed.
                         type: object
                     type: object
+                    x-kubernetes-map-type: atomic
                   name:
-                    description: 'Name is the name of an object.  If defined, it will
-                      match against objects with the specified name.  Name also supports
-                      a prefix or suffix glob.  For example, ` + "`" + `name: pod-*` + "`" + ` would match
-                      both ` + "`" + `pod-a` + "`" + ` and ` + "`" + `pod-b` + "`" + `, and ` + "`" + `name: *-pod` + "`" + ` would match both
-                      ` + "`" + `a-pod` + "`" + ` and ` + "`" + `b-pod` + "`" + `.'
+                    description: |-
+                      Name is the name of an object.  If defined, it will match against objects with the specified
+                      name.  Name also supports a prefix or suffix glob.  For example, ` + "`" + `name: pod-*` + "`" + ` would match
+                      both ` + "`" + `pod-a` + "`" + ` and ` + "`" + `pod-b` + "`" + `, and ` + "`" + `name: *-pod` + "`" + ` would match both ` + "`" + `a-pod` + "`" + ` and ` + "`" + `b-pod` + "`" + `.
                     pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                     type: string
                   namespaceSelector:
-                    description: NamespaceSelector is a label selector against an
-                      object's containing namespace or the object itself, if the object
-                      is a namespace.
+                    description: |-
+                      NamespaceSelector is a label selector against an object's containing
+                      namespace or the object itself, if the object is a namespace.
                     properties:
                       matchExpressions:
                         description: matchExpressions is a list of label selector
                           requirements. The requirements are ANDed.
                         items:
-                          description: A label selector requirement is a selector
-                            that contains values, a key, and an operator that relates
-                            the key and values.
+                          description: |-
+                            A label selector requirement is a selector that contains values, a key, and an operator that
+                            relates the key and values.
                           properties:
                             key:
                               description: key is the label key that the selector
                                 applies to.
                               type: string
                             operator:
-                              description: operator represents a key's relationship
-                                to a set of values. Valid operators are In, NotIn,
-                                Exists and DoesNotExist.
+                              description: |-
+                                operator represents a key's relationship to a set of values.
+                                Valid operators are In, NotIn, Exists and DoesNotExist.
                               type: string
                             values:
-                              description: values is an array of string values. If
-                                the operator is In or NotIn, the values array must
-                                be non-empty. If the operator is Exists or DoesNotExist,
-                                the values array must be empty. This array is replaced
-                                during a strategic merge patch.
+                              description: |-
+                                values is an array of string values. If the operator is In or NotIn,
+                                the values array must be non-empty. If the operator is Exists or DoesNotExist,
+                                the values array must be empty. This array is replaced during a strategic
+                                merge patch.
                               items:
                                 type: string
                               type: array
@@ -2445,37 +2534,39 @@ spec:
                       matchLabels:
                         additionalProperties:
                           type: string
-                        description: matchLabels is a map of {key,value} pairs. A
-                          single {key,value} in the matchLabels map is equivalent
-                          to an element of matchExpressions, whose key field is "key",
-                          the operator is "In", and the values array contains only
-                          "value". The requirements are ANDed.
+                        description: |-
+                          matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+                          map is equivalent to an element of matchExpressions, whose key field is "key", the
+                          operator is "In", and the values array contains only "value". The requirements are ANDed.
                         type: object
                     type: object
+                    x-kubernetes-map-type: atomic
                   namespaces:
-                    description: 'Namespaces is a list of namespace names. If defined,
-                      a constraint only applies to resources in a listed namespace.  Namespaces
-                      also supports a prefix or suffix based glob.  For example, ` + "`" + `namespaces:
-                      [kube-*]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and ` + "`" + `kube-public` + "`" + `, and
-                      ` + "`" + `namespaces: [*-system]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and ` + "`" + `gatekeeper-system` + "`" + `.'
+                    description: |-
+                      Namespaces is a list of namespace names. If defined, a constraint only
+                      applies to resources in a listed namespace.  Namespaces also supports a
+                      prefix or suffix based glob.  For example, ` + "`" + `namespaces: [kube-*]` + "`" + ` matches both
+                      ` + "`" + `kube-system` + "`" + ` and ` + "`" + `kube-public` + "`" + `, and ` + "`" + `namespaces: [*-system]` + "`" + ` matches both
+                      ` + "`" + `kube-system` + "`" + ` and ` + "`" + `gatekeeper-system` + "`" + `.
                     items:
-                      description: 'A string that supports globbing at its front or
-                        end. Ex: "kube-*" will match "kube-system" or "kube-public",
-                        "*-system" will match "kube-system" or "gatekeeper-system".  The
-                        asterisk is required for wildcard matching.'
+                      description: |-
+                        A string that supports globbing at its front or end. Ex: "kube-*" will match "kube-system" or
+                        "kube-public", "*-system" will match "kube-system" or "gatekeeper-system".  The asterisk is
+                        required for wildcard matching.
                       pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                       type: string
                     type: array
                   scope:
-                    description: Scope determines if cluster-scoped and/or namespaced-scoped
-                      resources are matched.  Accepts ` + "`" + `*` + "`" + `, ` + "`" + `Cluster` + "`" + `, or ` + "`" + `Namespaced` + "`" + `.
-                      (defaults to ` + "`" + `*` + "`" + `)
+                    description: |-
+                      Scope determines if cluster-scoped and/or namespaced-scoped resources
+                      are matched.  Accepts ` + "`" + `*` + "`" + `, ` + "`" + `Cluster` + "`" + `, or ` + "`" + `Namespaced` + "`" + `. (defaults to ` + "`" + `*` + "`" + `)
                     type: string
                   source:
-                    description: Source determines whether generated or original resources
-                      are matched. Accepts ` + "`" + `Generated` + "`" + `|` + "`" + `Original` + "`" + `|` + "`" + `All` + "`" + ` (defaults
-                      to ` + "`" + `All` + "`" + `). A value of ` + "`" + `Generated` + "`" + ` will only match generated
-                      resources, while ` + "`" + `Original` + "`" + ` will only match regular resources.
+                    description: |-
+                      Source determines whether generated or original resources are matched.
+                      Accepts ` + "`" + `Generated` + "`" + `|` + "`" + `Original` + "`" + `|` + "`" + `All` + "`" + ` (defaults to ` + "`" + `All` + "`" + `). A value of
+                      ` + "`" + `Generated` + "`" + ` will only match generated resources, while ` + "`" + `Original` + "`" + ` will only
+                      match regular resources.
                     enum:
                     - All
                     - Generated
@@ -2493,22 +2584,23 @@ spec:
                         properties:
                           dataSource:
                             default: ValueAtLocation
-                            description: DataSource specifies where to extract the
-                              data that will be sent to the external data provider
-                              as parameters.
+                            description: |-
+                              DataSource specifies where to extract the data that will be sent
+                              to the external data provider as parameters.
                             enum:
                             - ValueAtLocation
                             - Username
                             type: string
                           default:
-                            description: Default specifies the default value to use
-                              when the external data provider returns an error and
-                              the failure policy is set to "UseDefault".
+                            description: |-
+                              Default specifies the default value to use when the external data
+                              provider returns an error and the failure policy is set to "UseDefault".
                             type: string
                           failurePolicy:
                             default: Fail
-                            description: FailurePolicy specifies the policy to apply
-                              when the external data provider returns an error.
+                            description: |-
+                              FailurePolicy specifies the policy to apply when the external data
+                              provider returns an error.
                             enum:
                             - UseDefault
                             - Ignore
@@ -2540,9 +2632,9 @@ spec:
             description: AssignMetadataStatus defines the observed state of AssignMetadata.
             properties:
               byPod:
-                description: 'INSERT ADDITIONAL STATUS FIELD - define observed state
-                  of cluster Important: Run "make" to regenerate code after modifying
-                  this file'
+                description: |-
+                  INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
+                  Important: Run "make" to regenerate code after modifying this file
                 items:
                   description: MutatorPodStatusStatus defines the observed state of
                     MutatorPodStatus.
@@ -2557,9 +2649,9 @@ spec:
                           message:
                             type: string
                           type:
-                            description: Type indicates a specific class of error
-                              for use by controller code. If not present, the error
-                              should be treated as not matching any known type.
+                            description: |-
+                              Type indicates a specific class of error for use by controller code.
+                              If not present, the error should be treated as not matching any known type.
                             type: string
                         required:
                         - message
@@ -2568,9 +2660,10 @@ spec:
                     id:
                       type: string
                     mutatorUID:
-                      description: Storing the mutator UID allows us to detect drift,
-                        such as when a mutator has been recreated after its CRD was
-                        deleted out from under it, interrupting the watch
+                      description: |-
+                        Storing the mutator UID allows us to detect drift, such as
+                        when a mutator has been recreated after its CRD was deleted
+                        out from under it, interrupting the watch
                       type: string
                     observedGeneration:
                       format: int64
@@ -2608,8 +2701,7 @@ var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_conf
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.10.0
-  creationTimestamp: null
+    controller-gen.kubebuilder.io/version: v0.14.0
   labels:
     gatekeeper.sh/system: "yes"
   name: configs.config.gatekeeper.sh
@@ -2629,14 +2721,19 @@ spec:
         description: Config is the Schema for the configs API.
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           metadata:
             type: object
@@ -2649,10 +2746,10 @@ spec:
                   properties:
                     excludedNamespaces:
                       items:
-                        description: 'A string that supports globbing at its front
-                          or end. Ex: "kube-*" will match "kube-system" or "kube-public",
-                          "*-system" will match "kube-system" or "gatekeeper-system".  The
-                          asterisk is required for wildcard matching.'
+                        description: |-
+                          A string that supports globbing at its front or end. Ex: "kube-*" will match "kube-system" or
+                          "kube-public", "*-system" will match "kube-system" or "gatekeeper-system".  The asterisk is
+                          required for wildcard matching.
                         pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                         type: string
                       type: array
@@ -2741,8 +2838,7 @@ var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_cons
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.10.0
-  creationTimestamp: null
+    controller-gen.kubebuilder.io/version: v0.14.0
   labels:
     gatekeeper.sh/system: "yes"
   name: constraintpodstatuses.status.gatekeeper.sh
@@ -2763,14 +2859,19 @@ spec:
           API.
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           metadata:
             type: object
@@ -2778,8 +2879,9 @@ spec:
             description: ConstraintPodStatusStatus defines the observed state of ConstraintPodStatus.
             properties:
               constraintUID:
-                description: Storing the constraint UID allows us to detect drift,
-                  such as when a constraint has been recreated after its CRD was deleted
+                description: |-
+                  Storing the constraint UID allows us to detect drift, such as
+                  when a constraint has been recreated after its CRD was deleted
                   out from under it, interrupting the watch
                 type: string
               enforced:
@@ -2834,8 +2936,7 @@ var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_cons
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.10.0
-  creationTimestamp: null
+    controller-gen.kubebuilder.io/version: v0.14.0
   labels:
     gatekeeper.sh/system: "yes"
   name: constrainttemplatepodstatuses.status.gatekeeper.sh
@@ -2856,14 +2957,19 @@ spec:
           API.
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           metadata:
             type: object
@@ -2899,10 +3005,10 @@ spec:
                   type: string
                 type: array
               templateUID:
-                description: UID is a type that holds unique ID values, including
-                  UUIDs.  Because we don't ONLY use UUIDs, this is an alias to string.  Being
-                  a type captures intent and helps make sure that UIDs and names do
-                  not get conflated.
+                description: |-
+                  UID is a type that holds unique ID values, including UUIDs.  Because we
+                  don't ONLY use UUIDs, this is an alias to string.  Being a type captures
+                  intent and helps make sure that UIDs and names do not get conflated.
                 type: string
             type: object
         type: object
@@ -3336,8 +3442,7 @@ var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_expa
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.10.0
-  creationTimestamp: null
+    controller-gen.kubebuilder.io/version: v0.14.0
   labels:
     gatekeeper.sh/system: "yes"
   name: expansiontemplate.expansion.gatekeeper.sh
@@ -3357,14 +3462,19 @@ spec:
         description: ExpansionTemplate is the Schema for the ExpansionTemplate API.
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           metadata:
             properties:
@@ -3376,11 +3486,13 @@ spec:
             description: ExpansionTemplateSpec defines the desired state of ExpansionTemplate.
             properties:
               applyTo:
-                description: ApplyTo lists the specific groups, versions and kinds
-                  of generator resources which will be expanded.
+                description: |-
+                  ApplyTo lists the specific groups, versions and kinds of generator resources
+                  which will be expanded.
                 items:
-                  description: ApplyTo determines what GVKs items the mutation should
-                    apply to. Globs are not allowed.
+                  description: |-
+                    ApplyTo determines what GVKs items the mutation should apply to.
+                    Globs are not allowed.
                   properties:
                     groups:
                       items:
@@ -3397,14 +3509,15 @@ spec:
                   type: object
                 type: array
               enforcementAction:
-                description: EnforcementAction specifies the enforcement action to
-                  be used for resources matching the ExpansionTemplate. Specifying
-                  an empty value will use the enforcement action specified by the
-                  Constraint in violation.
+                description: |-
+                  EnforcementAction specifies the enforcement action to be used for resources
+                  matching the ExpansionTemplate. Specifying an empty value will use the
+                  enforcement action specified by the Constraint in violation.
                 type: string
               generatedGVK:
-                description: GeneratedGVK specifies the GVK of the resources which
-                  the generator resource creates.
+                description: |-
+                  GeneratedGVK specifies the GVK of the resources which the generator
+                  resource creates.
                 properties:
                   group:
                     type: string
@@ -3414,9 +3527,10 @@ spec:
                     type: string
                 type: object
               templateSource:
-                description: TemplateSource specifies the source field on the generator
-                  resource to use as the base for expanded resource. For Pod-creating
-                  generators, this is usually spec.template
+                description: |-
+                  TemplateSource specifies the source field on the generator resource to
+                  use as the base for expanded resource. For Pod-creating generators, this
+                  is usually spec.template
                 type: string
             type: object
           status:
@@ -3450,10 +3564,10 @@ spec:
                         type: string
                       type: array
                     templateUID:
-                      description: UID is a type that holds unique ID values, including
-                        UUIDs.  Because we don't ONLY use UUIDs, this is an alias
-                        to string.  Being a type captures intent and helps make sure
-                        that UIDs and names do not get conflated.
+                      description: |-
+                        UID is a type that holds unique ID values, including UUIDs.  Because we
+                        don't ONLY use UUIDs, this is an alias to string.  Being a type captures
+                        intent and helps make sure that UIDs and names do not get conflated.
                       type: string
                   type: object
                 type: array
@@ -3469,14 +3583,19 @@ spec:
         description: ExpansionTemplate is the Schema for the ExpansionTemplate API.
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           metadata:
             type: object
@@ -3484,11 +3603,13 @@ spec:
             description: ExpansionTemplateSpec defines the desired state of ExpansionTemplate.
             properties:
               applyTo:
-                description: ApplyTo lists the specific groups, versions and kinds
-                  of generator resources which will be expanded.
+                description: |-
+                  ApplyTo lists the specific groups, versions and kinds of generator resources
+                  which will be expanded.
                 items:
-                  description: ApplyTo determines what GVKs items the mutation should
-                    apply to. Globs are not allowed.
+                  description: |-
+                    ApplyTo determines what GVKs items the mutation should apply to.
+                    Globs are not allowed.
                   properties:
                     groups:
                       items:
@@ -3505,14 +3626,15 @@ spec:
                   type: object
                 type: array
               enforcementAction:
-                description: EnforcementAction specifies the enforcement action to
-                  be used for resources matching the ExpansionTemplate. Specifying
-                  an empty value will use the enforcement action specified by the
-                  Constraint in violation.
+                description: |-
+                  EnforcementAction specifies the enforcement action to be used for resources
+                  matching the ExpansionTemplate. Specifying an empty value will use the
+                  enforcement action specified by the Constraint in violation.
                 type: string
               generatedGVK:
-                description: GeneratedGVK specifies the GVK of the resources which
-                  the generator resource creates.
+                description: |-
+                  GeneratedGVK specifies the GVK of the resources which the generator
+                  resource creates.
                 properties:
                   group:
                     type: string
@@ -3522,9 +3644,10 @@ spec:
                     type: string
                 type: object
               templateSource:
-                description: TemplateSource specifies the source field on the generator
-                  resource to use as the base for expanded resource. For Pod-creating
-                  generators, this is usually spec.template
+                description: |-
+                  TemplateSource specifies the source field on the generator resource to
+                  use as the base for expanded resource. For Pod-creating generators, this
+                  is usually spec.template
                 type: string
             type: object
           status:
@@ -3558,10 +3681,10 @@ spec:
                         type: string
                       type: array
                     templateUID:
-                      description: UID is a type that holds unique ID values, including
-                        UUIDs.  Because we don't ONLY use UUIDs, this is an alias
-                        to string.  Being a type captures intent and helps make sure
-                        that UIDs and names do not get conflated.
+                      description: |-
+                        UID is a type that holds unique ID values, including UUIDs.  Because we
+                        don't ONLY use UUIDs, this is an alias to string.  Being a type captures
+                        intent and helps make sure that UIDs and names do not get conflated.
                       type: string
                   type: object
                 type: array
@@ -3592,8 +3715,7 @@ var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_expa
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.10.0
-  creationTimestamp: null
+    controller-gen.kubebuilder.io/version: v0.14.0
   labels:
     gatekeeper.sh/system: "yes"
   name: expansiontemplatepodstatuses.status.gatekeeper.sh
@@ -3614,14 +3736,19 @@ spec:
           API.
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           metadata:
             type: object
@@ -3652,10 +3779,10 @@ spec:
                   type: string
                 type: array
               templateUID:
-                description: UID is a type that holds unique ID values, including
-                  UUIDs.  Because we don't ONLY use UUIDs, this is an alias to string.  Being
-                  a type captures intent and helps make sure that UIDs and names do
-                  not get conflated.
+                description: |-
+                  UID is a type that holds unique ID values, including UUIDs.  Because we
+                  don't ONLY use UUIDs, this is an alias to string.  Being a type captures
+                  intent and helps make sure that UIDs and names do not get conflated.
                 type: string
             type: object
         type: object
@@ -3682,8 +3809,7 @@ var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_modi
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.10.0
-  creationTimestamp: null
+    controller-gen.kubebuilder.io/version: v0.14.0
   labels:
     gatekeeper.sh/system: "yes"
   name: modifyset.mutations.gatekeeper.sh
@@ -3700,18 +3826,24 @@ spec:
   - name: v1
     schema:
       openAPIV3Schema:
-        description: ModifySet allows the user to modify non-keyed lists, such as
+        description: |-
+          ModifySet allows the user to modify non-keyed lists, such as
           the list of arguments to a container.
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           metadata:
             properties:
@@ -3723,13 +3855,14 @@ spec:
             description: ModifySetSpec defines the desired state of ModifySet.
             properties:
               applyTo:
-                description: ApplyTo lists the specific groups, versions and kinds
-                  a mutation will be applied to. This is necessary because every mutation
-                  implies part of an object schema and object schemas are associated
-                  with specific GVKs.
+                description: |-
+                  ApplyTo lists the specific groups, versions and kinds a mutation will be applied to.
+                  This is necessary because every mutation implies part of an object schema and object
+                  schemas are associated with specific GVKs.
                 items:
-                  description: ApplyTo determines what GVKs items the mutation should
-                    apply to. Globs are not allowed.
+                  description: |-
+                    ApplyTo determines what GVKs items the mutation should apply to.
+                    Globs are not allowed.
                   properties:
                     groups:
                       items:
@@ -3750,37 +3883,40 @@ spec:
                   ` + "`" + `spec.containers[name: main].args` + "`" + `.'
                 type: string
               match:
-                description: Match allows the user to limit which resources get mutated.
-                  Individual match criteria are AND-ed together. An undefined match
-                  criteria matches everything.
+                description: |-
+                  Match allows the user to limit which resources get mutated.
+                  Individual match criteria are AND-ed together. An undefined
+                  match criteria matches everything.
                 properties:
                   excludedNamespaces:
-                    description: 'ExcludedNamespaces is a list of namespace names.
-                      If defined, a constraint only applies to resources not in a
-                      listed namespace. ExcludedNamespaces also supports a prefix
-                      or suffix based glob.  For example, ` + "`" + `excludedNamespaces: [kube-*]` + "`" + `
-                      matches both ` + "`" + `kube-system` + "`" + ` and ` + "`" + `kube-public` + "`" + `, and ` + "`" + `excludedNamespaces:
-                      [*-system]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and ` + "`" + `gatekeeper-system` + "`" + `.'
+                    description: |-
+                      ExcludedNamespaces is a list of namespace names. If defined, a
+                      constraint only applies to resources not in a listed namespace.
+                      ExcludedNamespaces also supports a prefix or suffix based glob.  For example,
+                      ` + "`" + `excludedNamespaces: [kube-*]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and
+                      ` + "`" + `kube-public` + "`" + `, and ` + "`" + `excludedNamespaces: [*-system]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and
+                      ` + "`" + `gatekeeper-system` + "`" + `.
                     items:
-                      description: 'A string that supports globbing at its front or
-                        end. Ex: "kube-*" will match "kube-system" or "kube-public",
-                        "*-system" will match "kube-system" or "gatekeeper-system".  The
-                        asterisk is required for wildcard matching.'
+                      description: |-
+                        A string that supports globbing at its front or end. Ex: "kube-*" will match "kube-system" or
+                        "kube-public", "*-system" will match "kube-system" or "gatekeeper-system".  The asterisk is
+                        required for wildcard matching.
                       pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                       type: string
                     type: array
                   kinds:
                     items:
-                      description: Kinds accepts a list of objects with apiGroups
-                        and kinds fields that list the groups/kinds of objects to
-                        which the mutation will apply. If multiple groups/kinds objects
-                        are specified, only one match is needed for the resource to
-                        be in scope.
+                      description: |-
+                        Kinds accepts a list of objects with apiGroups and kinds fields
+                        that list the groups/kinds of objects to which the mutation will apply.
+                        If multiple groups/kinds objects are specified,
+                        only one match is needed for the resource to be in scope.
                       properties:
                         apiGroups:
-                          description: APIGroups is the API groups the resources belong
-                            to. '*' is all groups. If '*' is present, the length of
-                            the slice must be one. Required.
+                          description: |-
+                            APIGroups is the API groups the resources belong to. '*' is all groups.
+                            If '*' is present, the length of the slice must be one.
+                            Required.
                           items:
                             type: string
                           type: array
@@ -3791,36 +3927,37 @@ spec:
                       type: object
                     type: array
                   labelSelector:
-                    description: 'LabelSelector is the combination of two optional
-                      fields: ` + "`" + `matchLabels` + "`" + ` and ` + "`" + `matchExpressions` + "`" + `.  These two fields
-                      provide different methods of selecting or excluding k8s objects
-                      based on the label keys and values included in object metadata.  All
-                      selection expressions from both sections are ANDed to determine
-                      if an object meets the cumulative requirements of the selector.'
+                    description: |-
+                      LabelSelector is the combination of two optional fields: ` + "`" + `matchLabels` + "`" + `
+                      and ` + "`" + `matchExpressions` + "`" + `.  These two fields provide different methods of
+                      selecting or excluding k8s objects based on the label keys and values
+                      included in object metadata.  All selection expressions from both
+                      sections are ANDed to determine if an object meets the cumulative
+                      requirements of the selector.
                     properties:
                       matchExpressions:
                         description: matchExpressions is a list of label selector
                           requirements. The requirements are ANDed.
                         items:
-                          description: A label selector requirement is a selector
-                            that contains values, a key, and an operator that relates
-                            the key and values.
+                          description: |-
+                            A label selector requirement is a selector that contains values, a key, and an operator that
+                            relates the key and values.
                           properties:
                             key:
                               description: key is the label key that the selector
                                 applies to.
                               type: string
                             operator:
-                              description: operator represents a key's relationship
-                                to a set of values. Valid operators are In, NotIn,
-                                Exists and DoesNotExist.
+                              description: |-
+                                operator represents a key's relationship to a set of values.
+                                Valid operators are In, NotIn, Exists and DoesNotExist.
                               type: string
                             values:
-                              description: values is an array of string values. If
-                                the operator is In or NotIn, the values array must
-                                be non-empty. If the operator is Exists or DoesNotExist,
-                                the values array must be empty. This array is replaced
-                                during a strategic merge patch.
+                              description: |-
+                                values is an array of string values. If the operator is In or NotIn,
+                                the values array must be non-empty. If the operator is Exists or DoesNotExist,
+                                the values array must be empty. This array is replaced during a strategic
+                                merge patch.
                               items:
                                 type: string
                               type: array
@@ -3832,49 +3969,48 @@ spec:
                       matchLabels:
                         additionalProperties:
                           type: string
-                        description: matchLabels is a map of {key,value} pairs. A
-                          single {key,value} in the matchLabels map is equivalent
-                          to an element of matchExpressions, whose key field is "key",
-                          the operator is "In", and the values array contains only
-                          "value". The requirements are ANDed.
+                        description: |-
+                          matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+                          map is equivalent to an element of matchExpressions, whose key field is "key", the
+                          operator is "In", and the values array contains only "value". The requirements are ANDed.
                         type: object
                     type: object
+                    x-kubernetes-map-type: atomic
                   name:
-                    description: 'Name is the name of an object.  If defined, it will
-                      match against objects with the specified name.  Name also supports
-                      a prefix or suffix glob.  For example, ` + "`" + `name: pod-*` + "`" + ` would match
-                      both ` + "`" + `pod-a` + "`" + ` and ` + "`" + `pod-b` + "`" + `, and ` + "`" + `name: *-pod` + "`" + ` would match both
-                      ` + "`" + `a-pod` + "`" + ` and ` + "`" + `b-pod` + "`" + `.'
+                    description: |-
+                      Name is the name of an object.  If defined, it will match against objects with the specified
+                      name.  Name also supports a prefix or suffix glob.  For example, ` + "`" + `name: pod-*` + "`" + ` would match
+                      both ` + "`" + `pod-a` + "`" + ` and ` + "`" + `pod-b` + "`" + `, and ` + "`" + `name: *-pod` + "`" + ` would match both ` + "`" + `a-pod` + "`" + ` and ` + "`" + `b-pod` + "`" + `.
                     pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                     type: string
                   namespaceSelector:
-                    description: NamespaceSelector is a label selector against an
-                      object's containing namespace or the object itself, if the object
-                      is a namespace.
+                    description: |-
+                      NamespaceSelector is a label selector against an object's containing
+                      namespace or the object itself, if the object is a namespace.
                     properties:
                       matchExpressions:
                         description: matchExpressions is a list of label selector
                           requirements. The requirements are ANDed.
                         items:
-                          description: A label selector requirement is a selector
-                            that contains values, a key, and an operator that relates
-                            the key and values.
+                          description: |-
+                            A label selector requirement is a selector that contains values, a key, and an operator that
+                            relates the key and values.
                           properties:
                             key:
                               description: key is the label key that the selector
                                 applies to.
                               type: string
                             operator:
-                              description: operator represents a key's relationship
-                                to a set of values. Valid operators are In, NotIn,
-                                Exists and DoesNotExist.
+                              description: |-
+                                operator represents a key's relationship to a set of values.
+                                Valid operators are In, NotIn, Exists and DoesNotExist.
                               type: string
                             values:
-                              description: values is an array of string values. If
-                                the operator is In or NotIn, the values array must
-                                be non-empty. If the operator is Exists or DoesNotExist,
-                                the values array must be empty. This array is replaced
-                                during a strategic merge patch.
+                              description: |-
+                                values is an array of string values. If the operator is In or NotIn,
+                                the values array must be non-empty. If the operator is Exists or DoesNotExist,
+                                the values array must be empty. This array is replaced during a strategic
+                                merge patch.
                               items:
                                 type: string
                               type: array
@@ -3886,37 +4022,39 @@ spec:
                       matchLabels:
                         additionalProperties:
                           type: string
-                        description: matchLabels is a map of {key,value} pairs. A
-                          single {key,value} in the matchLabels map is equivalent
-                          to an element of matchExpressions, whose key field is "key",
-                          the operator is "In", and the values array contains only
-                          "value". The requirements are ANDed.
+                        description: |-
+                          matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+                          map is equivalent to an element of matchExpressions, whose key field is "key", the
+                          operator is "In", and the values array contains only "value". The requirements are ANDed.
                         type: object
                     type: object
+                    x-kubernetes-map-type: atomic
                   namespaces:
-                    description: 'Namespaces is a list of namespace names. If defined,
-                      a constraint only applies to resources in a listed namespace.  Namespaces
-                      also supports a prefix or suffix based glob.  For example, ` + "`" + `namespaces:
-                      [kube-*]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and ` + "`" + `kube-public` + "`" + `, and
-                      ` + "`" + `namespaces: [*-system]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and ` + "`" + `gatekeeper-system` + "`" + `.'
+                    description: |-
+                      Namespaces is a list of namespace names. If defined, a constraint only
+                      applies to resources in a listed namespace.  Namespaces also supports a
+                      prefix or suffix based glob.  For example, ` + "`" + `namespaces: [kube-*]` + "`" + ` matches both
+                      ` + "`" + `kube-system` + "`" + ` and ` + "`" + `kube-public` + "`" + `, and ` + "`" + `namespaces: [*-system]` + "`" + ` matches both
+                      ` + "`" + `kube-system` + "`" + ` and ` + "`" + `gatekeeper-system` + "`" + `.
                     items:
-                      description: 'A string that supports globbing at its front or
-                        end. Ex: "kube-*" will match "kube-system" or "kube-public",
-                        "*-system" will match "kube-system" or "gatekeeper-system".  The
-                        asterisk is required for wildcard matching.'
+                      description: |-
+                        A string that supports globbing at its front or end. Ex: "kube-*" will match "kube-system" or
+                        "kube-public", "*-system" will match "kube-system" or "gatekeeper-system".  The asterisk is
+                        required for wildcard matching.
                       pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                       type: string
                     type: array
                   scope:
-                    description: Scope determines if cluster-scoped and/or namespaced-scoped
-                      resources are matched.  Accepts ` + "`" + `*` + "`" + `, ` + "`" + `Cluster` + "`" + `, or ` + "`" + `Namespaced` + "`" + `.
-                      (defaults to ` + "`" + `*` + "`" + `)
+                    description: |-
+                      Scope determines if cluster-scoped and/or namespaced-scoped resources
+                      are matched.  Accepts ` + "`" + `*` + "`" + `, ` + "`" + `Cluster` + "`" + `, or ` + "`" + `Namespaced` + "`" + `. (defaults to ` + "`" + `*` + "`" + `)
                     type: string
                   source:
-                    description: Source determines whether generated or original resources
-                      are matched. Accepts ` + "`" + `Generated` + "`" + `|` + "`" + `Original` + "`" + `|` + "`" + `All` + "`" + ` (defaults
-                      to ` + "`" + `All` + "`" + `). A value of ` + "`" + `Generated` + "`" + ` will only match generated
-                      resources, while ` + "`" + `Original` + "`" + ` will only match regular resources.
+                    description: |-
+                      Source determines whether generated or original resources are matched.
+                      Accepts ` + "`" + `Generated` + "`" + `|` + "`" + `Original` + "`" + `|` + "`" + `All` + "`" + ` (defaults to ` + "`" + `All` + "`" + `). A value of
+                      ` + "`" + `Generated` + "`" + ` will only match generated resources, while ` + "`" + `Original` + "`" + ` will only
+                      match regular resources.
                     enum:
                     - All
                     - Generated
@@ -3935,18 +4073,22 @@ spec:
                     - prune
                     type: string
                   pathTests:
-                    description: PathTests are a series of existence tests that can
-                      be checked before a mutation is applied
+                    description: |-
+                      PathTests are a series of existence tests that can be checked
+                      before a mutation is applied
                     items:
-                      description: "PathTest allows the user to customize how the
-                        mutation works if parent paths are missing. It traverses the
-                        list in order. All sub paths are tested against the provided
-                        condition, if the test fails, the mutation is not applied.
-                        All ` + "`" + `subPath` + "`" + ` entries must be a prefix of ` + "`" + `location` + "`" + `. Any
+                      description: |-
+                        PathTest allows the user to customize how the mutation works if parent
+                        paths are missing. It traverses the list in order. All sub paths are
+                        tested against the provided condition, if the test fails, the mutation is
+                        not applied. All ` + "`" + `subPath` + "`" + ` entries must be a prefix of ` + "`" + `location` + "`" + `. Any
                         glob characters will take on the same value as was used to
-                        expand the matching glob in ` + "`" + `location` + "`" + `. \n Available Tests:
-                        * MustExist    - the path must exist or do not mutate * MustNotExist
-                        - the path must not exist or do not mutate."
+                        expand the matching glob in ` + "`" + `location` + "`" + `.
+
+
+                        Available Tests:
+                        * MustExist    - the path must exist or do not mutate
+                        * MustNotExist - the path must not exist or do not mutate.
                       properties:
                         condition:
                           description: Condition describes whether the path either
@@ -3984,9 +4126,9 @@ spec:
                           message:
                             type: string
                           type:
-                            description: Type indicates a specific class of error
-                              for use by controller code. If not present, the error
-                              should be treated as not matching any known type.
+                            description: |-
+                              Type indicates a specific class of error for use by controller code.
+                              If not present, the error should be treated as not matching any known type.
                             type: string
                         required:
                         - message
@@ -3995,9 +4137,10 @@ spec:
                     id:
                       type: string
                     mutatorUID:
-                      description: Storing the mutator UID allows us to detect drift,
-                        such as when a mutator has been recreated after its CRD was
-                        deleted out from under it, interrupting the watch
+                      description: |-
+                        Storing the mutator UID allows us to detect drift, such as
+                        when a mutator has been recreated after its CRD was deleted
+                        out from under it, interrupting the watch
                       type: string
                     observedGeneration:
                       format: int64
@@ -4017,18 +4160,24 @@ spec:
   - name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: ModifySet allows the user to modify non-keyed lists, such as
+        description: |-
+          ModifySet allows the user to modify non-keyed lists, such as
           the list of arguments to a container.
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           metadata:
             type: object
@@ -4036,13 +4185,14 @@ spec:
             description: ModifySetSpec defines the desired state of ModifySet.
             properties:
               applyTo:
-                description: ApplyTo lists the specific groups, versions and kinds
-                  a mutation will be applied to. This is necessary because every mutation
-                  implies part of an object schema and object schemas are associated
-                  with specific GVKs.
+                description: |-
+                  ApplyTo lists the specific groups, versions and kinds a mutation will be applied to.
+                  This is necessary because every mutation implies part of an object schema and object
+                  schemas are associated with specific GVKs.
                 items:
-                  description: ApplyTo determines what GVKs items the mutation should
-                    apply to. Globs are not allowed.
+                  description: |-
+                    ApplyTo determines what GVKs items the mutation should apply to.
+                    Globs are not allowed.
                   properties:
                     groups:
                       items:
@@ -4063,37 +4213,40 @@ spec:
                   ` + "`" + `spec.containers[name: main].args` + "`" + `.'
                 type: string
               match:
-                description: Match allows the user to limit which resources get mutated.
-                  Individual match criteria are AND-ed together. An undefined match
-                  criteria matches everything.
+                description: |-
+                  Match allows the user to limit which resources get mutated.
+                  Individual match criteria are AND-ed together. An undefined
+                  match criteria matches everything.
                 properties:
                   excludedNamespaces:
-                    description: 'ExcludedNamespaces is a list of namespace names.
-                      If defined, a constraint only applies to resources not in a
-                      listed namespace. ExcludedNamespaces also supports a prefix
-                      or suffix based glob.  For example, ` + "`" + `excludedNamespaces: [kube-*]` + "`" + `
-                      matches both ` + "`" + `kube-system` + "`" + ` and ` + "`" + `kube-public` + "`" + `, and ` + "`" + `excludedNamespaces:
-                      [*-system]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and ` + "`" + `gatekeeper-system` + "`" + `.'
+                    description: |-
+                      ExcludedNamespaces is a list of namespace names. If defined, a
+                      constraint only applies to resources not in a listed namespace.
+                      ExcludedNamespaces also supports a prefix or suffix based glob.  For example,
+                      ` + "`" + `excludedNamespaces: [kube-*]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and
+                      ` + "`" + `kube-public` + "`" + `, and ` + "`" + `excludedNamespaces: [*-system]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and
+                      ` + "`" + `gatekeeper-system` + "`" + `.
                     items:
-                      description: 'A string that supports globbing at its front or
-                        end. Ex: "kube-*" will match "kube-system" or "kube-public",
-                        "*-system" will match "kube-system" or "gatekeeper-system".  The
-                        asterisk is required for wildcard matching.'
+                      description: |-
+                        A string that supports globbing at its front or end. Ex: "kube-*" will match "kube-system" or
+                        "kube-public", "*-system" will match "kube-system" or "gatekeeper-system".  The asterisk is
+                        required for wildcard matching.
                       pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                       type: string
                     type: array
                   kinds:
                     items:
-                      description: Kinds accepts a list of objects with apiGroups
-                        and kinds fields that list the groups/kinds of objects to
-                        which the mutation will apply. If multiple groups/kinds objects
-                        are specified, only one match is needed for the resource to
-                        be in scope.
+                      description: |-
+                        Kinds accepts a list of objects with apiGroups and kinds fields
+                        that list the groups/kinds of objects to which the mutation will apply.
+                        If multiple groups/kinds objects are specified,
+                        only one match is needed for the resource to be in scope.
                       properties:
                         apiGroups:
-                          description: APIGroups is the API groups the resources belong
-                            to. '*' is all groups. If '*' is present, the length of
-                            the slice must be one. Required.
+                          description: |-
+                            APIGroups is the API groups the resources belong to. '*' is all groups.
+                            If '*' is present, the length of the slice must be one.
+                            Required.
                           items:
                             type: string
                           type: array
@@ -4104,36 +4257,37 @@ spec:
                       type: object
                     type: array
                   labelSelector:
-                    description: 'LabelSelector is the combination of two optional
-                      fields: ` + "`" + `matchLabels` + "`" + ` and ` + "`" + `matchExpressions` + "`" + `.  These two fields
-                      provide different methods of selecting or excluding k8s objects
-                      based on the label keys and values included in object metadata.  All
-                      selection expressions from both sections are ANDed to determine
-                      if an object meets the cumulative requirements of the selector.'
+                    description: |-
+                      LabelSelector is the combination of two optional fields: ` + "`" + `matchLabels` + "`" + `
+                      and ` + "`" + `matchExpressions` + "`" + `.  These two fields provide different methods of
+                      selecting or excluding k8s objects based on the label keys and values
+                      included in object metadata.  All selection expressions from both
+                      sections are ANDed to determine if an object meets the cumulative
+                      requirements of the selector.
                     properties:
                       matchExpressions:
                         description: matchExpressions is a list of label selector
                           requirements. The requirements are ANDed.
                         items:
-                          description: A label selector requirement is a selector
-                            that contains values, a key, and an operator that relates
-                            the key and values.
+                          description: |-
+                            A label selector requirement is a selector that contains values, a key, and an operator that
+                            relates the key and values.
                           properties:
                             key:
                               description: key is the label key that the selector
                                 applies to.
                               type: string
                             operator:
-                              description: operator represents a key's relationship
-                                to a set of values. Valid operators are In, NotIn,
-                                Exists and DoesNotExist.
+                              description: |-
+                                operator represents a key's relationship to a set of values.
+                                Valid operators are In, NotIn, Exists and DoesNotExist.
                               type: string
                             values:
-                              description: values is an array of string values. If
-                                the operator is In or NotIn, the values array must
-                                be non-empty. If the operator is Exists or DoesNotExist,
-                                the values array must be empty. This array is replaced
-                                during a strategic merge patch.
+                              description: |-
+                                values is an array of string values. If the operator is In or NotIn,
+                                the values array must be non-empty. If the operator is Exists or DoesNotExist,
+                                the values array must be empty. This array is replaced during a strategic
+                                merge patch.
                               items:
                                 type: string
                               type: array
@@ -4145,49 +4299,48 @@ spec:
                       matchLabels:
                         additionalProperties:
                           type: string
-                        description: matchLabels is a map of {key,value} pairs. A
-                          single {key,value} in the matchLabels map is equivalent
-                          to an element of matchExpressions, whose key field is "key",
-                          the operator is "In", and the values array contains only
-                          "value". The requirements are ANDed.
+                        description: |-
+                          matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+                          map is equivalent to an element of matchExpressions, whose key field is "key", the
+                          operator is "In", and the values array contains only "value". The requirements are ANDed.
                         type: object
                     type: object
+                    x-kubernetes-map-type: atomic
                   name:
-                    description: 'Name is the name of an object.  If defined, it will
-                      match against objects with the specified name.  Name also supports
-                      a prefix or suffix glob.  For example, ` + "`" + `name: pod-*` + "`" + ` would match
-                      both ` + "`" + `pod-a` + "`" + ` and ` + "`" + `pod-b` + "`" + `, and ` + "`" + `name: *-pod` + "`" + ` would match both
-                      ` + "`" + `a-pod` + "`" + ` and ` + "`" + `b-pod` + "`" + `.'
+                    description: |-
+                      Name is the name of an object.  If defined, it will match against objects with the specified
+                      name.  Name also supports a prefix or suffix glob.  For example, ` + "`" + `name: pod-*` + "`" + ` would match
+                      both ` + "`" + `pod-a` + "`" + ` and ` + "`" + `pod-b` + "`" + `, and ` + "`" + `name: *-pod` + "`" + ` would match both ` + "`" + `a-pod` + "`" + ` and ` + "`" + `b-pod` + "`" + `.
                     pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                     type: string
                   namespaceSelector:
-                    description: NamespaceSelector is a label selector against an
-                      object's containing namespace or the object itself, if the object
-                      is a namespace.
+                    description: |-
+                      NamespaceSelector is a label selector against an object's containing
+                      namespace or the object itself, if the object is a namespace.
                     properties:
                       matchExpressions:
                         description: matchExpressions is a list of label selector
                           requirements. The requirements are ANDed.
                         items:
-                          description: A label selector requirement is a selector
-                            that contains values, a key, and an operator that relates
-                            the key and values.
+                          description: |-
+                            A label selector requirement is a selector that contains values, a key, and an operator that
+                            relates the key and values.
                           properties:
                             key:
                               description: key is the label key that the selector
                                 applies to.
                               type: string
                             operator:
-                              description: operator represents a key's relationship
-                                to a set of values. Valid operators are In, NotIn,
-                                Exists and DoesNotExist.
+                              description: |-
+                                operator represents a key's relationship to a set of values.
+                                Valid operators are In, NotIn, Exists and DoesNotExist.
                               type: string
                             values:
-                              description: values is an array of string values. If
-                                the operator is In or NotIn, the values array must
-                                be non-empty. If the operator is Exists or DoesNotExist,
-                                the values array must be empty. This array is replaced
-                                during a strategic merge patch.
+                              description: |-
+                                values is an array of string values. If the operator is In or NotIn,
+                                the values array must be non-empty. If the operator is Exists or DoesNotExist,
+                                the values array must be empty. This array is replaced during a strategic
+                                merge patch.
                               items:
                                 type: string
                               type: array
@@ -4199,37 +4352,39 @@ spec:
                       matchLabels:
                         additionalProperties:
                           type: string
-                        description: matchLabels is a map of {key,value} pairs. A
-                          single {key,value} in the matchLabels map is equivalent
-                          to an element of matchExpressions, whose key field is "key",
-                          the operator is "In", and the values array contains only
-                          "value". The requirements are ANDed.
+                        description: |-
+                          matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+                          map is equivalent to an element of matchExpressions, whose key field is "key", the
+                          operator is "In", and the values array contains only "value". The requirements are ANDed.
                         type: object
                     type: object
+                    x-kubernetes-map-type: atomic
                   namespaces:
-                    description: 'Namespaces is a list of namespace names. If defined,
-                      a constraint only applies to resources in a listed namespace.  Namespaces
-                      also supports a prefix or suffix based glob.  For example, ` + "`" + `namespaces:
-                      [kube-*]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and ` + "`" + `kube-public` + "`" + `, and
-                      ` + "`" + `namespaces: [*-system]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and ` + "`" + `gatekeeper-system` + "`" + `.'
+                    description: |-
+                      Namespaces is a list of namespace names. If defined, a constraint only
+                      applies to resources in a listed namespace.  Namespaces also supports a
+                      prefix or suffix based glob.  For example, ` + "`" + `namespaces: [kube-*]` + "`" + ` matches both
+                      ` + "`" + `kube-system` + "`" + ` and ` + "`" + `kube-public` + "`" + `, and ` + "`" + `namespaces: [*-system]` + "`" + ` matches both
+                      ` + "`" + `kube-system` + "`" + ` and ` + "`" + `gatekeeper-system` + "`" + `.
                     items:
-                      description: 'A string that supports globbing at its front or
-                        end. Ex: "kube-*" will match "kube-system" or "kube-public",
-                        "*-system" will match "kube-system" or "gatekeeper-system".  The
-                        asterisk is required for wildcard matching.'
+                      description: |-
+                        A string that supports globbing at its front or end. Ex: "kube-*" will match "kube-system" or
+                        "kube-public", "*-system" will match "kube-system" or "gatekeeper-system".  The asterisk is
+                        required for wildcard matching.
                       pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                       type: string
                     type: array
                   scope:
-                    description: Scope determines if cluster-scoped and/or namespaced-scoped
-                      resources are matched.  Accepts ` + "`" + `*` + "`" + `, ` + "`" + `Cluster` + "`" + `, or ` + "`" + `Namespaced` + "`" + `.
-                      (defaults to ` + "`" + `*` + "`" + `)
+                    description: |-
+                      Scope determines if cluster-scoped and/or namespaced-scoped resources
+                      are matched.  Accepts ` + "`" + `*` + "`" + `, ` + "`" + `Cluster` + "`" + `, or ` + "`" + `Namespaced` + "`" + `. (defaults to ` + "`" + `*` + "`" + `)
                     type: string
                   source:
-                    description: Source determines whether generated or original resources
-                      are matched. Accepts ` + "`" + `Generated` + "`" + `|` + "`" + `Original` + "`" + `|` + "`" + `All` + "`" + ` (defaults
-                      to ` + "`" + `All` + "`" + `). A value of ` + "`" + `Generated` + "`" + ` will only match generated
-                      resources, while ` + "`" + `Original` + "`" + ` will only match regular resources.
+                    description: |-
+                      Source determines whether generated or original resources are matched.
+                      Accepts ` + "`" + `Generated` + "`" + `|` + "`" + `Original` + "`" + `|` + "`" + `All` + "`" + ` (defaults to ` + "`" + `All` + "`" + `). A value of
+                      ` + "`" + `Generated` + "`" + ` will only match generated resources, while ` + "`" + `Original` + "`" + ` will only
+                      match regular resources.
                     enum:
                     - All
                     - Generated
@@ -4248,18 +4403,22 @@ spec:
                     - prune
                     type: string
                   pathTests:
-                    description: PathTests are a series of existence tests that can
-                      be checked before a mutation is applied
+                    description: |-
+                      PathTests are a series of existence tests that can be checked
+                      before a mutation is applied
                     items:
-                      description: "PathTest allows the user to customize how the
-                        mutation works if parent paths are missing. It traverses the
-                        list in order. All sub paths are tested against the provided
-                        condition, if the test fails, the mutation is not applied.
-                        All ` + "`" + `subPath` + "`" + ` entries must be a prefix of ` + "`" + `location` + "`" + `. Any
+                      description: |-
+                        PathTest allows the user to customize how the mutation works if parent
+                        paths are missing. It traverses the list in order. All sub paths are
+                        tested against the provided condition, if the test fails, the mutation is
+                        not applied. All ` + "`" + `subPath` + "`" + ` entries must be a prefix of ` + "`" + `location` + "`" + `. Any
                         glob characters will take on the same value as was used to
-                        expand the matching glob in ` + "`" + `location` + "`" + `. \n Available Tests:
-                        * MustExist    - the path must exist or do not mutate * MustNotExist
-                        - the path must not exist or do not mutate."
+                        expand the matching glob in ` + "`" + `location` + "`" + `.
+
+
+                        Available Tests:
+                        * MustExist    - the path must exist or do not mutate
+                        * MustNotExist - the path must not exist or do not mutate.
                       properties:
                         condition:
                           description: Condition describes whether the path either
@@ -4297,9 +4456,9 @@ spec:
                           message:
                             type: string
                           type:
-                            description: Type indicates a specific class of error
-                              for use by controller code. If not present, the error
-                              should be treated as not matching any known type.
+                            description: |-
+                              Type indicates a specific class of error for use by controller code.
+                              If not present, the error should be treated as not matching any known type.
                             type: string
                         required:
                         - message
@@ -4308,9 +4467,10 @@ spec:
                     id:
                       type: string
                     mutatorUID:
-                      description: Storing the mutator UID allows us to detect drift,
-                        such as when a mutator has been recreated after its CRD was
-                        deleted out from under it, interrupting the watch
+                      description: |-
+                        Storing the mutator UID allows us to detect drift, such as
+                        when a mutator has been recreated after its CRD was deleted
+                        out from under it, interrupting the watch
                       type: string
                     observedGeneration:
                       format: int64
@@ -4330,18 +4490,24 @@ spec:
   - name: v1beta1
     schema:
       openAPIV3Schema:
-        description: ModifySet allows the user to modify non-keyed lists, such as
+        description: |-
+          ModifySet allows the user to modify non-keyed lists, such as
           the list of arguments to a container.
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           metadata:
             type: object
@@ -4349,13 +4515,14 @@ spec:
             description: ModifySetSpec defines the desired state of ModifySet.
             properties:
               applyTo:
-                description: ApplyTo lists the specific groups, versions and kinds
-                  a mutation will be applied to. This is necessary because every mutation
-                  implies part of an object schema and object schemas are associated
-                  with specific GVKs.
+                description: |-
+                  ApplyTo lists the specific groups, versions and kinds a mutation will be applied to.
+                  This is necessary because every mutation implies part of an object schema and object
+                  schemas are associated with specific GVKs.
                 items:
-                  description: ApplyTo determines what GVKs items the mutation should
-                    apply to. Globs are not allowed.
+                  description: |-
+                    ApplyTo determines what GVKs items the mutation should apply to.
+                    Globs are not allowed.
                   properties:
                     groups:
                       items:
@@ -4376,37 +4543,40 @@ spec:
                   ` + "`" + `spec.containers[name: main].args` + "`" + `.'
                 type: string
               match:
-                description: Match allows the user to limit which resources get mutated.
-                  Individual match criteria are AND-ed together. An undefined match
-                  criteria matches everything.
+                description: |-
+                  Match allows the user to limit which resources get mutated.
+                  Individual match criteria are AND-ed together. An undefined
+                  match criteria matches everything.
                 properties:
                   excludedNamespaces:
-                    description: 'ExcludedNamespaces is a list of namespace names.
-                      If defined, a constraint only applies to resources not in a
-                      listed namespace. ExcludedNamespaces also supports a prefix
-                      or suffix based glob.  For example, ` + "`" + `excludedNamespaces: [kube-*]` + "`" + `
-                      matches both ` + "`" + `kube-system` + "`" + ` and ` + "`" + `kube-public` + "`" + `, and ` + "`" + `excludedNamespaces:
-                      [*-system]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and ` + "`" + `gatekeeper-system` + "`" + `.'
+                    description: |-
+                      ExcludedNamespaces is a list of namespace names. If defined, a
+                      constraint only applies to resources not in a listed namespace.
+                      ExcludedNamespaces also supports a prefix or suffix based glob.  For example,
+                      ` + "`" + `excludedNamespaces: [kube-*]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and
+                      ` + "`" + `kube-public` + "`" + `, and ` + "`" + `excludedNamespaces: [*-system]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and
+                      ` + "`" + `gatekeeper-system` + "`" + `.
                     items:
-                      description: 'A string that supports globbing at its front or
-                        end. Ex: "kube-*" will match "kube-system" or "kube-public",
-                        "*-system" will match "kube-system" or "gatekeeper-system".  The
-                        asterisk is required for wildcard matching.'
+                      description: |-
+                        A string that supports globbing at its front or end. Ex: "kube-*" will match "kube-system" or
+                        "kube-public", "*-system" will match "kube-system" or "gatekeeper-system".  The asterisk is
+                        required for wildcard matching.
                       pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                       type: string
                     type: array
                   kinds:
                     items:
-                      description: Kinds accepts a list of objects with apiGroups
-                        and kinds fields that list the groups/kinds of objects to
-                        which the mutation will apply. If multiple groups/kinds objects
-                        are specified, only one match is needed for the resource to
-                        be in scope.
+                      description: |-
+                        Kinds accepts a list of objects with apiGroups and kinds fields
+                        that list the groups/kinds of objects to which the mutation will apply.
+                        If multiple groups/kinds objects are specified,
+                        only one match is needed for the resource to be in scope.
                       properties:
                         apiGroups:
-                          description: APIGroups is the API groups the resources belong
-                            to. '*' is all groups. If '*' is present, the length of
-                            the slice must be one. Required.
+                          description: |-
+                            APIGroups is the API groups the resources belong to. '*' is all groups.
+                            If '*' is present, the length of the slice must be one.
+                            Required.
                           items:
                             type: string
                           type: array
@@ -4417,36 +4587,37 @@ spec:
                       type: object
                     type: array
                   labelSelector:
-                    description: 'LabelSelector is the combination of two optional
-                      fields: ` + "`" + `matchLabels` + "`" + ` and ` + "`" + `matchExpressions` + "`" + `.  These two fields
-                      provide different methods of selecting or excluding k8s objects
-                      based on the label keys and values included in object metadata.  All
-                      selection expressions from both sections are ANDed to determine
-                      if an object meets the cumulative requirements of the selector.'
+                    description: |-
+                      LabelSelector is the combination of two optional fields: ` + "`" + `matchLabels` + "`" + `
+                      and ` + "`" + `matchExpressions` + "`" + `.  These two fields provide different methods of
+                      selecting or excluding k8s objects based on the label keys and values
+                      included in object metadata.  All selection expressions from both
+                      sections are ANDed to determine if an object meets the cumulative
+                      requirements of the selector.
                     properties:
                       matchExpressions:
                         description: matchExpressions is a list of label selector
                           requirements. The requirements are ANDed.
                         items:
-                          description: A label selector requirement is a selector
-                            that contains values, a key, and an operator that relates
-                            the key and values.
+                          description: |-
+                            A label selector requirement is a selector that contains values, a key, and an operator that
+                            relates the key and values.
                           properties:
                             key:
                               description: key is the label key that the selector
                                 applies to.
                               type: string
                             operator:
-                              description: operator represents a key's relationship
-                                to a set of values. Valid operators are In, NotIn,
-                                Exists and DoesNotExist.
+                              description: |-
+                                operator represents a key's relationship to a set of values.
+                                Valid operators are In, NotIn, Exists and DoesNotExist.
                               type: string
                             values:
-                              description: values is an array of string values. If
-                                the operator is In or NotIn, the values array must
-                                be non-empty. If the operator is Exists or DoesNotExist,
-                                the values array must be empty. This array is replaced
-                                during a strategic merge patch.
+                              description: |-
+                                values is an array of string values. If the operator is In or NotIn,
+                                the values array must be non-empty. If the operator is Exists or DoesNotExist,
+                                the values array must be empty. This array is replaced during a strategic
+                                merge patch.
                               items:
                                 type: string
                               type: array
@@ -4458,49 +4629,48 @@ spec:
                       matchLabels:
                         additionalProperties:
                           type: string
-                        description: matchLabels is a map of {key,value} pairs. A
-                          single {key,value} in the matchLabels map is equivalent
-                          to an element of matchExpressions, whose key field is "key",
-                          the operator is "In", and the values array contains only
-                          "value". The requirements are ANDed.
+                        description: |-
+                          matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+                          map is equivalent to an element of matchExpressions, whose key field is "key", the
+                          operator is "In", and the values array contains only "value". The requirements are ANDed.
                         type: object
                     type: object
+                    x-kubernetes-map-type: atomic
                   name:
-                    description: 'Name is the name of an object.  If defined, it will
-                      match against objects with the specified name.  Name also supports
-                      a prefix or suffix glob.  For example, ` + "`" + `name: pod-*` + "`" + ` would match
-                      both ` + "`" + `pod-a` + "`" + ` and ` + "`" + `pod-b` + "`" + `, and ` + "`" + `name: *-pod` + "`" + ` would match both
-                      ` + "`" + `a-pod` + "`" + ` and ` + "`" + `b-pod` + "`" + `.'
+                    description: |-
+                      Name is the name of an object.  If defined, it will match against objects with the specified
+                      name.  Name also supports a prefix or suffix glob.  For example, ` + "`" + `name: pod-*` + "`" + ` would match
+                      both ` + "`" + `pod-a` + "`" + ` and ` + "`" + `pod-b` + "`" + `, and ` + "`" + `name: *-pod` + "`" + ` would match both ` + "`" + `a-pod` + "`" + ` and ` + "`" + `b-pod` + "`" + `.
                     pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                     type: string
                   namespaceSelector:
-                    description: NamespaceSelector is a label selector against an
-                      object's containing namespace or the object itself, if the object
-                      is a namespace.
+                    description: |-
+                      NamespaceSelector is a label selector against an object's containing
+                      namespace or the object itself, if the object is a namespace.
                     properties:
                       matchExpressions:
                         description: matchExpressions is a list of label selector
                           requirements. The requirements are ANDed.
                         items:
-                          description: A label selector requirement is a selector
-                            that contains values, a key, and an operator that relates
-                            the key and values.
+                          description: |-
+                            A label selector requirement is a selector that contains values, a key, and an operator that
+                            relates the key and values.
                           properties:
                             key:
                               description: key is the label key that the selector
                                 applies to.
                               type: string
                             operator:
-                              description: operator represents a key's relationship
-                                to a set of values. Valid operators are In, NotIn,
-                                Exists and DoesNotExist.
+                              description: |-
+                                operator represents a key's relationship to a set of values.
+                                Valid operators are In, NotIn, Exists and DoesNotExist.
                               type: string
                             values:
-                              description: values is an array of string values. If
-                                the operator is In or NotIn, the values array must
-                                be non-empty. If the operator is Exists or DoesNotExist,
-                                the values array must be empty. This array is replaced
-                                during a strategic merge patch.
+                              description: |-
+                                values is an array of string values. If the operator is In or NotIn,
+                                the values array must be non-empty. If the operator is Exists or DoesNotExist,
+                                the values array must be empty. This array is replaced during a strategic
+                                merge patch.
                               items:
                                 type: string
                               type: array
@@ -4512,37 +4682,39 @@ spec:
                       matchLabels:
                         additionalProperties:
                           type: string
-                        description: matchLabels is a map of {key,value} pairs. A
-                          single {key,value} in the matchLabels map is equivalent
-                          to an element of matchExpressions, whose key field is "key",
-                          the operator is "In", and the values array contains only
-                          "value". The requirements are ANDed.
+                        description: |-
+                          matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+                          map is equivalent to an element of matchExpressions, whose key field is "key", the
+                          operator is "In", and the values array contains only "value". The requirements are ANDed.
                         type: object
                     type: object
+                    x-kubernetes-map-type: atomic
                   namespaces:
-                    description: 'Namespaces is a list of namespace names. If defined,
-                      a constraint only applies to resources in a listed namespace.  Namespaces
-                      also supports a prefix or suffix based glob.  For example, ` + "`" + `namespaces:
-                      [kube-*]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and ` + "`" + `kube-public` + "`" + `, and
-                      ` + "`" + `namespaces: [*-system]` + "`" + ` matches both ` + "`" + `kube-system` + "`" + ` and ` + "`" + `gatekeeper-system` + "`" + `.'
+                    description: |-
+                      Namespaces is a list of namespace names. If defined, a constraint only
+                      applies to resources in a listed namespace.  Namespaces also supports a
+                      prefix or suffix based glob.  For example, ` + "`" + `namespaces: [kube-*]` + "`" + ` matches both
+                      ` + "`" + `kube-system` + "`" + ` and ` + "`" + `kube-public` + "`" + `, and ` + "`" + `namespaces: [*-system]` + "`" + ` matches both
+                      ` + "`" + `kube-system` + "`" + ` and ` + "`" + `gatekeeper-system` + "`" + `.
                     items:
-                      description: 'A string that supports globbing at its front or
-                        end. Ex: "kube-*" will match "kube-system" or "kube-public",
-                        "*-system" will match "kube-system" or "gatekeeper-system".  The
-                        asterisk is required for wildcard matching.'
+                      description: |-
+                        A string that supports globbing at its front or end. Ex: "kube-*" will match "kube-system" or
+                        "kube-public", "*-system" will match "kube-system" or "gatekeeper-system".  The asterisk is
+                        required for wildcard matching.
                       pattern: ^(\*|\*-)?[a-z0-9]([-:a-z0-9]*[a-z0-9])?(\*|-\*)?$
                       type: string
                     type: array
                   scope:
-                    description: Scope determines if cluster-scoped and/or namespaced-scoped
-                      resources are matched.  Accepts ` + "`" + `*` + "`" + `, ` + "`" + `Cluster` + "`" + `, or ` + "`" + `Namespaced` + "`" + `.
-                      (defaults to ` + "`" + `*` + "`" + `)
+                    description: |-
+                      Scope determines if cluster-scoped and/or namespaced-scoped resources
+                      are matched.  Accepts ` + "`" + `*` + "`" + `, ` + "`" + `Cluster` + "`" + `, or ` + "`" + `Namespaced` + "`" + `. (defaults to ` + "`" + `*` + "`" + `)
                     type: string
                   source:
-                    description: Source determines whether generated or original resources
-                      are matched. Accepts ` + "`" + `Generated` + "`" + `|` + "`" + `Original` + "`" + `|` + "`" + `All` + "`" + ` (defaults
-                      to ` + "`" + `All` + "`" + `). A value of ` + "`" + `Generated` + "`" + ` will only match generated
-                      resources, while ` + "`" + `Original` + "`" + ` will only match regular resources.
+                    description: |-
+                      Source determines whether generated or original resources are matched.
+                      Accepts ` + "`" + `Generated` + "`" + `|` + "`" + `Original` + "`" + `|` + "`" + `All` + "`" + ` (defaults to ` + "`" + `All` + "`" + `). A value of
+                      ` + "`" + `Generated` + "`" + ` will only match generated resources, while ` + "`" + `Original` + "`" + ` will only
+                      match regular resources.
                     enum:
                     - All
                     - Generated
@@ -4561,18 +4733,22 @@ spec:
                     - prune
                     type: string
                   pathTests:
-                    description: PathTests are a series of existence tests that can
-                      be checked before a mutation is applied
+                    description: |-
+                      PathTests are a series of existence tests that can be checked
+                      before a mutation is applied
                     items:
-                      description: "PathTest allows the user to customize how the
-                        mutation works if parent paths are missing. It traverses the
-                        list in order. All sub paths are tested against the provided
-                        condition, if the test fails, the mutation is not applied.
-                        All ` + "`" + `subPath` + "`" + ` entries must be a prefix of ` + "`" + `location` + "`" + `. Any
+                      description: |-
+                        PathTest allows the user to customize how the mutation works if parent
+                        paths are missing. It traverses the list in order. All sub paths are
+                        tested against the provided condition, if the test fails, the mutation is
+                        not applied. All ` + "`" + `subPath` + "`" + ` entries must be a prefix of ` + "`" + `location` + "`" + `. Any
                         glob characters will take on the same value as was used to
-                        expand the matching glob in ` + "`" + `location` + "`" + `. \n Available Tests:
-                        * MustExist    - the path must exist or do not mutate * MustNotExist
-                        - the path must not exist or do not mutate."
+                        expand the matching glob in ` + "`" + `location` + "`" + `.
+
+
+                        Available Tests:
+                        * MustExist    - the path must exist or do not mutate
+                        * MustNotExist - the path must not exist or do not mutate.
                       properties:
                         condition:
                           description: Condition describes whether the path either
@@ -4610,9 +4786,9 @@ spec:
                           message:
                             type: string
                           type:
-                            description: Type indicates a specific class of error
-                              for use by controller code. If not present, the error
-                              should be treated as not matching any known type.
+                            description: |-
+                              Type indicates a specific class of error for use by controller code.
+                              If not present, the error should be treated as not matching any known type.
                             type: string
                         required:
                         - message
@@ -4621,9 +4797,10 @@ spec:
                     id:
                       type: string
                     mutatorUID:
-                      description: Storing the mutator UID allows us to detect drift,
-                        such as when a mutator has been recreated after its CRD was
-                        deleted out from under it, interrupting the watch
+                      description: |-
+                        Storing the mutator UID allows us to detect drift, such as
+                        when a mutator has been recreated after its CRD was deleted
+                        out from under it, interrupting the watch
                       type: string
                     observedGeneration:
                       format: int64
@@ -4661,8 +4838,7 @@ var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_muta
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.10.0
-  creationTimestamp: null
+    controller-gen.kubebuilder.io/version: v0.14.0
   labels:
     gatekeeper.sh/system: "yes"
   name: mutatorpodstatuses.status.gatekeeper.sh
@@ -4682,14 +4858,19 @@ spec:
         description: MutatorPodStatus is the Schema for the mutationpodstatuses API.
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           metadata:
             type: object
@@ -4706,9 +4887,9 @@ spec:
                     message:
                       type: string
                     type:
-                      description: Type indicates a specific class of error for use
-                        by controller code. If not present, the error should be treated
-                        as not matching any known type.
+                      description: |-
+                        Type indicates a specific class of error for use by controller code.
+                        If not present, the error should be treated as not matching any known type.
                       type: string
                   required:
                   - message
@@ -4717,9 +4898,10 @@ spec:
               id:
                 type: string
               mutatorUID:
-                description: Storing the mutator UID allows us to detect drift, such
-                  as when a mutator has been recreated after its CRD was deleted out
-                  from under it, interrupting the watch
+                description: |-
+                  Storing the mutator UID allows us to detect drift, such as
+                  when a mutator has been recreated after its CRD was deleted
+                  out from under it, interrupting the watch
                 type: string
               observedGeneration:
                 format: int64
@@ -4864,8 +5046,7 @@ var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_sync
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.10.0
-  creationTimestamp: null
+    controller-gen.kubebuilder.io/version: v0.14.0
   labels:
     gatekeeper.sh/system: "yes"
   name: syncsets.syncset.gatekeeper.sh
@@ -4887,14 +5068,19 @@ spec:
           defines the sets of resources that will be synced.
         properties:
           apiVersion:
-            description: 'APIVersion defines the versioned schema of this representation
-              of an object. Servers should convert recognized schemas to the latest
-              internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources'
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
             type: string
           kind:
-            description: 'Kind is a string value representing the REST resource this
-              object represents. Servers may infer this from the endpoint the client
-              submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds'
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
             type: string
           metadata:
             properties:
@@ -5228,7 +5414,6 @@ func configGatekeeperRenderedPolicy_v1_poddisruptionbudget_gatekeeperControllerM
 var _configGatekeeperRenderedRbacAuthorizationK8sIo_v1_clusterrole_gatekeeperManagerRoleYaml = []byte(`apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  creationTimestamp: null
   labels:
     gatekeeper.sh/system: "yes"
   name: gatekeeper-manager-role
@@ -5454,7 +5639,6 @@ func configGatekeeperRenderedRbacAuthorizationK8sIo_v1_clusterrolebinding_gateke
 var _configGatekeeperRenderedRbacAuthorizationK8sIo_v1_role_gatekeeperManagerRoleYaml = []byte(`apiVersion: rbac.authorization.k8s.io/v1
 kind: Role
 metadata:
-  creationTimestamp: null
   labels:
     gatekeeper.sh/system: "yes"
   name: gatekeeper-manager-role
