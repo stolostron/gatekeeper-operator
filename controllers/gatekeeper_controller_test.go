@@ -165,7 +165,7 @@ func TestCustomNamespace(t *testing.T) {
 	g.Expect(webhookObj).ToNot(BeNil())
 	err = crOverrides(logr.Logger{}, gatekeeper, WebhookFile, webhookObj, expectedNamespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
-	expectObjContainerArg(g, webhookObj).To(HaveKeyWithValue(ExemptNamespaceArg, expectedNamespace))
+	expectObjContainerArg(g, webhookObj).To(HaveKeyWithValue(ExemptNamespaceArg, ContainElement(expectedNamespace)))
 
 	// ValidatingWebhookConfiguration and MutatingWebhookConfiguration namespace overrides
 	webhookConfigs := []string{
@@ -1041,7 +1041,7 @@ func TestAuditInterval(t *testing.T) {
 	gatekeeper.Spec.Audit = &auditOverride
 	err = crOverrides(logr.Logger{}, gatekeeper, AuditFile, auditObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
-	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(AuditIntervalArg, "3600"))
+	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(AuditIntervalArg, ContainElement("3600")))
 }
 
 func TestAuditLogLevel(t *testing.T) {
@@ -1071,7 +1071,7 @@ func TestAuditLogLevel(t *testing.T) {
 	gatekeeper.Spec.Audit = &auditOverride
 	err = crOverrides(logr.Logger{}, gatekeeper, AuditFile, auditObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
-	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(LogLevelArg, "DEBUG"))
+	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(LogLevelArg, ContainElement("DEBUG")))
 }
 
 func TestAuditConstraintViolationLimit(t *testing.T) {
@@ -1099,7 +1099,7 @@ func TestAuditConstraintViolationLimit(t *testing.T) {
 	gatekeeper.Spec.Audit = &auditOverride
 	err = crOverrides(logr.Logger{}, gatekeeper, AuditFile, auditObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
-	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(ConstraintViolationLimitArg, "20"))
+	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(ConstraintViolationLimitArg, ContainElement("20")))
 }
 
 func TestAuditChunkSize(t *testing.T) {
@@ -1127,7 +1127,7 @@ func TestAuditChunkSize(t *testing.T) {
 	gatekeeper.Spec.Audit = &auditOverride
 	err = crOverrides(logr.Logger{}, gatekeeper, AuditFile, auditObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
-	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(AuditChunkSizeArg, "10"))
+	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(AuditChunkSizeArg, ContainElement("10")))
 }
 
 func TestAuditFromCache(t *testing.T) {
@@ -1155,7 +1155,7 @@ func TestAuditFromCache(t *testing.T) {
 	gatekeeper.Spec.Audit = &auditOverride
 	err = crOverrides(logr.Logger{}, gatekeeper, AuditFile, auditObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
-	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(AuditFromCacheArg, "true"))
+	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(AuditFromCacheArg, ContainElement("true")))
 }
 
 func TestEmitAuditEvents(t *testing.T) {
@@ -1183,7 +1183,7 @@ func TestEmitAuditEvents(t *testing.T) {
 	gatekeeper.Spec.Audit = &auditOverride
 	err = crOverrides(logr.Logger{}, gatekeeper, AuditFile, auditObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
-	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(EmitAuditEventsArg, "true"))
+	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(EmitAuditEventsArg, ContainElement("true")))
 }
 
 func TestAuditEventsInvolvedNamespace(t *testing.T) {
@@ -1211,7 +1211,7 @@ func TestAuditEventsInvolvedNamespace(t *testing.T) {
 	gatekeeper.Spec.Audit = &auditOverride
 	err = crOverrides(logr.Logger{}, gatekeeper, AuditFile, auditObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
-	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(AuditEventsInvolvedNamespaceArg, "true"))
+	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(AuditEventsInvolvedNamespaceArg, ContainElement("true")))
 }
 
 func TestAllAuditArgs(t *testing.T) {
@@ -1254,7 +1254,7 @@ func TestAllAuditArgs(t *testing.T) {
 	expectObjContainerArg(g, auditObj).NotTo(HaveKey(EmitAuditEventsArg))
 	expectObjContainerArg(g, auditObj).NotTo(HaveKey(AuditIntervalArg))
 	expectObjContainerArg(g, auditObj).NotTo(HaveKey(AuditEventsInvolvedNamespaceArg))
-	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(OperationArg, OperationMutationStatus))
+	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(OperationArg, ContainElement(OperationMutationStatus)))
 	// test nil
 	err = crOverrides(logr.Logger{}, gatekeeper, AuditFile, auditObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
@@ -1265,32 +1265,32 @@ func TestAllAuditArgs(t *testing.T) {
 	expectObjContainerArg(g, auditObj).NotTo(HaveKey(EmitAuditEventsArg))
 	expectObjContainerArg(g, auditObj).NotTo(HaveKey(AuditIntervalArg))
 	expectObjContainerArg(g, auditObj).NotTo(HaveKey(AuditEventsInvolvedNamespaceArg))
-	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(OperationArg, OperationMutationStatus))
+	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(OperationArg, ContainElement(OperationMutationStatus)))
 	// test override without mutation
 	gatekeeper.Spec.Audit = &auditOverride
 	err = crOverrides(logr.Logger{}, gatekeeper, AuditFile, auditObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
-	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(AuditChunkSizeArg, "10"))
-	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(AuditFromCacheArg, "true"))
-	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(ConstraintViolationLimitArg, "20"))
-	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(LogLevelArg, "DEBUG"))
-	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(EmitAuditEventsArg, "true"))
-	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(AuditIntervalArg, "3600"))
-	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(AuditEventsInvolvedNamespaceArg, "true"))
-	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(OperationArg, OperationMutationStatus))
+	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(AuditChunkSizeArg, ContainElement("10")))
+	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(AuditFromCacheArg, ContainElement("true")))
+	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(ConstraintViolationLimitArg, ContainElement("20")))
+	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(LogLevelArg, ContainElement("DEBUG")))
+	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(EmitAuditEventsArg, ContainElement("true")))
+	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(AuditIntervalArg, ContainElement("3600")))
+	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(AuditEventsInvolvedNamespaceArg, ContainElement("true")))
+	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(OperationArg, ContainElement(OperationMutationStatus)))
 	// test override with mutation
 	mutatingWebhook := operatorv1alpha1.Enabled
 	gatekeeper.Spec.MutatingWebhook = &mutatingWebhook
 	err = crOverrides(logr.Logger{}, gatekeeper, AuditFile, auditObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
-	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(AuditChunkSizeArg, "10"))
-	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(AuditFromCacheArg, "true"))
-	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(ConstraintViolationLimitArg, "20"))
-	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(LogLevelArg, "DEBUG"))
-	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(EmitAuditEventsArg, "true"))
-	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(AuditEventsInvolvedNamespaceArg, "true"))
-	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(AuditIntervalArg, "3600"))
-	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(OperationArg, OperationMutationStatus))
+	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(AuditChunkSizeArg, ContainElement("10")))
+	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(AuditFromCacheArg, ContainElement("true")))
+	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(ConstraintViolationLimitArg, ContainElement("20")))
+	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(LogLevelArg, ContainElement("DEBUG")))
+	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(EmitAuditEventsArg, ContainElement("true")))
+	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(AuditEventsInvolvedNamespaceArg, ContainElement("true")))
+	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(AuditIntervalArg, ContainElement("3600")))
+	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(OperationArg, ContainElement(OperationMutationStatus)))
 }
 
 func TestEmitAdmissionEvents(t *testing.T) {
@@ -1318,7 +1318,7 @@ func TestEmitAdmissionEvents(t *testing.T) {
 	gatekeeper.Spec.Webhook = &webhookOverride
 	err = crOverrides(logr.Logger{}, gatekeeper, WebhookFile, webhookObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
-	expectObjContainerArg(g, webhookObj).To(HaveKeyWithValue(EmitAdmissionEventsArg, "true"))
+	expectObjContainerArg(g, webhookObj).To(HaveKeyWithValue(EmitAdmissionEventsArg, ContainElement("true")))
 }
 
 func TestAdmissionEventsInvolvedNamespace(t *testing.T) {
@@ -1346,7 +1346,8 @@ func TestAdmissionEventsInvolvedNamespace(t *testing.T) {
 	gatekeeper.Spec.Webhook = &webhookOverride
 	err = crOverrides(logr.Logger{}, gatekeeper, WebhookFile, webhookObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
-	expectObjContainerArg(g, webhookObj).To(HaveKeyWithValue(AdmissionEventsInvolvedNamespaceArg, "true"))
+	expectObjContainerArg(g, webhookObj).To(
+		HaveKeyWithValue(AdmissionEventsInvolvedNamespaceArg, ContainElement("true")))
 }
 
 func TestWebhookLogLevel(t *testing.T) {
@@ -1376,7 +1377,7 @@ func TestWebhookLogLevel(t *testing.T) {
 	gatekeeper.Spec.Webhook = &webhookOverride
 	err = crOverrides(logr.Logger{}, gatekeeper, WebhookFile, webhookObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
-	expectObjContainerArg(g, webhookObj).To(HaveKeyWithValue(LogLevelArg, "DEBUG"))
+	expectObjContainerArg(g, webhookObj).To(HaveKeyWithValue(LogLevelArg, ContainElement("DEBUG")))
 }
 
 func TestMutationArg(t *testing.T) {
@@ -1392,20 +1393,20 @@ func TestMutationArg(t *testing.T) {
 	webhookObj, err := util.GetManifestObject(WebhookFile)
 	g.Expect(err).ToNot(HaveOccurred())
 	g.Expect(webhookObj).ToNot(BeNil())
-	expectObjContainerArg(g, webhookObj).To(HaveKeyWithValue(OperationArg, OperationMutationWebhook))
+	expectObjContainerArg(g, webhookObj).To(HaveKeyWithValue(OperationArg, ContainElement(OperationMutationWebhook)))
 
 	auditObj, err := util.GetManifestObject(AuditFile)
 	g.Expect(err).ToNot(HaveOccurred())
 	g.Expect(auditObj).ToNot(BeNil())
-	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(OperationArg, OperationMutationStatus))
+	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(OperationArg, ContainElement(OperationMutationStatus)))
 	// test nil
 	err = crOverrides(logr.Logger{}, gatekeeper, WebhookFile, webhookObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
-	expectObjContainerArg(g, webhookObj).To(HaveKeyWithValue(OperationArg, OperationMutationWebhook))
+	expectObjContainerArg(g, webhookObj).To(HaveKeyWithValue(OperationArg, ContainElement(OperationMutationWebhook)))
 
 	err = crOverrides(logr.Logger{}, gatekeeper, AuditFile, auditObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
-	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(OperationArg, OperationMutationStatus))
+	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(OperationArg, ContainElement(OperationMutationStatus)))
 	// test disabled override
 	mutation := operatorv1alpha1.Disabled
 	gatekeeper.Spec.MutatingWebhook = &mutation
@@ -1420,11 +1421,11 @@ func TestMutationArg(t *testing.T) {
 	mutation = operatorv1alpha1.Enabled
 	err = crOverrides(logr.Logger{}, gatekeeper, WebhookFile, webhookObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
-	expectObjContainerArg(g, webhookObj).To(HaveKeyWithValue(OperationArg, OperationMutationWebhook))
+	expectObjContainerArg(g, webhookObj).To(HaveKeyWithValue(OperationArg, ContainElement(OperationMutationWebhook)))
 
 	err = crOverrides(logr.Logger{}, gatekeeper, AuditFile, auditObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
-	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(OperationArg, OperationMutationStatus))
+	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(OperationArg, ContainElement(OperationMutationStatus)))
 }
 
 func TestDisabledBuiltins(t *testing.T) {
@@ -1501,9 +1502,10 @@ func TestAllWebhookArgs(t *testing.T) {
 	gatekeeper.Spec.Webhook = &webhookOverride
 	err = crOverrides(logr.Logger{}, gatekeeper, WebhookFile, webhookObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
-	expectObjContainerArg(g, webhookObj).To(HaveKeyWithValue(EmitAdmissionEventsArg, "true"))
-	expectObjContainerArg(g, webhookObj).To(HaveKeyWithValue(AdmissionEventsInvolvedNamespaceArg, "true"))
-	expectObjContainerArg(g, webhookObj).To(HaveKeyWithValue(LogLevelArg, "DEBUG"))
+	expectObjContainerArg(g, webhookObj).To(HaveKeyWithValue(EmitAdmissionEventsArg, ContainElement("true")))
+	expectObjContainerArg(g, webhookObj).To(
+		HaveKeyWithValue(AdmissionEventsInvolvedNamespaceArg, ContainElement("true")))
+	expectObjContainerArg(g, webhookObj).To(HaveKeyWithValue(LogLevelArg, ContainElement("DEBUG")))
 	expectObjContainerArg(g, webhookObj).NotTo(HaveKey(LogMutationsArg))
 	expectObjContainerArg(g, webhookObj).NotTo(HaveKey(MutationAnnotationsArg))
 	// test override with mutation
@@ -1511,10 +1513,11 @@ func TestAllWebhookArgs(t *testing.T) {
 	gatekeeper.Spec.MutatingWebhook = &enabled
 	err = crOverrides(logr.Logger{}, gatekeeper, WebhookFile, webhookObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
-	expectObjContainerArg(g, webhookObj).To(HaveKeyWithValue(EmitAdmissionEventsArg, "true"))
-	expectObjContainerArg(g, webhookObj).To(HaveKeyWithValue(AdmissionEventsInvolvedNamespaceArg, "true"))
-	expectObjContainerArg(g, webhookObj).To(HaveKeyWithValue(LogLevelArg, "DEBUG"))
-	expectObjContainerArg(g, webhookObj).To(HaveKeyWithValue(OperationArg, OperationMutationWebhook))
+	expectObjContainerArg(g, webhookObj).To(HaveKeyWithValue(EmitAdmissionEventsArg, ContainElement("true")))
+	expectObjContainerArg(g, webhookObj).To(
+		HaveKeyWithValue(AdmissionEventsInvolvedNamespaceArg, ContainElement("true")))
+	expectObjContainerArg(g, webhookObj).To(HaveKeyWithValue(LogLevelArg, ContainElement("DEBUG")))
+	expectObjContainerArg(g, webhookObj).To(HaveKeyWithValue(OperationArg, ContainElement(OperationMutationWebhook)))
 	expectObjContainerArg(g, webhookObj).NotTo(HaveKey(LogMutationsArg))
 	expectObjContainerArg(g, webhookObj).NotTo(HaveKey(MutationAnnotationsArg))
 
@@ -1524,12 +1527,13 @@ func TestAllWebhookArgs(t *testing.T) {
 	gatekeeper.Spec.Webhook.MutationAnnotations = &enabled
 	err = crOverrides(logr.Logger{}, gatekeeper, WebhookFile, webhookObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
-	expectObjContainerArg(g, webhookObj).To(HaveKeyWithValue(EmitAdmissionEventsArg, "true"))
-	expectObjContainerArg(g, webhookObj).To(HaveKeyWithValue(AdmissionEventsInvolvedNamespaceArg, "true"))
-	expectObjContainerArg(g, webhookObj).To(HaveKeyWithValue(LogLevelArg, "DEBUG"))
-	expectObjContainerArg(g, webhookObj).To(HaveKeyWithValue(OperationArg, OperationMutationWebhook))
-	expectObjContainerArg(g, webhookObj).To(HaveKeyWithValue(LogMutationsArg, "true"))
-	expectObjContainerArg(g, webhookObj).To(HaveKeyWithValue(MutationAnnotationsArg, "true"))
+	expectObjContainerArg(g, webhookObj).To(HaveKeyWithValue(EmitAdmissionEventsArg, ContainElement("true")))
+	expectObjContainerArg(g, webhookObj).To(
+		HaveKeyWithValue(AdmissionEventsInvolvedNamespaceArg, ContainElement("true")))
+	expectObjContainerArg(g, webhookObj).To(HaveKeyWithValue(LogLevelArg, ContainElement("DEBUG")))
+	expectObjContainerArg(g, webhookObj).To(HaveKeyWithValue(OperationArg, ContainElement(OperationMutationWebhook)))
+	expectObjContainerArg(g, webhookObj).To(HaveKeyWithValue(LogMutationsArg, ContainElement("true")))
+	expectObjContainerArg(g, webhookObj).To(HaveKeyWithValue(MutationAnnotationsArg, ContainElement("true")))
 }
 
 func expectObjContainerArg(g *WithT, obj *unstructured.Unstructured) Assertion {
@@ -1586,13 +1590,17 @@ func overrideWebhookOperations(
 	})
 }
 
-func getContainerArgumentsMap(g *WithT, obj *unstructured.Unstructured) map[string]string {
-	argsMap := make(map[string]string)
+func getContainerArgumentsMap(g *WithT, obj *unstructured.Unstructured) map[string][]string {
+	argsMap := make(map[string][]string)
 
 	args := getContainerArgumentsSlice(g, obj)
 	for _, arg := range args {
 		key, value := util.FromArg(arg)
-		argsMap[key] = value
+		if argsMap[key] == nil {
+			argsMap[key] = []string{}
+		}
+
+		argsMap[key] = append(argsMap[key], value)
 	}
 
 	return argsMap
