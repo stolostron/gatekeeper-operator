@@ -57,6 +57,7 @@ const (
 	crdFilePrefix                       = "apiextensions.k8s.io_v1_customresourcedefinition_"
 	AssignCRDFile                       = crdFilePrefix + "assign.mutations.gatekeeper.sh.yaml"
 	AssignMetadataCRDFile               = crdFilePrefix + "assignmetadata.mutations.gatekeeper.sh.yaml"
+	ConfigPodStatusCRDFile              = crdFilePrefix + "configpodstatuses.status.gatekeeper.sh.yaml"
 	MutatorPodStatusCRDFile             = crdFilePrefix + "mutatorpodstatuses.status.gatekeeper.sh.yaml"
 	ModifySetCRDFile                    = crdFilePrefix + "modifyset.mutations.gatekeeper.sh.yaml"
 	ProviderCRDFile                     = crdFilePrefix + "providers.externaldata.gatekeeper.sh.yaml"
@@ -111,6 +112,7 @@ var (
 		"apiextensions.k8s.io_v1_customresourcedefinition_expansiontemplatepodstatuses.status.gatekeeper.sh.yaml",
 		"apiextensions.k8s.io_v1_customresourcedefinition_assignimage.mutations.gatekeeper.sh.yaml",
 		"apiextensions.k8s.io_v1_customresourcedefinition_syncsets.syncset.gatekeeper.sh.yaml",
+		ConfigPodStatusCRDFile,
 		ModifySetCRDFile,
 		ProviderCRDFile,
 		AssignCRDFile,
@@ -177,7 +179,7 @@ const (
 // +kubebuilder:rbac:groups=*,resources=*,verbs=get;list;watch
 // +kubebuilder:rbac:groups=core,resources=namespaces;events,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=apiextensions.k8s.io,resources=customresourcedefinitions,verbs=get;list;watch;create;update;patch;delete
-// +kubebuilder:rbac:groups=config.gatekeeper.sh,resources=configs,verbs=get;list;watch;create;update;patch;delete
+// +kubebuilder:rbac:groups=config.gatekeeper.sh,resources=*,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=config.gatekeeper.sh,resources=configs/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=constraints.gatekeeper.sh,resources=*,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=mutations.gatekeeper.sh,resources=*,verbs=get;list;watch;create;update;patch;delete

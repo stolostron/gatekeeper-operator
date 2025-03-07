@@ -6,6 +6,7 @@
 // config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_assign.mutations.gatekeeper.sh.yaml
 // config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_assignimage.mutations.gatekeeper.sh.yaml
 // config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_assignmetadata.mutations.gatekeeper.sh.yaml
+// config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_configpodstatuses.status.gatekeeper.sh.yaml
 // config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_configs.config.gatekeeper.sh.yaml
 // config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_constraintpodstatuses.status.gatekeeper.sh.yaml
 // config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_constrainttemplatepodstatuses.status.gatekeeper.sh.yaml
@@ -2725,6 +2726,94 @@ func configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_assi
 	return a, nil
 }
 
+var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_configpodstatusesStatusGatekeeperShYaml = []byte(`apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.14.0
+  labels:
+    gatekeeper.sh/system: "yes"
+  name: configpodstatuses.status.gatekeeper.sh
+spec:
+  group: status.gatekeeper.sh
+  names:
+    kind: ConfigPodStatus
+    listKind: ConfigPodStatusList
+    plural: configpodstatuses
+    singular: configpodstatus
+  preserveUnknownFields: false
+  scope: Namespaced
+  versions:
+  - name: v1beta1
+    schema:
+      openAPIV3Schema:
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          status:
+            properties:
+              configUID:
+                description: |-
+                  UID is a type that holds unique ID values, including UUIDs.  Because we
+                  don't ONLY use UUIDs, this is an alias to string.  Being a type captures
+                  intent and helps make sure that UIDs and names do not get conflated.
+                type: string
+              errors:
+                items:
+                  properties:
+                    message:
+                      type: string
+                    type:
+                      type: string
+                  required:
+                  - message
+                  type: object
+                type: array
+              id:
+                type: string
+              observedGeneration:
+                format: int64
+                type: integer
+              operations:
+                items:
+                  type: string
+                type: array
+            type: object
+        type: object
+    served: true
+    storage: true
+`)
+
+func configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_configpodstatusesStatusGatekeeperShYamlBytes() ([]byte, error) {
+	return _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_configpodstatusesStatusGatekeeperShYaml, nil
+}
+
+func configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_configpodstatusesStatusGatekeeperShYaml() (*asset, error) {
+	bytes, err := configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_configpodstatusesStatusGatekeeperShYamlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_configpodstatuses.status.gatekeeper.sh.yaml", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info}
+	return a, nil
+}
+
 var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_configsConfigGatekeeperShYaml = []byte(`apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
@@ -2841,10 +2930,44 @@ spec:
             type: object
           status:
             description: ConfigStatus defines the observed state of Config.
+            properties:
+              byPod:
+                items:
+                  properties:
+                    configUID:
+                      description: |-
+                        UID is a type that holds unique ID values, including UUIDs.  Because we
+                        don't ONLY use UUIDs, this is an alias to string.  Being a type captures
+                        intent and helps make sure that UIDs and names do not get conflated.
+                      type: string
+                    errors:
+                      items:
+                        properties:
+                          message:
+                            type: string
+                          type:
+                            type: string
+                        required:
+                        - message
+                        type: object
+                      type: array
+                    id:
+                      type: string
+                    observedGeneration:
+                      format: int64
+                      type: integer
+                    operations:
+                      items:
+                        type: string
+                      type: array
+                  type: object
+                type: array
             type: object
         type: object
     served: true
     storage: true
+    subresources:
+      status: {}
 `)
 
 func configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_configsConfigGatekeeperShYamlBytes() ([]byte, error) {
@@ -2914,6 +3037,25 @@ spec:
                 type: string
               enforced:
                 type: boolean
+              enforcementPointsStatus:
+                items:
+                  description: EnforcementPointStatus represents the status of a single
+                    enforcement point.
+                  properties:
+                    enforcementPoint:
+                      type: string
+                    message:
+                      type: string
+                    observedGeneration:
+                      format: int64
+                      type: integer
+                    state:
+                      type: string
+                  required:
+                  - enforcementPoint
+                  - state
+                  type: object
+                type: array
               errors:
                 items:
                   description: Error represents a single error caught while adding
@@ -3038,6 +3180,17 @@ spec:
                   don't ONLY use UUIDs, this is an alias to string.  Being a type captures
                   intent and helps make sure that UIDs and names do not get conflated.
                 type: string
+              vapGenerationStatus:
+                description: VAPGenerationStatus represents the status of VAP generation.
+                properties:
+                  observedGeneration:
+                    format: int64
+                    type: integer
+                  state:
+                    type: string
+                  warning:
+                    type: string
+                type: object
             type: object
         type: object
     served: true
@@ -5218,8 +5371,9 @@ spec:
         - --operation=audit
         - --operation=status
         - --operation=mutation-status
+        - --operation=generate
         - --logtostderr
-        - --disable-opa-builtin={http.send}
+        - --disable-cert-rotation
         command:
         - /manager
         env:
@@ -5241,7 +5395,7 @@ spec:
           value: manager
         - name: OTEL_RESOURCE_ATTRIBUTES
           value: k8s.pod.name=$(POD_NAME),k8s.namespace.name=$(NAMESPACE),k8s.container.name=$(CONTAINER_NAME)
-        image: quay.io/gatekeeper/gatekeeper:v3.17.2
+        image: quay.io/gatekeeper/gatekeeper:v3.18.2
         imagePullPolicy: Always
         livenessProbe:
           httpGet:
@@ -5377,7 +5531,7 @@ spec:
           value: manager
         - name: OTEL_RESOURCE_ATTRIBUTES
           value: k8s.pod.name=$(POD_NAME),k8s.namespace.name=$(NAMESPACE),k8s.container.name=$(CONTAINER_NAME)
-        image: quay.io/gatekeeper/gatekeeper:v3.17.2
+        image: quay.io/gatekeeper/gatekeeper:v3.18.2
         imagePullPolicy: Always
         livenessProbe:
           httpGet:
@@ -5529,6 +5683,18 @@ rules:
   - apiextensions.k8s.io
   resources:
   - customresourcedefinitions
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - config.gatekeeper.sh
+  resources:
+  - '*'
   verbs:
   - create
   - delete
@@ -5994,6 +6160,7 @@ var _bindata = map[string]func() (*asset, error){
 	"config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_assign.mutations.gatekeeper.sh.yaml":                            configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_assignMutationsGatekeeperShYaml,
 	"config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_assignimage.mutations.gatekeeper.sh.yaml":                       configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_assignimageMutationsGatekeeperShYaml,
 	"config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_assignmetadata.mutations.gatekeeper.sh.yaml":                    configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_assignmetadataMutationsGatekeeperShYaml,
+	"config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_configpodstatuses.status.gatekeeper.sh.yaml":                    configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_configpodstatusesStatusGatekeeperShYaml,
 	"config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_configs.config.gatekeeper.sh.yaml":                              configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_configsConfigGatekeeperShYaml,
 	"config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_constraintpodstatuses.status.gatekeeper.sh.yaml":                configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_constraintpodstatusesStatusGatekeeperShYaml,
 	"config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_constrainttemplatepodstatuses.status.gatekeeper.sh.yaml":        configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_constrainttemplatepodstatusesStatusGatekeeperShYaml,
@@ -6068,6 +6235,7 @@ var _bintree = &bintree{nil, map[string]*bintree{
 			"apiextensions.k8s.io_v1_customresourcedefinition_assign.mutations.gatekeeper.sh.yaml":                            {configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_assignMutationsGatekeeperShYaml, map[string]*bintree{}},
 			"apiextensions.k8s.io_v1_customresourcedefinition_assignimage.mutations.gatekeeper.sh.yaml":                       {configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_assignimageMutationsGatekeeperShYaml, map[string]*bintree{}},
 			"apiextensions.k8s.io_v1_customresourcedefinition_assignmetadata.mutations.gatekeeper.sh.yaml":                    {configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_assignmetadataMutationsGatekeeperShYaml, map[string]*bintree{}},
+			"apiextensions.k8s.io_v1_customresourcedefinition_configpodstatuses.status.gatekeeper.sh.yaml":                    {configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_configpodstatusesStatusGatekeeperShYaml, map[string]*bintree{}},
 			"apiextensions.k8s.io_v1_customresourcedefinition_configs.config.gatekeeper.sh.yaml":                              {configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_configsConfigGatekeeperShYaml, map[string]*bintree{}},
 			"apiextensions.k8s.io_v1_customresourcedefinition_constraintpodstatuses.status.gatekeeper.sh.yaml":                {configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_constraintpodstatusesStatusGatekeeperShYaml, map[string]*bintree{}},
 			"apiextensions.k8s.io_v1_customresourcedefinition_constrainttemplatepodstatuses.status.gatekeeper.sh.yaml":        {configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_constrainttemplatepodstatusesStatusGatekeeperShYaml, map[string]*bintree{}},

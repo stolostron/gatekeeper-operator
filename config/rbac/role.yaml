@@ -86,24 +86,13 @@ rules:
 - apiGroups:
   - config.gatekeeper.sh
   resources:
-  - configs
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - config.gatekeeper.sh
-  resources:
   - configs/status
   verbs:
   - get
   - patch
   - update
 - apiGroups:
+  - config.gatekeeper.sh
   - constraints.gatekeeper.sh
   - expansion.gatekeeper.sh
   - mutations.gatekeeper.sh
