@@ -6,11 +6,11 @@ metadata:
 spec:
   imageDigestMirrors:
     - mirrors:
-        - quay.io/redhat-user-workloads/gatekeeper-tenant/gatekeeper-operator-3-17/gatekeeper-operator-bundle-3-17
+        - quay.io/redhat-user-workloads/gatekeeper-tenant/gatekeeper-operator-3-18/gatekeeper-operator-bundle-3-18
       source: registry.redhat.io/gatekeeper/gatekeeper-operator-bundle
     - mirrors:
-        - quay.io/redhat-user-workloads/gatekeeper-tenant/gatekeeper-operator-3-17/gatekeeper-operator-3-17
+        - quay.io/redhat-user-workloads/gatekeeper-tenant/gatekeeper-operator-3-18/gatekeeper-operator-3-18
       source: registry.redhat.io/gatekeeper/gatekeeper-rhel9-operator
     - mirrors:
-        - quay.io/redhat-user-workloads/gatekeeper-tenant/gatekeeper-operator-3-17/gatekeeper-3-17
+        - quay.io/redhat-user-workloads/gatekeeper-tenant/gatekeeper-operator-3-18/gatekeeper-3-18
       source: registry.redhat.io/gatekeeper/gatekeeper-rhel9
