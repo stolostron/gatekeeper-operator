@@ -8,7 +8,7 @@ metadata:
     pipelinesascode.tekton.dev/cancel-in-progress: "false"
     pipelinesascode.tekton.dev/max-keep-runs: "3"
     pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch
-      == "release-3.18"
+      == "release-3.18" && (".tekton/gatekeeper-operator-[!b]*.yaml".pathChanged() ||  "build/Dockerfile*".pathChanged() || "go.{mod,sum}".pathChanged() ||  "main.go".pathChanged() || "{api,pkg,controllers}/***".pathChanged())
   creationTimestamp: null
   labels:
     appstudio.openshift.io/application: gatekeeper-operator-3-18
@@ -28,6 +28,10 @@ spec:
     value: build/bundle.Dockerfile.rhtap
   - name: path-context
     value: .
+  - name: build-source-image
+    value: "true"
+  - name: hermetic
+    value: "true"
   pipelineSpec:
     description: |
       This pipeline is ideal for building container images from a Containerfile while reducing network traffic.
@@ -582,7 +586,7 @@ spec:
         - name: name
           value: rpms-signature-scan
         - name: bundle
-          value: quay.io/konflux-ci/tekton-catalog/task-rpms-signature-scan@sha256:b9cb1e126d186010e0a5281501b475177d55b4eb2829c5e7d7614c173a8c929c
+          value: quay.io/konflux-ci/tekton-catalog/task-rpms-signature-scan:0.2@sha256:d00d159c370e3c99447516970c316ef57dfd27c29e0ce3cff50727c9c40936d8
         - name: kind
           value: task
         resolver: bundles
