@@ -63,7 +63,7 @@ jobs:
           echo "::endgroup::"
 
       - name: Run Gosec Security Scanner
-        uses: securego/gosec@v2.22.2
+        uses: securego/gosec@v2.22.3
         with:
           args: -no-fail -fmt sonarqube -out gosec.json -stdout -exclude-dir=.go -exclude-dir=test ./...
 
