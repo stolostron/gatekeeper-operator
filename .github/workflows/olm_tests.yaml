@@ -51,8 +51,10 @@ jobs:
             kubectl -n mygatekeeper get deployment gatekeeper-operator-controller && break
 
             # Patch any ErrorPreventedResolution status, which would unnecessarily block the deployment for 10 minutes
-            kubectl get subscription -n mygatekeeper -l operators.coreos.com/gatekeeper-operator.mygatekeeper= -o yaml |
-              yq '.items[0] | .status.conditions[] |= del(select(.reason == "ErrorPreventedResolution"))' | kubectl apply -f -
+            gk_subscription=$(kubectl get subscription -n mygatekeeper -l operators.coreos.com/gatekeeper-operator.mygatekeeper= -o yaml | yq '.items[0]')
+            if [[ "${gk_subscription}" != "null" ]]; then
+              echo ${gk_subscription} | yq '.status.conditions[] |= del(select(.reason == "ErrorPreventedResolution"))' | kubectl apply -f -
+            fi
 
             sleep 10
           done
