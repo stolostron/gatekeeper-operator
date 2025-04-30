@@ -239,7 +239,7 @@ jobs:
           yq '.spec.type = "NodePort"' -i test/bats/tests/mutations/mutate_svc.yaml
 
           test/externaldata/dummy-provider/scripts/generate-tls-certificate.sh
-          sed -i 's/"golang:1.22-bookworm"/"golang:1.23-bookworm"/' test/externaldata/dummy-provider/Dockerfile
+          sed -i 's/"golang:.*-bookworm"/"golang:bookworm"/' test/externaldata/dummy-provider/Dockerfile
           docker build -t dummy-provider:test -f test/externaldata/dummy-provider/Dockerfile test/externaldata/dummy-provider
           kind load docker-image dummy-provider:test --name test-kind
           echo "::endgroup::"
