@@ -234,7 +234,7 @@ jobs:
           echo "* Patching test command for exempt namespaces:"
           replace='num_namespaces=$(($(kubectl get ns -o json | jq '\''.items | length'\'')-$(kubectl get ns | grep excluded | wc  -l)))'
           sed -i "s/num_namespaces=.*/$replace/" test/bats/test.bats
-          sed -i -E 's/(golang:1.23-bookworm)[^ ]+/\1/' test/externaldata/dummy-provider/Dockerfile
+          sed -i -E 's/(golang:.*-bookworm)[^ ]+/golang:bookworm/' test/externaldata/dummy-provider/Dockerfile
 
           test/externaldata/dummy-provider/scripts/generate-tls-certificate.sh
           docker build -t dummy-provider:test -f test/externaldata/dummy-provider/Dockerfile test/externaldata/dummy-provider
