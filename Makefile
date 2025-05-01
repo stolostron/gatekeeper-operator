@@ -326,9 +326,11 @@ bundle: operator-sdk manifests kustomize ## Generate bundle manifests and metada
   else
 	  $(SED) -i 's/^  replaces:.*/  # replaces: none/' bundle/manifests/$(PROJECT_NAME).clusterserviceversion.yaml
   endif
-	awk '/FROM/,/# Core bundle annotations/' build/bundle.Dockerfile | sed '$$d' > build/bundle.Dockerfile.tmp
-	mv build/bundle.Dockerfile.tmp build/bundle.Dockerfile
-	yq '.annotations' bundle/metadata/annotations.yaml | sed 's/: /=/' | sed 's/^\([^#]\)/LABEL \1/' >> build/bundle.Dockerfile
+	@for bundle in build/bundle.Dockerfile*; do \
+		awk '/FROM/,/# Core bundle annotations/' $${bundle} | sed '$$d' > $${bundle}.tmp; \
+		mv $${bundle}.tmp $${bundle}; \
+		yq '.annotations' bundle/metadata/annotations.yaml | sed 's/: /=/' | sed 's/^\([^#]\)/LABEL \1/' >> $${bundle}; \
+	done
 	$(OPERATOR_SDK) bundle validate ./bundle
 
 .PHONY: bundle-build
