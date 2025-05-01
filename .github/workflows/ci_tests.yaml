@@ -54,6 +54,12 @@ jobs:
           make update-bindata
           git diff --exit-code
 
+      - name: Verify containerfiles are synced
+        run: |
+          diff \
+            <(sed -E 's/FROM .*go([0-9.]+).* AS builder/FROM \1 AS builder/' build/Dockerfile) \
+            <(sed -E 's/FROM .*rhel_[0-9]+_([0-9.]+).* AS builder/FROM \1 AS builder/' build/Dockerfile.rhtap)
+
       - name: Unit and Integration Tests
         run: |
           make test
