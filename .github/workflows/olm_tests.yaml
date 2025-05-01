@@ -70,6 +70,7 @@ jobs:
 
       - name: Debug
         if: ${{ failure() }}
+        continue-on-error: true
         run: |
           echo "::group:Deployments"
           kubectl -n mygatekeeper get all

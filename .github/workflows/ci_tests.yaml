@@ -125,6 +125,7 @@ jobs:
 
       - name: Debug
         if: ${{ failure() }}
+        continue-on-error: true
         run: |
           echo "::group:Deployments"
           kubectl -n gatekeeper-system get all
@@ -169,6 +170,7 @@ jobs:
 
       - name: Debug
         if: ${{ failure() }}
+        continue-on-error: true
         run: |
           echo "::group:Deployments"
           kubectl -n openshift-gatekeeper-system get all
