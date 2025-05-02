@@ -43,8 +43,8 @@ csv_patch=$(printf '[{
   "op": "replace",
   "path": "/spec/install/spec/deployments/0/spec/template/spec/containers/0/image",
   "value": "%s",
-}]' ${gatekeeper_img} ${gatekeeper_img} ${gatekeeper_img} ${operator_img} ${operator_img})
+}]' "${gatekeeper_img}" "${gatekeeper_img}" "${gatekeeper_img}" "${operator_img}" "${operator_img}")
 
-kubectl patch --local=true -f ${csv_file} --type=json --patch="${csv_patch}" --output=yaml >${csv_file}.bk
+kubectl patch --local=true -f "${csv_file}" --type=json --patch="${csv_patch}" --output=yaml >"${csv_file}.bk"
 
-mv ${csv_file}.bk ${csv_file}
+mv "${csv_file}.bk" "${csv_file}"
