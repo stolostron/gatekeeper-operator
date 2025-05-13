@@ -23,7 +23,7 @@ annotations:
   name: gatekeeper/gatekeeper-operator-bundle
   description: "The Gatekeeper Operator installs and configures Open Policy Agent Gatekeeper."
   summary: "Red Hat Gatekeeper Operator"
-  version: v3.17.2
+  version: v3.17.3
   release: "0"
   distribution-scope: public
   maintainer: "acm-component-maintainers@redhat.com"
