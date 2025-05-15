@@ -5395,7 +5395,7 @@ spec:
           value: manager
         - name: OTEL_RESOURCE_ATTRIBUTES
           value: k8s.pod.name=$(POD_NAME),k8s.namespace.name=$(NAMESPACE),k8s.container.name=$(CONTAINER_NAME)
-        image: quay.io/gatekeeper/gatekeeper:v3.18.2
+        image: quay.io/gatekeeper/gatekeeper:v3.18.3
         imagePullPolicy: Always
         livenessProbe:
           httpGet:
@@ -5531,7 +5531,7 @@ spec:
           value: manager
         - name: OTEL_RESOURCE_ATTRIBUTES
           value: k8s.pod.name=$(POD_NAME),k8s.namespace.name=$(NAMESPACE),k8s.container.name=$(CONTAINER_NAME)
-        image: quay.io/gatekeeper/gatekeeper:v3.18.2
+        image: quay.io/gatekeeper/gatekeeper:v3.18.3
         imagePullPolicy: Always
         livenessProbe:
           httpGet:
