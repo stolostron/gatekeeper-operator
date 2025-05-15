@@ -114,9 +114,8 @@ release of the Gatekeeper Operator using Konflux and the GitHub Actions release 
    ```shell
    STOLOSTRON="$(git remote -v | grep push | awk '/stolostron/ {print $1}')"
    git fetch --prune ${STOLOSTRON}
-   latest_branch="$(git ls-remote ${STOLOSTRON} | grep -o release-[0-9]*\.[0-9]* | tail -1)"
-   git checkout ${STOLOSTRON}/${latest_branch}
-   git checkout -b create-${latest_branch}
+   git checkout ${STOLOSTRON}/release-${RELEASE_VERSION%.*}
+   git checkout -b create-${RELEASE_VERSION}
    ```
 
 3. Remove any `GATEKEEPER_VERSION` file if necessary:
@@ -187,7 +186,7 @@ release of the Gatekeeper Operator using Konflux and the GitHub Actions release 
 9. Commit above changes:
 
    ```shell
-   git commit --signoff -am "Release ${RELEASE_VERSION}"
+   git commit -S --signoff -am "Release ${RELEASE_VERSION}"
    ```
 
 10. Push the changes in the branch to your fork (set `FORK` manually if you have more than one
@@ -195,25 +194,26 @@ release of the Gatekeeper Operator using Konflux and the GitHub Actions release 
 
     ```shell
     FORK="$(git remote -v | grep push | awk '!/stolostron/ {print $1}')"
-    git push -u ${FORK} create-release-${RELEASE_VERSION}
+    git push -u ${FORK} create-${RELEASE_VERSION}
     ```
 
 11. Create a PR with the above changes and merge it. If using the `gh`
     [GitHub CLI](https://cli.github.com/) you can create the PR using:
 
     ```shell
-    gh pr create --repo stolostron/gatekeeper-operator --title "Release ${RELEASE_VERSION}" --body ""
+    gh pr create --repo stolostron/gatekeeper-operator --title "Release v${RELEASE_VERSION}" --body ""  --base "release-${RELEASE_VERSION%.*}"
     ```
 
 ## Tag the new release
 
-1. After the PR is merged (and any subsequent fixes), fetch the new commits:
+1. After the PR is merged (and any subsequent fixes), fetch the new commits (replace "release-X.Y"
+   with the relevant release branch):
 
    ```shell
+   branch=release-X.Y
    STOLOSTRON="$(git remote -v | grep push | awk '/stolostron/ {print $1}')"
-   latest_branch="$(git ls-remote ${STOLOSTRON} | grep -o release-[0-9]*\.[0-9]* | tail -1)"
    git fetch --prune ${STOLOSTRON}
-   git checkout ${STOLOSTRON}/${latest_branch}
+   git checkout ${STOLOSTRON}/${branch}
    ```
 
 2. Create and push a new release tag. This will trigger the GitHub actions release workflow to build
