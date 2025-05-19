@@ -10,10 +10,11 @@ release of the Gatekeeper Operator using Konflux and the GitHub Actions release 
 
 ## Create a new release branch
 
-1. Check the latest upstream release
-   https://github.com/open-policy-agent/gatekeeper/releases/latest. Ensure an associated release
-   branch has been created and updated in https://github.com/stolostron/gatekeeper and tagged with
-   the correct version.
+1. Check the latest upstream release from the
+   [`open-policy-agent/gatekeeper` release page](https://github.com/open-policy-agent/gatekeeper/releases/latest).
+   Ensure an associated release branch has been created and updated in
+   [stolostron/gatekeeper](https://github.com/stolostron/gatekeeper) and tagged with the correct
+   version.
 2. Make sure your clone is up-to-date and check out the latest `release-*` branch:
 
    ```shell
@@ -28,16 +29,20 @@ release of the Gatekeeper Operator using Konflux and the GitHub Actions release 
 
    ```shell
    RELEASE_VERSION=1.2.3
-   git push -u ${STOLOSTRON}/release-${RELEASE_VERSION%.*}
+   ```
+
+   ```shell
+   git checkout -b release-${RELEASE_VERSION%.*}
+   git push -u ${STOLOSTRON} release-${RELEASE_VERSION%.*}
    ```
 
 ## Create the Konflux application
 
 1. Create a new Konflux application for the new version in the
    [`releng/konflux-release-data`](https://gitlab.cee.redhat.com/releng/konflux-release-data/-/tree/main/tenants-config/cluster/stone-prd-rh01/tenants/gatekeeper-tenant)
-   repo (VPN required), copying the most recent version into a new folder and doing a find/replace
-   for the old version to the new version. Merge the MR there. This will trigger PRs to be created
-   for each component in the repo.
+   repo (VPN required). Follow the instructions in the README in the `gatekeeper-tenant` directory
+   to open and merge an MR there. This will trigger PRs to be created for each component in the
+   repo.
 2. Set the Konflux component to be updated (both must be handled):
 
    Operator:
@@ -61,7 +66,7 @@ release of the Gatekeeper Operator using Konflux and the GitHub Actions release 
 
    latest_branch="$(git ls-remote ${STOLOSTRON} | grep -o release-[0-9]*\.[0-9]* | tail -1)"
    xyver=${latest_branch#*-}
-   git checkout ${STOLOSTRON}/appstudio-${component}-${xyver//./-}
+   git checkout --track ${STOLOSTRON}/konflux-${component}-${xyver//./-}
 
    commit_msg=$(git show -s --format=%s)
    git reset ${STOLOSTRON}/${latest_branch}
@@ -86,17 +91,18 @@ release of the Gatekeeper Operator using Konflux and the GitHub Actions release 
      annotation
    - Add matching `spec.params`: `hermetic` and, for the operator (not bundle), `prefetch-input`
 
-6. Update the image patch script with the new version (use `gsed` if on Mac):
+6. Update the image patch script with the new version:
 
    ```shell
-   sed -E -i "s/[0-9]+-[0-9]+/${xyver//./-}/g" build/konflux-patch.sh
+   SED=$([[ $(uname -s | tr '[:upper:]' '[:lower:]') == "darwin" ]] && echo "gsed" || echo "sed" )
+   ${SED} -E -i "s/[0-9]+-[0-9]+/${xyver//./-}/g" build/konflux-patch.sh
    ```
 
 7. Commit the changes with the stored message and force push the commit:
 
    ```shell
    git commit -S -s -am "${commit_msg}"
-   git push --force
+   git push --force -u ${STOLOSTRON} konflux-${component}-${xyver//./-}
    ```
 
 ## Update the operator
@@ -106,6 +112,9 @@ release of the Gatekeeper Operator using Konflux and the GitHub Actions release 
 
    ```shell
    RELEASE_VERSION=1.2.3
+   ```
+
+   ```shell
    RELEASE_PREV_VERSION=$(cat VERSION)
    ```
 
