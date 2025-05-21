@@ -342,7 +342,7 @@ spec:
                                     pod labels will be ignored. The default value is empty.
                                     The same key is forbidden to exist in both matchLabelKeys and labelSelector.
                                     Also, matchLabelKeys cannot be set when labelSelector isn't set.
-                                    This is an alpha field and requires enabling MatchLabelKeysInPodAffinity feature gate.
+                                    This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
                                   items:
                                     type: string
                                   type: array
@@ -357,7 +357,7 @@ spec:
                                     pod labels will be ignored. The default value is empty.
                                     The same key is forbidden to exist in both mismatchLabelKeys and labelSelector.
                                     Also, mismatchLabelKeys cannot be set when labelSelector isn't set.
-                                    This is an alpha field and requires enabling MatchLabelKeysInPodAffinity feature gate.
+                                    This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
                                   items:
                                     type: string
                                   type: array
@@ -523,7 +523,7 @@ spec:
                                 pod labels will be ignored. The default value is empty.
                                 The same key is forbidden to exist in both matchLabelKeys and labelSelector.
                                 Also, matchLabelKeys cannot be set when labelSelector isn't set.
-                                This is an alpha field and requires enabling MatchLabelKeysInPodAffinity feature gate.
+                                This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
                               items:
                                 type: string
                               type: array
@@ -538,7 +538,7 @@ spec:
                                 pod labels will be ignored. The default value is empty.
                                 The same key is forbidden to exist in both mismatchLabelKeys and labelSelector.
                                 Also, mismatchLabelKeys cannot be set when labelSelector isn't set.
-                                This is an alpha field and requires enabling MatchLabelKeysInPodAffinity feature gate.
+                                This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
                               items:
                                 type: string
                               type: array
@@ -701,7 +701,7 @@ spec:
                                     pod labels will be ignored. The default value is empty.
                                     The same key is forbidden to exist in both matchLabelKeys and labelSelector.
                                     Also, matchLabelKeys cannot be set when labelSelector isn't set.
-                                    This is an alpha field and requires enabling MatchLabelKeysInPodAffinity feature gate.
+                                    This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
                                   items:
                                     type: string
                                   type: array
@@ -716,7 +716,7 @@ spec:
                                     pod labels will be ignored. The default value is empty.
                                     The same key is forbidden to exist in both mismatchLabelKeys and labelSelector.
                                     Also, mismatchLabelKeys cannot be set when labelSelector isn't set.
-                                    This is an alpha field and requires enabling MatchLabelKeysInPodAffinity feature gate.
+                                    This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
                                   items:
                                     type: string
                                   type: array
@@ -882,7 +882,7 @@ spec:
                                 pod labels will be ignored. The default value is empty.
                                 The same key is forbidden to exist in both matchLabelKeys and labelSelector.
                                 Also, matchLabelKeys cannot be set when labelSelector isn't set.
-                                This is an alpha field and requires enabling MatchLabelKeysInPodAffinity feature gate.
+                                This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
                               items:
                                 type: string
                               type: array
@@ -897,7 +897,7 @@ spec:
                                 pod labels will be ignored. The default value is empty.
                                 The same key is forbidden to exist in both mismatchLabelKeys and labelSelector.
                                 Also, mismatchLabelKeys cannot be set when labelSelector isn't set.
-                                This is an alpha field and requires enabling MatchLabelKeysInPodAffinity feature gate.
+                                This is a beta field and requires enabling MatchLabelKeysInPodAffinity feature gate (enabled by default).
                               items:
                                 type: string
                               type: array
@@ -1103,6 +1103,12 @@ spec:
                                 Name must match the name of one entry in pod.spec.resourceClaims of
                                 the Pod where this field is used. It makes that resource available
                                 inside a container.
+                              type: string
+                            request:
+                              description: |-
+                                Request is the name chosen for a request in the referenced claim.
+                                If empty, everything from the claim is made available, otherwise
+                                only the result of this request.
                               type: string
                           required:
                           - name
@@ -1458,6 +1464,12 @@ spec:
                                 the Pod where this field is used. It makes that resource available
                                 inside a container.
                               type: string
+                            request:
+                              description: |-
+                                Request is the name chosen for a request in the referenced claim.
+                                If empty, everything from the claim is made available, otherwise
+                                only the result of this request.
+                              type: string
                           required:
                           - name
                           type: object
@@ -1795,15 +1807,6 @@ rules:
 - apiGroups:
   - templates.gatekeeper.sh
   resources:
-  - constrainttemplates/finalizers
-  verbs:
-  - delete
-  - get
-  - patch
-  - update
-- apiGroups:
-  - templates.gatekeeper.sh
-  resources:
   - constrainttemplates/status
   verbs:
   - get
@@ -1883,8 +1886,8 @@ spec:
         - /manager
         env:
         - name: RELATED_IMAGE_GATEKEEPER
-          value: quay.io/gatekeeper/gatekeeper:v3.18.3
-        image: quay.io/gatekeeper/gatekeeper-operator:v3.18.1
+          value: quay.io/gatekeeper/gatekeeper:v3.19.1
+        image: quay.io/gatekeeper/gatekeeper-operator:v3.19.0
         imagePullPolicy: Always
         livenessProbe:
           httpGet:
