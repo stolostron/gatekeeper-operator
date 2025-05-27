@@ -31,7 +31,7 @@ type ConfigReconciler struct {
 func (r *ConfigReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		WithOptions(controller.Options{MaxConcurrentReconciles: int(1)}).
-		Named(ControllerName).
+		Named("config_reconciler").
 		For(&v1alpha1.Config{},
 			builder.WithPredicates(predicate.Funcs{
 				// Reconcile only when Spec.Match is changed

@@ -27,8 +27,6 @@ import (
 	operatorv1alpha1 "github.com/stolostron/gatekeeper-operator/api/v1alpha1"
 )
 
-var ControllerName = "constraintstatus_reconciler"
-
 type ConstraintPodStatusReconciler struct {
 	client.Client
 	Scheme        *runtime.Scheme
@@ -45,7 +43,7 @@ type ConstraintPodStatusReconciler struct {
 func (r *ConstraintPodStatusReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		WithOptions(controller.Options{MaxConcurrentReconciles: int(1)}).
-		Named(ControllerName).
+		Named("constraintstatus_reconciler").
 		For(&v1beta1.ConstraintPodStatus{},
 			builder.WithPredicates(predicate.Funcs{
 				// Execute this reconcile func when it is audit-constraintStatuspod

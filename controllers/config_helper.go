@@ -16,6 +16,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	cacheRuntime "sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/config"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/metrics/server"
@@ -220,8 +221,12 @@ func (r *GatekeeperReconciler) handleConfigController(ctx context.Context) error
 	var configCtrlCtx context.Context
 
 	configCtrlCtx, r.configCtrlCtxCancel = context.WithCancel(ctx)
+	validateName := true
 
 	configMgr, err := ctrl.NewManager(r.KubeConfig, ctrl.Options{
+		Controller: config.Controller{
+			SkipNameValidation: &validateName,
+		},
 		Scheme: r.Scheme,
 		Metrics: server.Options{
 			BindAddress: "0",
