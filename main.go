@@ -32,6 +32,7 @@ import (
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/config"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/handler"
 	"sigs.k8s.io/controller-runtime/pkg/healthz"
@@ -82,6 +83,11 @@ func main() {
 	ctrl.Log.WithName("Gatekeeper Operator version").Info(fmt.Sprintf("%#v", version.Get()))
 	ctx := ctrl.SetupSignalHandler()
 
+	validateName := true
+	controllerOptions := config.Controller{
+		SkipNameValidation: &validateName,
+	}
+
 	metricsOptions := server.Options{
 		BindAddress: metricsAddr,
 	}
@@ -95,6 +101,7 @@ func main() {
 	cfg := ctrl.GetConfigOrDie()
 
 	mgr, err := ctrl.NewManager(cfg, ctrl.Options{
+		Controller:             controllerOptions,
 		Scheme:                 scheme,
 		Metrics:                metricsOptions,
 		WebhookServer:          webhookOptions,

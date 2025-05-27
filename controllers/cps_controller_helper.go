@@ -15,6 +15,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime"
 	cacheRuntime "sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+	"sigs.k8s.io/controller-runtime/pkg/config"
 	"sigs.k8s.io/controller-runtime/pkg/event"
 	"sigs.k8s.io/controller-runtime/pkg/metrics/server"
 
@@ -55,8 +56,12 @@ func (r *GatekeeperReconciler) handleCPSController(ctx context.Context,
 	var cpsCtrlCtx context.Context
 
 	cpsCtrlCtx, r.cpsCtrlCtxCancel = context.WithCancel(ctx)
+	validateName := true
 
 	cpsMgr, err := ctrl.NewManager(r.KubeConfig, ctrl.Options{
+		Controller: config.Controller{
+			SkipNameValidation: &validateName,
+		},
 		Scheme: r.Scheme,
 		Metrics: server.Options{
 			BindAddress: "0",
