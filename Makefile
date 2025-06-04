@@ -150,7 +150,7 @@ IMPORT_MANIFESTS_PATH ?= https://github.com/stolostron/gatekeeper
 TMP_IMPORT_MANIFESTS_PATH := $(shell mktemp -d)
 GATEKEEPER_MANIFEST_DIR ?= config/gatekeeper
 
-GATEKEEPER_TAG := $(shell curl -sL https://api.github.com/repos/stolostron/gatekeeper/tags | jq -r '.[].name' | sort --version-sort | grep $(shell echo $(GATEKEEPER_VERSION) | cut -d '.' -f 1-2) | tail -1 )
+GATEKEEPER_TAG := $(shell curl --fail -sL https://api.github.com/repos/stolostron/gatekeeper/tags | jq -r '.[].name' | sort --version-sort | grep $(shell echo $(GATEKEEPER_VERSION) | cut -d '.' -f 1-2) | tail -1 )
 
 .PHONY: import-manifests
 import-manifests: kustomize ## Import Gatekeeper manifests.
