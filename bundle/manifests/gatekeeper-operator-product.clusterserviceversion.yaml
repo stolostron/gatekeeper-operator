@@ -511,5 +511,5 @@ spec:
   relatedImages:
   - image: quay.io/gatekeeper/gatekeeper:v3.19.2
     name: gatekeeper
-  replaces: gatekeeper-operator-product.v3.18.1
+  replaces: gatekeeper-operator-product.v3.18.0
   version: "3.19.0"
