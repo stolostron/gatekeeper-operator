@@ -167,7 +167,7 @@ release of the Gatekeeper Operator using Konflux and the GitHub Actions release 
    channel prior to running the release Make targets:
 
    ```shell
-   export CHANNEL=$(cat VERSION | cut -d '.' -f 1-2)
+   export CHANNELS=$(cat VERSION | cut -d '.' -f 1-2)
    export DEFAULT_CHANNEL=${CHANNEL}
    ```
 
