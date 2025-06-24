@@ -334,6 +334,12 @@ spec:
         - apiGroups:
           - templates.gatekeeper.sh
           resources:
+          - constrainttemplates/finalizers
+          verbs:
+          - update
+        - apiGroups:
+          - templates.gatekeeper.sh
+          resources:
           - constrainttemplates/status
           verbs:
           - get
@@ -364,7 +370,7 @@ spec:
                 - /manager
                 env:
                 - name: RELATED_IMAGE_GATEKEEPER
-                  value: quay.io/gatekeeper/gatekeeper:v3.19.1
+                  value: quay.io/gatekeeper/gatekeeper:v3.19.2
                 image: quay.io/gatekeeper/gatekeeper-operator:v3.19.0
                 imagePullPolicy: Always
                 livenessProbe:
@@ -503,7 +509,7 @@ spec:
   provider:
     name: Red Hat
   relatedImages:
-  - image: quay.io/gatekeeper/gatekeeper:v3.19.1
+  - image: quay.io/gatekeeper/gatekeeper:v3.19.2
     name: gatekeeper
   replaces: gatekeeper-operator-product.v3.18.1
   version: "3.19.0"
