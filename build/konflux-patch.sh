@@ -3,7 +3,7 @@
 set -e
 
 # Gatekeeper Operator image
-stage_operator_img="quay.io/redhat-user-workloads/gatekeeper-tenant/gatekeeper-operator-3-19/gatekeeper-operator-3-19@sha256:365a02d1105a11cc2615525de79f52f31213183bdc751525cdeb22488cfa2a07"
+stage_operator_img="quay.io/redhat-user-workloads/gatekeeper-tenant/gatekeeper-operator-3-19/gatekeeper-operator-3-19@sha256:a803364800211680daaad4eb5973189c6c6f085ab9c1ee0a0514684120d15e41"
 operator_img="registry.redhat.io/gatekeeper/gatekeeper-rhel9-operator@${stage_operator_img##*@}"
 # Gatekeeper image
 stage_gatekeeper_img="quay.io/redhat-user-workloads/gatekeeper-tenant/gatekeeper-operator-3-19/gatekeeper-3-19@sha256:11f62a5a82009f90545dab8341f5ab4fef05750d91492389b053fd5dd7534391"
