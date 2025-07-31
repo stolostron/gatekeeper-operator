@@ -8,7 +8,7 @@ require (
 	github.com/onsi/ginkgo/v2 v2.23.3
 	github.com/onsi/gomega v1.36.3
 	github.com/open-policy-agent/frameworks/constraint v0.0.0-20250328190153-08aa5ffa6033
-	github.com/open-policy-agent/gatekeeper/v3 v3.19.2
+	github.com/open-policy-agent/gatekeeper/v3 v3.19.3
 	github.com/pkg/errors v0.9.1
 	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56
 	k8s.io/api v0.32.3
