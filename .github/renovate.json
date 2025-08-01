@@ -14,7 +14,7 @@
       "matchBaseBranches": ["/^release-[0-9]+\\.[0-9]+$/"],
       "matchManagers": ["dockerfile"],
       "managerFilePatterns": ["build/bundle.Dockerfile.rhtap"],
-      "ignorePaths": ["*"],
+      "ignorePaths": ["**"],
       "enabled": true,
       "pinDigests": false
     },
@@ -23,7 +23,7 @@
       "matchBaseBranches": ["/^release-[0-9]+\\.[0-9]+$/"],
       "matchManagers": ["dockerfile"],
       "managerFilePatterns": ["build/*Dockerfile.rhtap"],
-      "ignorePaths": ["*"],
+      "ignorePaths": ["**"],
       "enabled": true,
       "pinDigests": true
     }
