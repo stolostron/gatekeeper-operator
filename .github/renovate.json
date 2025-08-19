@@ -4,27 +4,28 @@
   "gomod": {
     "enabled": false
   },
+  "kustomize": {
+    "enabled": false
+  },
+  "dockerfile": {
+    "managerFilePatterns": ["build/*Dockerfile.rhtap"],
+    "ignorePaths": [
+      "**/Dockerfile"
+    ]
+  },
   "packageRules": [
     {
-      "matchManagers": ["dockerfile"],
-      "enabled": false
-    },
-    {
-      "groupName": "Bundle builder image update",
+      "groupName": "bundle containerfile builder image",
       "matchBaseBranches": ["/^release-[0-9]+\\.[0-9]+$/"],
       "matchManagers": ["dockerfile"],
-      "managerFilePatterns": ["build/bundle.Dockerfile.rhtap"],
-      "ignorePaths": ["**"],
-      "enabled": true,
+      "ignorePaths": ["build/Dockerfile.rhtap"],
       "pinDigests": false
     },
     {
-      "groupName": "Operator base image update",
+      "groupName": "operator containerfile images",
       "matchBaseBranches": ["/^release-[0-9]+\\.[0-9]+$/"],
       "matchManagers": ["dockerfile"],
-      "managerFilePatterns": ["build/*Dockerfile.rhtap"],
-      "ignorePaths": ["**"],
-      "enabled": true,
+      "ignorePaths": ["build/bundle.Dockerfile.rhtap"],
       "pinDigests": true
     }
   ]
