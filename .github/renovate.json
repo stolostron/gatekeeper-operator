@@ -15,18 +15,16 @@
   },
   "packageRules": [
     {
-      "groupName": "bundle containerfile builder image",
-      "matchBaseBranches": ["/^release-[0-9]+\\.[0-9]+$/"],
+      "groupName": "containerfile images ({{baseBranch}})",
       "matchManagers": ["dockerfile"],
-      "ignorePaths": ["build/Dockerfile.rhtap"],
-      "pinDigests": false
+      "ignorePaths": ["**/bundle.Dockerfile.rhtap"],
+      "pinDigests": true
     },
     {
-      "groupName": "operator containerfile images",
-      "matchBaseBranches": ["/^release-[0-9]+\\.[0-9]+$/"],
+      "groupName": "containerfile images ({{baseBranch}})",
       "matchManagers": ["dockerfile"],
-      "ignorePaths": ["build/bundle.Dockerfile.rhtap"],
-      "pinDigests": true
+      "ignorePaths": ["**/Dockerfile.rhtap"],
+      "pinDigests": false
     }
   ]
 }
