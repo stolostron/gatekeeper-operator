@@ -1,9 +1,6 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "timezone": "America/New_York",
-  "gomod": {
-    "enabled": false
-  },
   "kustomize": {
     "enabled": false
   },
@@ -13,18 +10,38 @@
       "**/Dockerfile"
     ]
   },
+  "gomod": {
+    "packageRules": [
+      {
+        "matchDepTypes": ["indirect"],
+        "enabled": false
+      }
+    ]
+  },
+  "vulnerabilityAlerts": {
+    "enabled": true
+  },
+  "osvVulnerabilityAlerts": true,
   "packageRules": [
     {
-      "groupName": "containerfile images ({{baseBranch}})",
+      "groupName": "containerfile images ({{{baseBranch}}})",
       "matchManagers": ["dockerfile"],
       "ignorePaths": ["**/bundle.Dockerfile.rhtap"],
       "pinDigests": true
     },
     {
-      "groupName": "containerfile images ({{baseBranch}})",
+      "groupName": "containerfile images ({{{baseBranch}}})",
       "matchManagers": ["dockerfile"],
       "ignorePaths": ["**/Dockerfile.rhtap"],
       "pinDigests": false
+    },
+    {
+      "matchManagers": ["gomod"],
+      "enabled": false,
+      "vulnerabilityAlerts": {
+        "enabled": true
+      },
+      "osvVulnerabilityAlerts": true
     }
   ]
 }
