@@ -332,6 +332,9 @@ bundle: operator-sdk manifests kustomize ## Generate bundle manifests and metada
 		mv $${bundle}.tmp $${bundle}; \
 		yq '.annotations' bundle/metadata/annotations.yaml | sed 's/: /=/' | sed 's/^\([^#]\)/LABEL \1/' >> $${bundle}; \
 	done
+	@for operator in build/Dockerfile*; do \
+		$(SED) -i 's/^\(LABEL version=\).*/\1v$(VERSION)/' $${operator}; \
+	done
 	$(OPERATOR_SDK) bundle validate ./bundle
 
 .PHONY: bundle-build
