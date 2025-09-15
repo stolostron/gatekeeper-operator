@@ -93,15 +93,16 @@ const (
 	LogMutationsArg                     = "--log-mutations"
 	MutationAnnotationsArg              = "--mutation-annotations"
 	LogDeniesArg                        = "--log-denies"
-	admissionFileFmt                    = "admissionregistration.k8s.io_v1_%[1]swebhookconfiguration" +
-		"_gatekeeper-%[1]s-webhook-configuration.yaml"
-	OpenshiftSecretName = "gatekeeper-webhook-server-cert-ocp"
+	OpenshiftSecretName                 = "gatekeeper-webhook-server-cert-ocp"
+
+	//nolint:lll
+	ValidatingWebhookConfiguration = "admissionregistration.k8s.io_v1_validatingwebhookconfiguration_gatekeeper-validating-webhook-configuration.yaml"
+	//nolint:lll
+	MutatingWebhookConfiguration = "admissionregistration.k8s.io_v1_mutatingwebhookconfiguration_gatekeeper-mutating-webhook-configuration.yaml"
 )
 
 var (
-	ValidatingWebhookConfiguration = fmt.Sprintf(admissionFileFmt, "validating")
-	MutatingWebhookConfiguration   = fmt.Sprintf(admissionFileFmt, "mutating")
-	orderedStaticAssets            = []string{
+	orderedStaticAssets = []string{
 		NamespaceFile,
 		"v1_resourcequota_gatekeeper-critical-pods.yaml",
 		"apiextensions.k8s.io_v1_customresourcedefinition_configs.config.gatekeeper.sh.yaml",
@@ -586,60 +587,39 @@ func crOverrides(
 	}
 
 	switch asset {
-	// audit overrides
-	case AuditFile:
+	// Deployments
+	case AuditFile, WebhookFile:
 		if err := commonOverrides(obj, gatekeeper.Spec); err != nil {
 			return err
 		}
 
-		if err := auditOverrides(log, obj, gatekeeper.Spec.Audit); err != nil {
-			return err
+		switch asset {
+		case AuditFile:
+			if err := auditOverrides(log, obj, gatekeeper.Spec.Audit); err != nil {
+				return err
+			}
+		case WebhookFile:
+			if err := webhookOverrides(log, obj, gatekeeper.Spec.Webhook); err != nil {
+				return err
+			}
 		}
 
 		if isOpenshift {
-			if err := removeAnnotations(obj); err != nil {
-				return err
-			}
-
-			if err := openShiftDeploymentOverrides(obj); err != nil {
-				return err
-			}
-		}
-	// webhook overrides
-	case WebhookFile:
-		if err := commonOverrides(obj, gatekeeper.Spec); err != nil {
-			return err
-		}
-
-		if err := webhookOverrides(log, obj, gatekeeper.Spec.Webhook); err != nil {
-			return err
-		}
-
-		if isOpenshift {
-			if err := removeAnnotations(obj); err != nil {
-				return err
-			}
-
 			if err := openShiftDeploymentOverrides(obj); err != nil {
 				return err
 			}
 		}
 	// ValidatingWebhookConfiguration overrides
 	case ValidatingWebhookConfiguration:
-		if err := webhookConfigurationOverrides(
-			obj, gatekeeper.Spec.Webhook, namespace, ValidationGatekeeperWebhook, true, controllerDeploymentPending,
-		); err != nil {
+		err := webhookConfigurationOverrides(obj, gatekeeper.Spec.Webhook, namespace,
+			ValidationGatekeeperWebhook, true, controllerDeploymentPending)
+		if err != nil {
 			return err
 		}
 
-		if err := webhookConfigurationOverrides(
-			obj,
-			gatekeeper.Spec.Webhook,
-			namespace,
-			CheckIgnoreLabelGatekeeperWebhook,
-			false,
-			controllerDeploymentPending,
-		); err != nil {
+		err = webhookConfigurationOverrides(obj, gatekeeper.Spec.Webhook, namespace,
+			CheckIgnoreLabelGatekeeperWebhook, false, controllerDeploymentPending)
+		if err != nil {
 			return err
 		}
 
@@ -648,14 +628,9 @@ func crOverrides(
 		}
 	// MutatingWebhookConfiguration overrides
 	case MutatingWebhookConfiguration:
-		if err := webhookConfigurationOverrides(
-			obj,
-			gatekeeper.Spec.Webhook,
-			namespace,
-			MutationGatekeeperWebhook,
-			true,
-			controllerDeploymentPending,
-		); err != nil {
+		err := webhookConfigurationOverrides(obj, gatekeeper.Spec.Webhook, namespace,
+			MutationGatekeeperWebhook, true, controllerDeploymentPending)
+		if err != nil {
 			return err
 		}
 
@@ -968,17 +943,6 @@ func setCommonConfig(log logr.Logger, obj *unstructured.Unstructured, config ope
 	return nil
 }
 
-func removeAnnotations(obj *unstructured.Unstructured) error {
-	err := unstructured.SetNestedField(
-		obj.Object, map[string]interface{}{}, "spec", "template", "metadata", "annotations",
-	)
-	if err != nil {
-		return errors.Wrapf(err, "Failed to remove annotations")
-	}
-
-	return nil
-}
-
 // openShiftDeploymentOverrides will remove runAsUser, runAsGroup, and seccompProfile on every container in the
 // Deployment manifest. The seccompProfile is removed for backwards compatibility with OpenShift <= v4.10. Setting
 // seccompProfile=runtime/default in such versions explicitly disqualified the workload from the restricted SCC.
@@ -986,6 +950,8 @@ func removeAnnotations(obj *unstructured.Unstructured) error {
 // profile unless there is a ClusterServiceVersion present, which is not the case for the Gatekeeper operand namespace.
 // Add --disable-cert-rotation arguments
 func openShiftDeploymentOverrides(obj *unstructured.Unstructured) error {
+	unstructured.RemoveNestedField(obj.Object, "spec", "template", "metadata", "annotations")
+
 	containers, _, err := unstructured.NestedSlice(obj.Object, "spec", "template", "spec", "containers")
 	if err != nil {
 		return errors.Wrapf(err, "Failed to parse the deployment's containers")
