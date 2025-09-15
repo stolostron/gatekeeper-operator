@@ -115,9 +115,6 @@ var (
 		ConfigPodStatusCRDFile,
 		ModifySetCRDFile,
 		ProviderCRDFile,
-		AssignCRDFile,
-		AssignMetadataCRDFile,
-		MutatorPodStatusCRDFile,
 		"v1_serviceaccount_gatekeeper-admin.yaml",
 		"policy_v1_poddisruptionbudget_gatekeeper-controller-manager.yaml",
 		ClusterRoleFile,
@@ -128,10 +125,6 @@ var (
 		WebhookFile,
 		ServiceFile,
 		// ServerCertFile will be added when it is not openshift platform
-	}
-	webhookStaticAssets = []string{
-		ValidatingWebhookConfiguration,
-		MutatingWebhookConfiguration,
 	}
 	MutatingCRDs = []string{
 		AssignCRDFile,
@@ -467,30 +460,19 @@ func (r *GatekeeperReconciler) validateWebhookDeployment(ctx context.Context) (e
 func getStaticAssets(
 	gatekeeper *operatorv1alpha1.Gatekeeper, isOpenshift bool,
 ) (deleteWebhookAssets, applyOrderedAssets, applyWebhookAssets, deleteCRDAssets []string) {
-	validatingWebhookEnabled := gatekeeper.Spec.ValidatingWebhook.DefaultEnabled()
-	mutatingWebhookEnabled := gatekeeper.Spec.MutatingWebhook.DefaultEnabled()
+	applyOrderedAssets = append([]string{}, orderedStaticAssets...)
 
-	deleteWebhookAssets = make([]string, 0)
-	applyOrderedAssets = make([]string, 0)
-	applyWebhookAssets = make([]string, 0)
-	deleteCRDAssets = make([]string, 0)
-	// Copy over our set of ordered static assets so we maintain its
-	// immutability.
-	applyOrderedAssets = append(applyOrderedAssets, orderedStaticAssets...)
-	applyWebhookAssets = append(applyWebhookAssets, webhookStaticAssets...)
-
-	if !validatingWebhookEnabled {
-		// Remove and apply ValidatingWebhookConfiguration resource
+	if gatekeeper.Spec.ValidatingWebhook.DefaultEnabled() {
+		applyWebhookAssets = append(applyWebhookAssets, ValidatingWebhookConfiguration)
+	} else {
 		deleteWebhookAssets = append(deleteWebhookAssets, ValidatingWebhookConfiguration)
-		applyWebhookAssets = getSubsetOfAssets(applyWebhookAssets, ValidatingWebhookConfiguration)
 	}
 
-	if !mutatingWebhookEnabled {
-		// Remove and apply mutating resources
+	if gatekeeper.Spec.MutatingWebhook.DefaultEnabled() {
+		applyWebhookAssets = append(applyWebhookAssets, MutatingWebhookConfiguration)
+		applyOrderedAssets = append(applyOrderedAssets, MutatingCRDs...)
+	} else {
 		deleteWebhookAssets = append(deleteWebhookAssets, MutatingWebhookConfiguration)
-		applyOrderedAssets = getSubsetOfAssets(applyOrderedAssets, MutatingCRDs...)
-		applyWebhookAssets = getSubsetOfAssets(applyWebhookAssets, MutatingWebhookConfiguration)
-
 		deleteCRDAssets = append(deleteCRDAssets, MutatingCRDs...)
 	}
 
@@ -499,26 +481,6 @@ func getStaticAssets(
 	}
 
 	return deleteWebhookAssets, applyOrderedAssets, applyWebhookAssets, deleteCRDAssets
-}
-
-func getSubsetOfAssets(inputAssets []string, assetsToRemove ...string) []string {
-	outputAssets := make([]string, 0)
-
-	for _, i := range inputAssets {
-		addAsset := true
-
-		for _, j := range assetsToRemove {
-			if i == j {
-				addAsset = false
-			}
-		}
-
-		if addAsset {
-			outputAssets = append(outputAssets, i)
-		}
-	}
-
-	return outputAssets
 }
 
 func (r *GatekeeperReconciler) crudResource(
