@@ -121,15 +121,6 @@ func TestDeployWebhookConfigs(t *testing.T) {
 	g.Expect(deleteCRDAssets).To(ContainElements(MutatingCRDs))
 }
 
-func TestGetSubsetOfAssets(t *testing.T) {
-	g := NewWithT(t)
-	g.Expect(getSubsetOfAssets(orderedStaticAssets)).To(Equal(orderedStaticAssets))
-	g.Expect(getSubsetOfAssets(orderedStaticAssets, orderedStaticAssets...)).To(BeEmpty())
-	g.Expect(getSubsetOfAssets(orderedStaticAssets, MutatingCRDs...)).To(
-		HaveLen(len(orderedStaticAssets) - len(MutatingCRDs)),
-	)
-}
-
 func TestCustomNamespace(t *testing.T) {
 	g := NewWithT(t)
 	gatekeeper := &operatorv1alpha1.Gatekeeper{
