@@ -1,5 +1,5 @@
 # Build the manager binary
-FROM registry.ci.openshift.org/stolostron/builder:go1.23-linux AS builder
+FROM registry.ci.openshift.org/stolostron/builder:go1.24-linux AS builder
 
 ARG GOOS
 ARG GOARCH
@@ -35,7 +35,7 @@ ENTRYPOINT ["/manager"]
 LABEL name=gatekeeper/gatekeeper-rhel9-operator
 LABEL summary="Red Hat Gatekeeper Operator"
 LABEL description="The Gatekeeper Operator installs and configures Open Policy Agent Gatekeeper."
-LABEL version=v3.19.1
+LABEL version=v3.20.0
 LABEL maintainer="acm-component-maintainers@redhat.com"
 LABEL com.redhat.component=gatekeeper-operator-container
 LABEL io.openshift.tags="data,images"
