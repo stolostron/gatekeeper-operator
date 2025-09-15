@@ -93,6 +93,7 @@ rules:
   - update
 - apiGroups:
   - config.gatekeeper.sh
+  - connection.gatekeeper.sh
   - constraints.gatekeeper.sh
   - expansion.gatekeeper.sh
   - mutations.gatekeeper.sh
