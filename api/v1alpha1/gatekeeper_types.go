@@ -31,12 +31,24 @@ const (
 	Disabled Mode = "Disabled"
 )
 
-func (m Mode) ToBool() bool {
-	return m == Enabled
+func (m *Mode) DefaultEnabled() bool {
+	if m == nil {
+		return true
+	}
+
+	return *m == Enabled
+}
+
+func (m *Mode) DefaultDisabled() bool {
+	if m == nil {
+		return false
+	}
+
+	return *m == Enabled
 }
 
 func (m Mode) ToBoolString() string {
-	if m.ToBool() {
+	if m.DefaultEnabled() {
 		return "true"
 	}
 

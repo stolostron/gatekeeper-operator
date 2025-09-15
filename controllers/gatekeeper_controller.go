@@ -217,9 +217,6 @@ func (r *GatekeeperReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	logger := r.Log.WithValues("gatekeeper", req.NamespacedName)
 	logger.Info("Reconciling Gatekeeper")
 
-	var requeueTime time.Duration
-	var resultErr error
-
 	if req.Name != defaultGatekeeperCrName {
 		err := fmt.Errorf("name of Gatekeeper resource must be '%s'", defaultGatekeeperCrName)
 		logger.Error(err, "Invalid Gatekeeper resource name")
@@ -259,6 +256,9 @@ func (r *GatekeeperReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 		return ctrl.Result{RequeueAfter: 5 * time.Second}, nil
 	}
 
+	var requeueTime time.Duration
+	var resultErr error
+
 	if err := r.handleConfigController(ctx); err != nil {
 		if errors.Is(err, errCrdNotReady) {
 			// Config CRD is not ready, wait for the CRD is ready
@@ -290,16 +290,9 @@ func (r *GatekeeperReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 // SetupWithManager sets up the controller with the Manager.
 func (r *GatekeeperReconciler) SetupWithManager(mgr ctrl.Manager, fromCPSMgrSource source.Source) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		WithOptions(controller.Options{MaxConcurrentReconciles: int(1)}).
+		WithOptions(controller.Options{MaxConcurrentReconciles: 1}).
 		For(&operatorv1alpha1.Gatekeeper{}).
-		WithEventFilter(predicate.Funcs{
-			UpdateFunc: func(e event.UpdateEvent) bool {
-				oldGeneration := e.ObjectOld.GetGeneration()
-				newGeneration := e.ObjectNew.GetGeneration()
-
-				return oldGeneration != newGeneration
-			},
-		}).
+		WithEventFilter(predicate.GenerationChangedPredicate{}).
 		WatchesRawSource(fromCPSMgrSource).
 		Complete(r)
 }
@@ -474,8 +467,8 @@ func (r *GatekeeperReconciler) validateWebhookDeployment(ctx context.Context) (e
 func getStaticAssets(
 	gatekeeper *operatorv1alpha1.Gatekeeper, isOpenshift bool,
 ) (deleteWebhookAssets, applyOrderedAssets, applyWebhookAssets, deleteCRDAssets []string) {
-	validatingWebhookEnabled := gatekeeper.Spec.ValidatingWebhook == nil || gatekeeper.Spec.ValidatingWebhook.ToBool()
-	mutatingWebhookEnabled := mutatingWebhookEnabled(gatekeeper.Spec.MutatingWebhook)
+	validatingWebhookEnabled := gatekeeper.Spec.ValidatingWebhook.DefaultEnabled()
+	mutatingWebhookEnabled := gatekeeper.Spec.MutatingWebhook.DefaultEnabled()
 
 	deleteWebhookAssets = make([]string, 0)
 	applyOrderedAssets = make([]string, 0)
@@ -506,10 +499,6 @@ func getStaticAssets(
 	}
 
 	return deleteWebhookAssets, applyOrderedAssets, applyWebhookAssets, deleteCRDAssets
-}
-
-func mutatingWebhookEnabled(mode *operatorv1alpha1.Mode) bool {
-	return mode == nil || mode.ToBool()
 }
 
 func getSubsetOfAssets(inputAssets []string, assetsToRemove ...string) []string {
@@ -713,7 +702,7 @@ func crOverrides(
 		}
 	// ClusterRole overrides
 	case ClusterRoleFile:
-		if !mutatingWebhookEnabled(gatekeeper.Spec.MutatingWebhook) {
+		if !gatekeeper.Spec.MutatingWebhook.DefaultEnabled() {
 			if err := removeMutatingRBACRules(obj); err != nil {
 				return err
 			}
@@ -1113,14 +1102,14 @@ func setMutationFlags(obj *unstructured.Unstructured, webhookConfig *operatorv1a
 		return nil
 	}
 
-	if webhookConfig.LogMutations != nil && webhookConfig.LogMutations.ToBool() {
+	if webhookConfig.LogMutations.DefaultDisabled() {
 		err := setContainerArg(obj, LogMutationsArg, webhookConfig.LogMutations.ToBoolString())
 		if err != nil {
 			return err
 		}
 	}
 
-	if webhookConfig.MutationAnnotations != nil && webhookConfig.MutationAnnotations.ToBool() {
+	if webhookConfig.MutationAnnotations.DefaultDisabled() {
 		return setContainerArg(
 			obj, MutationAnnotationsArg, webhookConfig.MutationAnnotations.ToBoolString(),
 		)
@@ -1131,7 +1120,7 @@ func setMutationFlags(obj *unstructured.Unstructured, webhookConfig *operatorv1a
 
 // Default is Disabled (false)
 func setLogDeniesFlag(obj *unstructured.Unstructured, logDenies *operatorv1alpha1.Mode) error {
-	if logDenies != nil && logDenies.ToBool() {
+	if logDenies.DefaultDisabled() {
 		err := setContainerArg(obj, LogDeniesArg, logDenies.ToBoolString())
 		if err != nil {
 			return err
@@ -1216,21 +1205,21 @@ func setDisabledBuiltins(obj *unstructured.Unstructured, disabledBuiltins []stri
 }
 
 func setEnableMutation(obj *unstructured.Unstructured, spec operatorv1alpha1.GatekeeperSpec) error {
-	if !mutatingWebhookEnabled(spec.MutatingWebhook) {
+	if spec.MutatingWebhook.DefaultEnabled() {
 		switch obj.GetName() {
 		case AuditDeploymentName:
-			return unsetContainerArg(obj, OperationArg, OperationMutationStatus)
+			return setContainerArg(obj, OperationArg, OperationMutationStatus)
 		case WebhookDeploymentName:
-			return unsetContainerArg(obj, OperationArg, OperationMutationWebhook)
+			return setContainerArg(obj, OperationArg, OperationMutationWebhook)
 		default:
 			return nil
 		}
 	} else {
 		switch obj.GetName() {
 		case AuditDeploymentName:
-			return setContainerArg(obj, OperationArg, OperationMutationStatus)
+			return unsetContainerArg(obj, OperationArg, OperationMutationStatus)
 		case WebhookDeploymentName:
-			return setContainerArg(obj, OperationArg, OperationMutationWebhook)
+			return unsetContainerArg(obj, OperationArg, OperationMutationWebhook)
 		default:
 			return nil
 		}

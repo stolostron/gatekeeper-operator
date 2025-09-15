@@ -988,7 +988,7 @@ func byCheckingValidation(ctx SpecContext, mode v1alpha1.Mode) {
 
 		Eventually(func() error {
 			err := K8sClient.Get(ctx, validatingWebhookName, validatingWebhookConfiguration)
-			if !mode.ToBool() && apierrors.IsNotFound(err) {
+			if mode != v1alpha1.Enabled && apierrors.IsNotFound(err) {
 				return nil
 			}
 
@@ -1002,7 +1002,7 @@ type getCRDFunc func(types.NamespacedName, *extv1.CustomResourceDefinition)
 func byCheckingMutation(ctx SpecContext, mode v1alpha1.Mode) {
 	msgNegation := ""
 
-	if !mode.ToBool() {
+	if mode != v1alpha1.Enabled {
 		msgNegation = "not "
 	}
 
@@ -1018,7 +1018,7 @@ func byCheckingMutation(ctx SpecContext, mode v1alpha1.Mode) {
 				controllers.OperationMutationWebhook,
 			)
 		},
-			timeout, pollInterval).Should(Equal(mode.ToBool()), fmt.Sprintf(
+			timeout, pollInterval).Should(Equal(mode == v1alpha1.Enabled), fmt.Sprintf(
 			"Argument %s=%s should %sbe set",
 			controllers.OperationArg, controllers.OperationMutationWebhook, msgNegation,
 		))
@@ -1034,7 +1034,7 @@ func byCheckingMutation(ctx SpecContext, mode v1alpha1.Mode) {
 			return findContainerArgValue(auditDeployment.Spec.Template.Spec.Containers[0].Args,
 				controllers.OperationMutationStatus)
 		},
-			timeout, pollInterval).Should(Equal(mode.ToBool()), fmt.Sprintf(
+			timeout, pollInterval).Should(Equal(mode == v1alpha1.Enabled), fmt.Sprintf(
 			"Argument %s=%s should %sbe set",
 			controllers.OperationArg, controllers.OperationMutationStatus, msgNegation,
 		))
@@ -1045,7 +1045,7 @@ func byCheckingMutation(ctx SpecContext, mode v1alpha1.Mode) {
 
 		Eventually(func() error {
 			err := K8sClient.Get(ctx, mutatingWebhookName, mutatingWebhookConfiguration)
-			if !mode.ToBool() && apierrors.IsNotFound(err) {
+			if mode != v1alpha1.Enabled && apierrors.IsNotFound(err) {
 				return nil
 			}
 
@@ -1057,7 +1057,7 @@ func byCheckingMutation(ctx SpecContext, mode v1alpha1.Mode) {
 	crdFn := func(crdName types.NamespacedName, mutatingCRD *extv1.CustomResourceDefinition) {
 		Eventually(func() error {
 			err := K8sClient.Get(ctx, crdName, mutatingCRD)
-			if !mode.ToBool() && apierrors.IsNotFound(err) {
+			if mode != v1alpha1.Enabled && apierrors.IsNotFound(err) {
 				return nil
 			}
 
