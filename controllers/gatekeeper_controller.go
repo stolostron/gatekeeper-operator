@@ -221,7 +221,7 @@ func (r *GatekeeperReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	var resultErr error
 
 	if req.Name != defaultGatekeeperCrName {
-		err := fmt.Errorf("Gatekeeper resource name must be '%s'", defaultGatekeeperCrName)
+		err := fmt.Errorf("name of Gatekeeper resource must be '%s'", defaultGatekeeperCrName)
 		logger.Error(err, "Invalid Gatekeeper resource name")
 
 		// Return success to avoid requeue

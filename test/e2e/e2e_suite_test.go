@@ -187,16 +187,16 @@ func getAffinityNode(ctx SpecContext) (*corev1.Node, error) {
 
 func labelNode(ctx SpecContext, node *corev1.Node) error {
 	patch := client.MergeFrom(node.DeepCopy())
-	node.ObjectMeta.Labels["region"] = "EMEA"
-	node.ObjectMeta.Labels["topology.kubernetes.io/zone"] = "test"
+	node.Labels["region"] = "EMEA"
+	node.Labels["topology.kubernetes.io/zone"] = "test"
 
 	return K8sClient.Patch(ctx, node, patch)
 }
 
 func unlabelNode(ctx SpecContext, node *corev1.Node) error {
 	patch := client.MergeFrom(node.DeepCopy())
-	delete(node.ObjectMeta.Labels, "region")
-	delete(node.ObjectMeta.Labels, "topology.kubernetes.io/zone")
+	delete(node.Labels, "region")
+	delete(node.Labels, "topology.kubernetes.io/zone")
 
 	return K8sClient.Patch(ctx, node, patch)
 }
@@ -215,8 +215,8 @@ func deleteAffinityPod(ctx SpecContext) error {
 	}
 
 	affinityPodName := types.NamespacedName{
-		Namespace: affinityPodFromFile.ObjectMeta.Namespace,
-		Name:      affinityPodFromFile.ObjectMeta.Name,
+		Namespace: affinityPodFromFile.Namespace,
+		Name:      affinityPodFromFile.Name,
 	}
 	pod := &corev1.Pod{}
 
@@ -241,7 +241,7 @@ func loadAffinityPodFromFile(namespace string) (*corev1.Pod, error) {
 
 	pod := &corev1.Pod{}
 	err = decodeYAML(f, pod)
-	pod.ObjectMeta.Namespace = namespace
+	pod.Namespace = namespace
 
 	return pod, err
 }

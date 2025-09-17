@@ -10,7 +10,6 @@ require (
 	github.com/open-policy-agent/frameworks/constraint v0.0.0-20250826220826-a139325b6501
 	github.com/open-policy-agent/gatekeeper/v3 v3.20.1
 	github.com/pkg/errors v0.9.1
-	golang.org/x/exp v0.0.0-20241108190413-2d47ceb2692f
 	k8s.io/api v0.33.3
 	k8s.io/apiextensions-apiserver v0.33.3
 	k8s.io/apimachinery v0.33.3
@@ -65,6 +64,7 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.2 // indirect
+	golang.org/x/exp v0.0.0-20241108190413-2d47ceb2692f // indirect
 	golang.org/x/net v0.43.0 // indirect
 	golang.org/x/oauth2 v0.30.0 // indirect
 	golang.org/x/sync v0.16.0 // indirect
