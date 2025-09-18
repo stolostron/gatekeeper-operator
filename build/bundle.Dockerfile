@@ -34,3 +34,4 @@ LABEL distribution-scope=public
 LABEL maintainer="acm-component-maintainers@redhat.com"
 LABEL url=https://github.com/stolostron/gatekeeper-operator
 LABEL vendor="Red Hat, Inc."
+LABEL cpe=cpe:/a:redhat:gatekeeper:3.17::el9
