@@ -29,3 +29,4 @@ annotations:
   maintainer: "acm-component-maintainers@redhat.com"
   url: https://github.com/stolostron/gatekeeper-operator
   vendor: "Red Hat, Inc."
+  cpe: cpe:/a:redhat:gatekeeper:3.19::el9
