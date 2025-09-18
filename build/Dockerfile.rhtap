@@ -41,3 +41,4 @@ LABEL com.redhat.component=gatekeeper-operator-container
 LABEL io.openshift.tags="data,images"
 LABEL io.k8s.display-name="Gatekeeper Operator"
 LABEL io.k8s.description="The Gatekeeper Operator installs and configures Open Policy Agent Gatekeeper."
+LABEL cpe="cpe:/a:redhat:gatekeeper:3.17::el9"
