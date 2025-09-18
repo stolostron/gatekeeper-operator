@@ -321,6 +321,7 @@ bundle: operator-sdk manifests kustomize ## Generate bundle manifests and metada
 	$(SED) -i '/^    createdAt:.*/d' bundle/manifests/$(PROJECT_NAME).clusterserviceversion.yaml
 	yq '.annotations["operators.operatorframework.io.bundle.channels.v1"] = "$(CHANNELS)"' -i bundle/metadata/annotations.yaml
 	yq '.annotations.version = "v$(VERSION)"' -i bundle/metadata/annotations.yaml
+	yq '.annotations.cpe = "cpe:/a:redhat:gatekeeper:$(shell echo "$(VERSION)" | cut -d '.' -f 1-2)::el9"' -i bundle/metadata/annotations.yaml
 	$(SED) -i 's/^    olm.skipRange:.*/    olm.skipRange: "<$(VERSION)"/' bundle/manifests/$(PROJECT_NAME).clusterserviceversion.yaml
   ifneq ($(REPLACES_VERSION), none)
 	  $(SED) -i 's/^  replaces:.*/  replaces: $(PROJECT_NAME).v$(REPLACES_VERSION)/' bundle/manifests/$(PROJECT_NAME).clusterserviceversion.yaml
