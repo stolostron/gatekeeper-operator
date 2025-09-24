@@ -1,4 +1,4 @@
-FROM registry.redhat.io/openshift4/ose-cli-rhel9:v4.19@sha256:8b47a32aa3cabfb6dd16f83b7f9a01d6d20e1c0071f4bdfb20780b857d8dfc77 as builder
+FROM registry.redhat.io/openshift4/ose-cli-rhel9:v4.19@sha256:f9d718e89d3d0d410e1f8e7f974b75c53d7900d9304dfe57eb7b07cc0e6b7a46 as builder
 
 WORKDIR /gatekeeper-operator
 COPY . .
