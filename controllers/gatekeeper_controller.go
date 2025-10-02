@@ -599,7 +599,7 @@ func crOverrides(
 				return err
 			}
 		case WebhookFile:
-			if err := webhookOverrides(log, obj, gatekeeper.Spec.Webhook); err != nil {
+			if err := webhookOverrides(log, obj, gatekeeper.Spec); err != nil {
 				return err
 			}
 		}
@@ -611,13 +611,18 @@ func crOverrides(
 		}
 	// ValidatingWebhookConfiguration overrides
 	case ValidatingWebhookConfiguration:
-		err := webhookConfigurationOverrides(obj, gatekeeper.Spec.Webhook, namespace,
+		var whSpecConfig *operatorv1alpha1.WebhookSpecConfig
+		if gatekeeper.Spec.Webhook != nil {
+			whSpecConfig = &gatekeeper.Spec.Webhook.WebhookSpecConfig
+		}
+
+		err := webhookConfigurationOverrides(obj, whSpecConfig, namespace,
 			ValidationGatekeeperWebhook, true, controllerDeploymentPending)
 		if err != nil {
 			return err
 		}
 
-		err = webhookConfigurationOverrides(obj, gatekeeper.Spec.Webhook, namespace,
+		err = webhookConfigurationOverrides(obj, whSpecConfig, namespace,
 			CheckIgnoreLabelGatekeeperWebhook, false, controllerDeploymentPending)
 		if err != nil {
 			return err
@@ -628,7 +633,14 @@ func crOverrides(
 		}
 	// MutatingWebhookConfiguration overrides
 	case MutatingWebhookConfiguration:
-		err := webhookConfigurationOverrides(obj, gatekeeper.Spec.Webhook, namespace,
+		var whSpecConfig *operatorv1alpha1.WebhookSpecConfig
+		if gatekeeper.Spec.MutatingWebhookConfig != nil {
+			whSpecConfig = &gatekeeper.Spec.MutatingWebhookConfig.WebhookSpecConfig
+		} else if gatekeeper.Spec.Webhook != nil {
+			whSpecConfig = &gatekeeper.Spec.Webhook.WebhookSpecConfig
+		}
+
+		err := webhookConfigurationOverrides(obj, whSpecConfig, namespace,
 			MutationGatekeeperWebhook, true, controllerDeploymentPending)
 		if err != nil {
 			return err
@@ -720,32 +732,48 @@ func auditOverrides(log logr.Logger, obj *unstructured.Unstructured, audit *oper
 	return nil
 }
 
-func webhookOverrides(log logr.Logger, obj *unstructured.Unstructured, webhook *operatorv1alpha1.WebhookConfig) error {
-	if webhook != nil {
-		if err := setEmitEvents(obj, EmitAdmissionEventsArg, webhook.EmitAdmissionEvents); err != nil {
+func webhookOverrides(log logr.Logger, obj *unstructured.Unstructured, spec operatorv1alpha1.GatekeeperSpec) error {
+	logMutations := false
+	mutationAnnotations := false
+
+	if spec.Webhook != nil {
+		if err := setEmitEvents(obj, EmitAdmissionEventsArg, spec.Webhook.EmitAdmissionEvents); err != nil {
 			return err
 		}
 
 		if err := setEventsInvolvedNamespace(obj, AdmissionEventsInvolvedNamespaceArg,
-			webhook.AdmissionEventsInvolvedNamespace); err != nil {
+			spec.Webhook.AdmissionEventsInvolvedNamespace); err != nil {
 			return err
 		}
 
-		if err := setDisabledBuiltins(obj, webhook.DisabledBuiltins); err != nil {
+		if err := setDisabledBuiltins(obj, spec.Webhook.DisabledBuiltins); err != nil {
 			return err
 		}
 
-		if err := setMutationFlags(obj, webhook); err != nil {
+		if err := setLogDeniesFlag(obj, spec.Webhook.LogDenies); err != nil {
 			return err
 		}
 
-		if err := setLogDeniesFlag(obj, webhook.LogDenies); err != nil {
+		if err := setCommonConfig(log, obj, spec.Webhook.CommonConfig); err != nil {
 			return err
 		}
 
-		if err := setCommonConfig(log, obj, webhook.CommonConfig); err != nil {
-			return err
+		logMutations = spec.Webhook.LogMutations.DefaultDisabled()               //nolint:staticcheck
+		mutationAnnotations = spec.Webhook.MutationAnnotations.DefaultDisabled() //nolint:staticcheck
+	}
+
+	if spec.MutatingWebhookConfig != nil {
+		if spec.MutatingWebhookConfig.LogMutations.DefaultDisabled() {
+			logMutations = true
 		}
+
+		if spec.MutatingWebhookConfig.MutationAnnotations.DefaultDisabled() {
+			mutationAnnotations = true
+		}
+	}
+
+	if err := setMutationFlags(obj, logMutations, mutationAnnotations); err != nil {
+		return err
 	}
 
 	return nil
@@ -754,7 +782,7 @@ func webhookOverrides(log logr.Logger, obj *unstructured.Unstructured, webhook *
 // override common properties
 func webhookConfigurationOverrides(
 	obj *unstructured.Unstructured,
-	webhook *operatorv1alpha1.WebhookConfig,
+	whSpecConfig *operatorv1alpha1.WebhookSpecConfig,
 	gatekeeperNamespace string,
 	webhookName string,
 	updateFailurePolicy bool,
@@ -770,19 +798,20 @@ func webhookConfigurationOverrides(
 		}
 	}
 
-	if webhook != nil {
+	if whSpecConfig != nil {
 		if updateFailurePolicy && !controllerDeploymentPending {
-			failurePolicy := webhook.FailurePolicy
+			failurePolicy := whSpecConfig.FailurePolicy
 			if err := setFailurePolicy(obj, failurePolicy, webhookName); err != nil {
 				return err
 			}
 		}
 
-		if err := setOperations(obj, webhook.Operations, webhookName); err != nil {
+		if err := setOperations(obj, whSpecConfig.Operations, webhookName); err != nil {
 			return err
 		}
 
-		if err := setNamespaceSelector(obj, webhook.NamespaceSelector, gatekeeperNamespace, webhookName); err != nil {
+		//nolint:lll
+		if err := setNamespaceSelector(obj, whSpecConfig.NamespaceSelector, gatekeeperNamespace, webhookName); err != nil {
 			return err
 		}
 	} else if err := setNamespaceSelector(obj, nil, gatekeeperNamespace, webhookName); err != nil {
@@ -1025,22 +1054,19 @@ func openShiftDeploymentOverrides(obj *unstructured.Unstructured) error {
 	return nil
 }
 
-func setMutationFlags(obj *unstructured.Unstructured, webhookConfig *operatorv1alpha1.WebhookConfig) error {
-	if webhookConfig == nil {
-		return nil
-	}
-
-	if webhookConfig.LogMutations.DefaultDisabled() {
-		err := setContainerArg(obj, LogMutationsArg, webhookConfig.LogMutations.ToBoolString())
+func setMutationFlags(obj *unstructured.Unstructured, logMutations, mutationAnnotations bool) error {
+	if logMutations {
+		err := setContainerArg(obj, LogMutationsArg, "true")
 		if err != nil {
 			return err
 		}
 	}
 
-	if webhookConfig.MutationAnnotations.DefaultDisabled() {
-		return setContainerArg(
-			obj, MutationAnnotationsArg, webhookConfig.MutationAnnotations.ToBoolString(),
-		)
+	if mutationAnnotations {
+		err := setContainerArg(obj, MutationAnnotationsArg, "true")
+		if err != nil {
+			return err
+		}
 	}
 
 	return nil

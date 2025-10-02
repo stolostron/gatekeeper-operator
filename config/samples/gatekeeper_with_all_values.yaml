@@ -54,6 +54,16 @@ spec:
       - name: log-level
         value: INFO
       - name: enable-k8s-native-validation
+  mutatingWebhookConfig:
+    operations:
+      - CREATE
+    failurePolicy: Ignore
+    namespaceSelector:
+      matchExpressions:
+        - key: admission.gatekeeper.sh/enabled
+          operator: Exists
+    logMutations: Enabled
+    mutationAnnotations: Enabled
   nodeSelector:
     region: "EMEA"
   affinity:

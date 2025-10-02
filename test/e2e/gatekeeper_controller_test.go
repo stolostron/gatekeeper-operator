@@ -717,6 +717,10 @@ var _ = Describe("Gatekeeper", func() {
 			gatekeeper.Spec.MutatingWebhook = &webhookMode
 			Expect(K8sClient.Create(ctx, gatekeeper)).Should(Succeed())
 
+			_, webhookDeployment := gatekeeperDeployments(ctx)
+			webhookTemplate := webhookDeployment.Spec.Template
+			webhookContainer := webhookTemplate.Spec.Containers[0]
+
 			byCheckingMutation(ctx, webhookMode)
 
 			byCheckingFailurePolicy(ctx, &mutatingWebhookName, "default",
@@ -728,6 +732,11 @@ var _ = Describe("Gatekeeper", func() {
 				util.MutatingWebhookConfigurationKind,
 				controllers.MutationGatekeeperWebhook,
 				test.DefaultDeployment.NamespaceSelector)
+
+			By("Checking expected log-mutations setting", func() {
+				_, found := getContainerArg(webhookContainer.Args, controllers.LogMutationsArg)
+				Expect(found).To(BeFalse())
+			})
 		})
 
 		It("Enables Gatekeeper mutation with configured values", func(ctx SpecContext) {
@@ -737,6 +746,10 @@ var _ = Describe("Gatekeeper", func() {
 			webhookMode := v1alpha1.Enabled
 			gatekeeper.Spec.MutatingWebhook = &webhookMode
 			Expect(K8sClient.Create(ctx, gatekeeper)).Should(Succeed())
+
+			_, webhookDeployment := gatekeeperDeployments(ctx)
+			webhookTemplate := webhookDeployment.Spec.Template
+			webhookContainer := webhookTemplate.Spec.Containers[0]
 
 			byCheckingMutation(ctx, webhookMode)
 
@@ -749,6 +762,21 @@ var _ = Describe("Gatekeeper", func() {
 				util.MutatingWebhookConfigurationKind,
 				controllers.MutationGatekeeperWebhook,
 				gatekeeper.Spec.Webhook.NamespaceSelector)
+
+			By("Checking expected log-mutations setting", func() {
+				value, found := getContainerArg(webhookContainer.Args, controllers.LogMutationsArg)
+				Expect(found).To(BeTrue())
+				Expect(value).To(Equal(util.ToArg(controllers.LogMutationsArg, "true")))
+			})
+
+			By("Updating the mutating webhook namespaceSelector")
+			gatekeeper.Spec.MutatingWebhookConfig.NamespaceSelector.MatchExpressions[0].Key = "foo.sh/really-enabled"
+			Expect(K8sClient.Update(ctx, gatekeeper)).Should(Succeed())
+
+			byCheckingNamespaceSelector(ctx, &mutatingWebhookName, "expected after change",
+				util.MutatingWebhookConfigurationKind,
+				controllers.MutationGatekeeperWebhook,
+				gatekeeper.Spec.MutatingWebhookConfig.NamespaceSelector)
 		})
 
 		It("Disables Gatekeeper mutation", func(ctx SpecContext) {
@@ -791,8 +819,10 @@ var _ = Describe("Gatekeeper", func() {
 				},
 				Spec: v1alpha1.GatekeeperSpec{
 					Webhook: &v1alpha1.WebhookConfig{
-						Operations: []v1alpha1.OperationType{
-							"CREATE", "UPDATE", "CONNECT", "DELETE",
+						WebhookSpecConfig: v1alpha1.WebhookSpecConfig{
+							Operations: []v1alpha1.OperationType{
+								"CREATE", "UPDATE", "CONNECT", "DELETE",
+							},
 						},
 					},
 				},
@@ -838,6 +868,30 @@ var _ = Describe("Gatekeeper", func() {
 				g.Expect(err).ShouldNot(HaveOccurred())
 				g.Expect(mutatingWebhookConfiguration.Webhooks[0].Rules[0].Operations).Should(HaveLen(1))
 				g.Expect(mutatingWebhookConfiguration.Webhooks[0].Rules[0].Operations[0]).Should(BeEquivalentTo("*"))
+			}, timeout, pollInterval).Should(Succeed())
+
+			gatekeeper.Spec.MutatingWebhookConfig = &v1alpha1.MutatingWebhookConfig{
+				WebhookSpecConfig: v1alpha1.WebhookSpecConfig{
+					Operations: []v1alpha1.OperationType{"CREATE", "UPDATE", "DELETE"},
+				},
+			}
+			Expect(K8sClient.Update(ctx, gatekeeper)).Should(Succeed())
+
+			By("ValidatingWebhookConfiguration Rules should still have only 1 operations")
+			Eventually(func(g Gomega) {
+				err := K8sClient.Get(ctx, validatingWebhookName, validatingWebhookConfiguration)
+				g.Expect(err).ShouldNot(HaveOccurred())
+				g.Expect(validatingWebhookConfiguration.Webhooks[0].Rules[0].Operations).Should(HaveLen(1))
+				g.Expect(validatingWebhookConfiguration.Webhooks[0].Rules[0].Operations[0]).Should(BeEquivalentTo("*"))
+				g.Expect(validatingWebhookConfiguration.Webhooks[1].Rules[0].Operations).Should(HaveLen(1))
+				g.Expect(validatingWebhookConfiguration.Webhooks[1].Rules[0].Operations[0]).Should(BeEquivalentTo("*"))
+			}, timeout*2, pollInterval).Should(Succeed())
+
+			By("MutatingWebhookConfiguration Rules should have 3 operations")
+			Eventually(func(g Gomega) {
+				err := K8sClient.Get(ctx, mutatingWebhookName, mutatingWebhookConfiguration)
+				g.Expect(err).ShouldNot(HaveOccurred())
+				g.Expect(mutatingWebhookConfiguration.Webhooks[0].Rules[0].Operations).Should(HaveLen(3))
 			}, timeout, pollInterval).Should(Succeed())
 		})
 	})
@@ -1090,17 +1144,30 @@ func byCheckingFailurePolicy(ctx SpecContext, webhookNamespacedName *types.Names
 		webhookConfiguration := &unstructured.Unstructured{}
 		webhookConfiguration.SetAPIVersion(admregv1.SchemeGroupVersion.String())
 		webhookConfiguration.SetKind(kind)
-		Eventually(func() error {
-			return K8sClient.Get(ctx, *webhookNamespacedName, webhookConfiguration)
-		}, timeout, pollInterval).ShouldNot(HaveOccurred())
-		assertFailurePolicy(webhookConfiguration, webhookName, failurePolicy)
+		Eventually(func(g Gomega) {
+			err := K8sClient.Get(ctx, *webhookNamespacedName, webhookConfiguration)
+			g.Expect(err).NotTo(HaveOccurred())
+
+			assertFailurePolicy(g, webhookConfiguration, webhookName, failurePolicy)
+		}, timeout, pollInterval).Should(Succeed())
 	})
 }
 
-func assertFailurePolicy(obj *unstructured.Unstructured, webhookName string, expected *admregv1.FailurePolicyType) {
-	assertWebhook(obj, webhookName, func(webhook map[string]interface{}) {
-		Expect(webhook["failurePolicy"]).To(BeEquivalentTo(string(*expected)))
-	})
+func assertFailurePolicy(
+	g Gomega, obj *unstructured.Unstructured, webhookName string, expected *admregv1.FailurePolicyType,
+) {
+	webhooks, found, err := unstructured.NestedSlice(obj.Object, "webhooks")
+	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(found).To(BeTrue())
+
+	for _, webhook := range webhooks {
+		w, ok := webhook.(map[string]any)
+		g.Expect(ok).To(BeTrue())
+
+		if w["name"] == webhookName {
+			g.Expect(w["failurePolicy"]).To(BeEquivalentTo(string(*expected)))
+		}
+	}
 }
 
 func byCheckingNamespaceSelector(ctx SpecContext, webhookNamespacedName *types.NamespacedName,
@@ -1110,41 +1177,39 @@ func byCheckingNamespaceSelector(ctx SpecContext, webhookNamespacedName *types.N
 		webhookConfiguration := &unstructured.Unstructured{}
 		webhookConfiguration.SetAPIVersion(admregv1.SchemeGroupVersion.String())
 		webhookConfiguration.SetKind(kind)
-		Eventually(func() error {
-			return K8sClient.Get(ctx, *webhookNamespacedName, webhookConfiguration)
+		Eventually(func(g Gomega) {
+			err := K8sClient.Get(ctx, *webhookNamespacedName, webhookConfiguration)
+			g.Expect(err).NotTo(HaveOccurred())
+
+			assertNamespaceSelector(g, webhookConfiguration, webhookName, namespaceSelector)
 		}, timeout, pollInterval).ShouldNot(HaveOccurred())
-		assertNamespaceSelector(webhookConfiguration, webhookName, namespaceSelector)
 	})
 }
 
-func assertNamespaceSelector(obj *unstructured.Unstructured, webhookName string, expected *metav1.LabelSelector) {
-	assertWebhook(obj, webhookName, func(webhook map[string]interface{}) {
-		nsSelector, found, err := unstructured.NestedFieldNoCopy(webhook, "namespaceSelector")
-		Expect(err).NotTo(HaveOccurred())
-		Expect(found).To(BeTrue())
-
-		nsSelectorBytes, err := json.Marshal(nsSelector)
-		Expect(err).NotTo(HaveOccurred())
-
-		nsSelectorTyped := &metav1.LabelSelector{}
-		err = json.Unmarshal(nsSelectorBytes, nsSelectorTyped)
-		Expect(err).NotTo(HaveOccurred())
-
-		Expect(nsSelectorTyped).To(BeEquivalentTo(expected))
-	})
-}
-
-func assertWebhook(obj *unstructured.Unstructured, webhookName string, webhookFn func(map[string]interface{})) {
+func assertNamespaceSelector(
+	g Gomega, obj *unstructured.Unstructured, webhookName string, expected *metav1.LabelSelector,
+) {
 	webhooks, found, err := unstructured.NestedSlice(obj.Object, "webhooks")
-	Expect(err).NotTo(HaveOccurred())
-	Expect(found).To(BeTrue())
+	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(found).To(BeTrue())
 
 	for _, webhook := range webhooks {
-		w, ok := webhook.(map[string]interface{})
-		Expect(ok).To(BeTrue())
+		w, ok := webhook.(map[string]any)
+		g.Expect(ok).To(BeTrue())
 
 		if w["name"] == webhookName {
-			webhookFn(w)
+			nsSelector, found, err := unstructured.NestedFieldNoCopy(w, "namespaceSelector")
+			g.Expect(err).NotTo(HaveOccurred())
+			g.Expect(found).To(BeTrue())
+
+			nsSelectorBytes, err := json.Marshal(nsSelector)
+			g.Expect(err).NotTo(HaveOccurred())
+
+			nsSelectorTyped := &metav1.LabelSelector{}
+			err = json.Unmarshal(nsSelectorBytes, nsSelectorTyped)
+			g.Expect(err).NotTo(HaveOccurred())
+
+			g.Expect(nsSelectorTyped).To(BeEquivalentTo(expected))
 		}
 	}
 }
