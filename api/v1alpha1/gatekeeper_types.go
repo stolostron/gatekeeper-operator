@@ -181,7 +181,8 @@ type AuditConfig struct {
 type OperationType admregv1.OperationType
 
 type WebhookConfig struct {
-	CommonConfig `json:",inline"`
+	CommonConfig      `json:",inline"`
+	WebhookSpecConfig `json:",inline"`
 
 	// EmitAdmissionEvents enables the emission of all admission violations as Kubernetes events.
 	// The default value is Disabled.
@@ -201,6 +202,59 @@ type WebhookConfig struct {
 	//nolint:lll
 	AdmissionEventsInvolvedNamespace *Mode `json:"admissionEventsInvolvedNamespace,omitempty"`
 
+	// DisabledBuiltins is a list of specific OPA built-in functions to disable. By default, http.send
+	// is disabled.
+	// See https://open-policy-agent.github.io/gatekeeper/website/docs/customize-startup#disable-opa-built-in-functions.
+	//
+	// +optional
+	DisabledBuiltins []string `json:"disabledBuiltins,omitempty"`
+
+	// Deprecated: spec.webhook.logMutations is deprecated. Use the field at
+	// spec.mutatingWebhookConfig.logMutations, which will override what is set here.
+	// LogMutations enables the logging of mutation events and errors. The default value is Disabled.
+	// See https://open-policy-agent.github.io/gatekeeper/website/docs/customize-startup#beta-enable-mutation-logging-and-annotations.
+	//
+	// +optional
+	//nolint:lll
+	LogMutations *Mode `json:"logMutations,omitempty"`
+
+	// Deprecated: spec.webhook.mutationAnnotations is deprecated. Use the newer field at
+	// spec.mutatingWebhookConfig.mutationAnnotations, which will override what is set here.
+	// MutationAnnotations adds the gatekeeper.sh/mutation-id and gatekeeper.sh/mutations annotations
+	// to mutated objects. The default value is Disabled.
+	// See https://open-policy-agent.github.io/gatekeeper/website/docs/customize-startup#beta-enable-mutation-logging-and-annotations.
+	//
+	// +optional
+	//nolint:lll
+	MutationAnnotations *Mode `json:"mutationAnnotations,omitempty"`
+
+	// LogDenies enables the logging of all deny, dry run, and warn failures. The default value is
+	// Disabled.
+	// See https://open-policy-agent.github.io/gatekeeper/website/docs/violations/#log-denies
+	// +optional
+	LogDenies *Mode `json:"logDenies,omitempty"`
+}
+
+type MutatingWebhookConfig struct {
+	WebhookSpecConfig `json:",inline"`
+
+	// LogMutations enables the logging of mutation events and errors. The default value is Disabled.
+	// See https://open-policy-agent.github.io/gatekeeper/website/docs/customize-startup#beta-enable-mutation-logging-and-annotations.
+	//
+	// +optional
+	//nolint:lll
+	LogMutations *Mode `json:"logMutations,omitempty"`
+
+	// MutationAnnotations adds the gatekeeper.sh/mutation-id and gatekeeper.sh/mutations annotations
+	// to mutated objects. The default value is Disabled.
+	// See https://open-policy-agent.github.io/gatekeeper/website/docs/customize-startup#beta-enable-mutation-logging-and-annotations.
+	//
+	// +optional
+	//nolint:lll
+	MutationAnnotations *Mode `json:"mutationAnnotations,omitempty"`
+}
+
+type WebhookSpecConfig struct {
 	// +optional
 	// +kubebuilder:validation:Enum:=Ignore;Fail
 	FailurePolicy *admregv1.FailurePolicyType `json:"failurePolicy,omitempty"`
@@ -218,34 +272,6 @@ type WebhookConfig struct {
 	// +optional
 	//nolint:lll
 	Operations []OperationType `json:"operations,omitempty"`
-
-	// DisabledBuiltins is a list of specific OPA built-in functions to disable. By default, http.send
-	// is disabled.
-	// See https://open-policy-agent.github.io/gatekeeper/website/docs/customize-startup#disable-opa-built-in-functions.
-	//
-	// +optional
-	DisabledBuiltins []string `json:"disabledBuiltins,omitempty"`
-
-	// LogMutations enables the logging of mutation events and errors. The default value is Disabled.
-	// See https://open-policy-agent.github.io/gatekeeper/website/docs/customize-startup#beta-enable-mutation-logging-and-annotations.
-	//
-	// +optional
-	//nolint:lll
-	LogMutations *Mode `json:"logMutations,omitempty"`
-
-	// MutationAnnotations adds the gatekeeper.sh/mutation-id and gatekeeper.sh/mutations annotations
-	// to mutated objects. The default value is Disabled.
-	// See https://open-policy-agent.github.io/gatekeeper/website/docs/customize-startup#beta-enable-mutation-logging-and-annotations.
-	//
-	// +optional
-	//nolint:lll
-	MutationAnnotations *Mode `json:"mutationAnnotations,omitempty"`
-
-	// LogDenies enables the logging of all deny, dry run, and warn failures. The default value is
-	// Disabled.
-	// See https://open-policy-agent.github.io/gatekeeper/website/docs/violations/#log-denies
-	// +optional
-	LogDenies *Mode `json:"logDenies,omitempty"`
 }
 
 type ImageConfig struct {
@@ -303,11 +329,21 @@ type GatekeeperSpec struct {
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Mutating Webhook"
 	MutatingWebhook *Mode `json:"mutatingWebhook,omitempty"`
 
-	// Webhook specifies the configuration for the Gatekeeper admission webhook.
+	// Webhook specifies the configuration for the Gatekeeper webhooks. This includes configurations
+	// common to both the mutating and the validating webhooks, for example the replicas and
+	// resources of the gatekeeper container running the webhooks.
 	//
 	// +optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Webhook Config"
 	Webhook *WebhookConfig `json:"webhook,omitempty"`
+
+	// MutatingWebhookConfig specifies configuration specific to, or overrides for, the mutating
+	// admission webhook. If this field is empty, the mutating webhook will use the same
+	// configuration as the validating webhook.
+	//
+	// +optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Mutating Webhook Config"
+	MutatingWebhookConfig *MutatingWebhookConfig `json:"mutatingWebhookConfig,omitempty"`
 
 	// Config specifies configurations for the configs.config.gatekeeper.sh API, allowing
 	// high-level configuration of Gatekeeper.

@@ -67,6 +67,11 @@ spec:
           webhook is enabled. The default value is Enabled. See https://open-policy-agent.github.io/gatekeeper/website/docs/mutation.
         displayName: Mutating Webhook
         path: mutatingWebhook
+      - description: MutatingWebhookConfig specifies configuration specific to, or
+          overrides for, the mutating admission webhook. If this field is empty, the
+          mutating webhook will use the same configuration as the validating webhook.
+        displayName: Mutating Webhook Config
+        path: mutatingWebhookConfig
       - description: NodeSelector is a map of node selectors to add to the Gatekeeper
           deployment Pods. See https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/.
         displayName: Node Selector
@@ -83,8 +88,10 @@ spec:
           admission webhook is enabled. The default value is Enabled.
         displayName: Validating Webhook
         path: validatingWebhook
-      - description: Webhook specifies the configuration for the Gatekeeper admission
-          webhook.
+      - description: Webhook specifies the configuration for the Gatekeeper webhooks.
+          This includes configurations common to both the mutating and the validating
+          webhooks, for example the replicas and resources of the gatekeeper container
+          running the webhooks.
         displayName: Webhook Config
         path: webhook
       version: v1alpha1

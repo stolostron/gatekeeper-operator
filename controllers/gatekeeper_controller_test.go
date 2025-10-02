@@ -834,7 +834,9 @@ func TestFailurePolicy(t *testing.T) {
 
 	failurePolicy := admregv1.Fail
 	webhook := operatorv1alpha1.WebhookConfig{
-		FailurePolicy: &failurePolicy,
+		WebhookSpecConfig: operatorv1alpha1.WebhookSpecConfig{
+			FailurePolicy: &failurePolicy,
+		},
 	}
 	mutatingWebhook := operatorv1alpha1.Enabled
 	gatekeeper := &operatorv1alpha1.Gatekeeper{
@@ -932,7 +934,9 @@ func TestNamespaceSelector(t *testing.T) {
 		},
 	}
 	webhook := operatorv1alpha1.WebhookConfig{
-		NamespaceSelector: &namespaceSelector,
+		WebhookSpecConfig: operatorv1alpha1.WebhookSpecConfig{
+			NamespaceSelector: &namespaceSelector,
+		},
 	}
 	mutatingWebhook := operatorv1alpha1.Enabled
 	gatekeeper := &operatorv1alpha1.Gatekeeper{
@@ -1514,8 +1518,8 @@ func TestAllWebhookArgs(t *testing.T) {
 
 	// test override with mutation flags
 	gatekeeper.Spec.MutatingWebhook = &enabled
-	gatekeeper.Spec.Webhook.LogMutations = &enabled
-	gatekeeper.Spec.Webhook.MutationAnnotations = &enabled
+	gatekeeper.Spec.Webhook.LogMutations = &enabled        //nolint:staticcheck
+	gatekeeper.Spec.Webhook.MutationAnnotations = &enabled //nolint:staticcheck
 	err = crOverrides(logr.Logger{}, gatekeeper, WebhookFile, webhookObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
 	expectObjContainerArg(g, webhookObj).To(HaveKeyWithValue(EmitAdmissionEventsArg, ContainElement("true")))
@@ -1544,7 +1548,9 @@ func TestWebhookOperations(t *testing.T) {
 		},
 		Spec: operatorv1alpha1.GatekeeperSpec{
 			Webhook: &operatorv1alpha1.WebhookConfig{
-				Operations: operations,
+				WebhookSpecConfig: operatorv1alpha1.WebhookSpecConfig{
+					Operations: operations,
+				},
 			},
 		},
 	}

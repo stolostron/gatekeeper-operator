@@ -1190,6 +1190,101 @@ spec:
                 - Enabled
                 - Disabled
                 type: string
+              mutatingWebhookConfig:
+                description: |-
+                  MutatingWebhookConfig specifies configuration specific to, or overrides for, the mutating
+                  admission webhook. If this field is empty, the mutating webhook will use the same
+                  configuration as the validating webhook.
+                properties:
+                  failurePolicy:
+                    description: FailurePolicyType specifies a failure policy that
+                      defines how unrecognized errors from the admission endpoint
+                      are handled.
+                    enum:
+                    - Ignore
+                    - Fail
+                    type: string
+                  logMutations:
+                    description: |-
+                      LogMutations enables the logging of mutation events and errors. The default value is Disabled.
+                      See https://open-policy-agent.github.io/gatekeeper/website/docs/customize-startup#beta-enable-mutation-logging-and-annotations.
+                    enum:
+                    - Enabled
+                    - Disabled
+                    type: string
+                  mutationAnnotations:
+                    description: |-
+                      MutationAnnotations adds the gatekeeper.sh/mutation-id and gatekeeper.sh/mutations annotations
+                      to mutated objects. The default value is Disabled.
+                      See https://open-policy-agent.github.io/gatekeeper/website/docs/customize-startup#beta-enable-mutation-logging-and-annotations.
+                    enum:
+                    - Enabled
+                    - Disabled
+                    type: string
+                  namespaceSelector:
+                    description: |-
+                      NamespaceSelector is a label selector to define which namespaces should be handled by the
+                      admission webhook.
+                    properties:
+                      matchExpressions:
+                        description: matchExpressions is a list of label selector
+                          requirements. The requirements are ANDed.
+                        items:
+                          description: |-
+                            A label selector requirement is a selector that contains values, a key, and an operator that
+                            relates the key and values.
+                          properties:
+                            key:
+                              description: key is the label key that the selector
+                                applies to.
+                              type: string
+                            operator:
+                              description: |-
+                                operator represents a key's relationship to a set of values.
+                                Valid operators are In, NotIn, Exists and DoesNotExist.
+                              type: string
+                            values:
+                              description: |-
+                                values is an array of string values. If the operator is In or NotIn,
+                                the values array must be non-empty. If the operator is Exists or DoesNotExist,
+                                the values array must be empty. This array is replaced during a strategic
+                                merge patch.
+                              items:
+                                type: string
+                              type: array
+                              x-kubernetes-list-type: atomic
+                          required:
+                          - key
+                          - operator
+                          type: object
+                        type: array
+                        x-kubernetes-list-type: atomic
+                      matchLabels:
+                        additionalProperties:
+                          type: string
+                        description: |-
+                          matchLabels is a map of {key,value} pairs. A single {key,value} in the matchLabels
+                          map is equivalent to an element of matchExpressions, whose key field is "key", the
+                          operator is "In", and the values array contains only "value". The requirements are ANDed.
+                        type: object
+                    type: object
+                    x-kubernetes-map-type: atomic
+                  operations:
+                    description: |-
+                      Operations specifies a list of API operations to be checked by the admission webhook. The
+                      default value is ["CREATE","UPDATE"].
+                      See https://open-policy-agent.github.io/gatekeeper/website/docs/customize-admission/#enable-validation-of-delete-operations.
+                    items:
+                      description: OperationType specifies an operation for a request.
+                      enum:
+                      - CONNECT
+                      - CREATE
+                      - UPDATE
+                      - DELETE
+                      - '*'
+                      type: string
+                    type: array
+                type: object
               nodeSelector:
                 additionalProperties:
                   type: string
@@ -1254,8 +1349,10 @@ spec:
                 - Disabled
                 type: string
               webhook:
-                description: Webhook specifies the configuration for the Gatekeeper
-                  admission webhook.
+                description: |-
+                  Webhook specifies the configuration for the Gatekeeper webhooks. This includes configurations
+                  common to both the mutating and the validating webhooks, for example the replicas and
+                  resources of the gatekeeper container running the webhooks.
                 properties:
                   admissionEventsInvolvedNamespace:
                     description: |-
@@ -1345,6 +1442,8 @@ spec:
                     type: string
                   logMutations:
                     description: |-
+                      Deprecated: spec.webhook.logMutations is deprecated. Use the field at
+                      spec.mutatingWebhookConfig.logMutations, which will override what is set here.
                       LogMutations enables the logging of mutation events and errors. The default value is Disabled.
                       See https://open-policy-agent.github.io/gatekeeper/website/docs/customize-startup#beta-enable-mutation-logging-and-annotations.
                     enum:
@@ -1353,6 +1452,8 @@ spec:
                     type: string
                   mutationAnnotations:
                     description: |-
+                      Deprecated: spec.webhook.mutationAnnotations is deprecated. Use the newer field at
+                      spec.mutatingWebhookConfig.mutationAnnotations, which will override what is set here.
                       MutationAnnotations adds the gatekeeper.sh/mutation-id and gatekeeper.sh/mutations annotations
                       to mutated objects. The default value is Disabled.
                       See https://open-policy-agent.github.io/gatekeeper/website/docs/customize-startup#beta-enable-mutation-logging-and-annotations.
