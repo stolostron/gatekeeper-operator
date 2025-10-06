@@ -32,6 +32,7 @@ spec:
     replicas: 2
     logLevel: ERROR
     emitAdmissionEvents: Enabled
+    timeoutSeconds: 10
     operations:
       - UPDATE
       - CREATE
@@ -57,6 +58,7 @@ spec:
   mutatingWebhookConfig:
     operations:
       - CREATE
+    timeoutSeconds: 5
     failurePolicy: Ignore
     namespaceSelector:
       matchExpressions:

@@ -260,6 +260,14 @@ type WebhookSpecConfig struct {
 	// +optional
 	//nolint:lll
 	Operations []OperationType `json:"operations,omitempty"`
+
+	// TimeoutSeconds specifies the timeout for the admission webhook in seconds.
+	// The default is 3 seconds for validating webhooks and 1 second for mutating webhooks.
+	//
+	// +optional
+	// +kubebuilder:validation:Minimum:=1
+	// +kubebuilder:validation:Maximum:=30
+	TimeoutSeconds int32 `json:"timeoutSeconds,omitempty"`
 }
 
 type ImageConfig struct {

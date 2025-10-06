@@ -1296,6 +1296,14 @@ spec:
                       - '*'
                       type: string
                     type: array
+                  timeoutSeconds:
+                    description: |-
+                      TimeoutSeconds specifies the timeout for the admission webhook in seconds.
+                      The default is 3 seconds for validating webhooks and 1 second for mutating webhooks.
+                    format: int32
+                    maximum: 30
+                    minimum: 1
+                    type: integer
                 type: object
               nodeSelector:
                 additionalProperties:
@@ -1608,6 +1616,14 @@ spec:
                           More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
                         type: object
                     type: object
+                  timeoutSeconds:
+                    description: |-
+                      TimeoutSeconds specifies the timeout for the admission webhook in seconds.
+                      The default is 3 seconds for validating webhooks and 1 second for mutating webhooks.
+                    format: int32
+                    maximum: 30
+                    minimum: 1
+                    type: integer
                 type: object
             type: object
           status:

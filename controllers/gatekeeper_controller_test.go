@@ -1475,6 +1475,109 @@ func overrideWebhookOperations(
 	})
 }
 
+func TestWebhookTimeoutSeconds(t *testing.T) {
+	g := NewWithT(t)
+
+	// Test with both validating and mutating webhook timeouts set
+	gatekeeper := &operatorv1alpha1.Gatekeeper{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "test",
+		},
+		Spec: operatorv1alpha1.GatekeeperSpec{
+			Webhook: &operatorv1alpha1.WebhookConfig{
+				WebhookSpecConfig: operatorv1alpha1.WebhookSpecConfig{
+					TimeoutSeconds: 5,
+				},
+			},
+			MutatingWebhook: operatorv1alpha1.Enabled,
+			MutatingWebhookConfig: &operatorv1alpha1.MutatingWebhookConfig{
+				WebhookSpecConfig: operatorv1alpha1.WebhookSpecConfig{
+					TimeoutSeconds: 2,
+				},
+			},
+		},
+	}
+
+	valObj, err := util.GetManifestObject(ValidatingWebhookConfiguration)
+	g.Expect(err).ToNot(HaveOccurred())
+
+	err = crOverrides(logr.Logger{}, gatekeeper, ValidatingWebhookConfiguration, valObj, namespace, false, false)
+	g.Expect(err).ToNot(HaveOccurred())
+	assertTimeoutSeconds(g, valObj, ValidationGatekeeperWebhook, 5)
+	assertTimeoutSeconds(g, valObj, CheckIgnoreLabelGatekeeperWebhook, 5)
+
+	mutObj, err := util.GetManifestObject(MutatingWebhookConfiguration)
+	g.Expect(err).ToNot(HaveOccurred())
+
+	err = crOverrides(logr.Logger{}, gatekeeper, MutatingWebhookConfiguration, mutObj, namespace, false, false)
+	g.Expect(err).ToNot(HaveOccurred())
+	assertTimeoutSeconds(g, mutObj, MutationGatekeeperWebhook, 2)
+
+	// Test with webhook timeout set but not mutating webhook config (fallback to webhook config)
+	gatekeeperFallback := &operatorv1alpha1.Gatekeeper{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "test",
+		},
+		Spec: operatorv1alpha1.GatekeeperSpec{
+			Webhook: &operatorv1alpha1.WebhookConfig{
+				WebhookSpecConfig: operatorv1alpha1.WebhookSpecConfig{
+					TimeoutSeconds: 7,
+				},
+			},
+			MutatingWebhook: operatorv1alpha1.Enabled,
+		},
+	}
+
+	mutObjFallback, err := util.GetManifestObject(MutatingWebhookConfiguration)
+	g.Expect(err).ToNot(HaveOccurred())
+
+	err = crOverrides(
+		logr.Logger{}, gatekeeperFallback, MutatingWebhookConfiguration, mutObjFallback, namespace, false, false,
+	)
+	g.Expect(err).ToNot(HaveOccurred())
+	// Should use timeout from spec.webhook since mutatingWebhookConfig is not set
+	assertTimeoutSeconds(g, mutObjFallback, MutationGatekeeperWebhook, 7)
+
+	// Test default values (0 should not override, keeps manifest defaults)
+	gatekeeperDefault := &operatorv1alpha1.Gatekeeper{
+		ObjectMeta: metav1.ObjectMeta{
+			Name: "test",
+		},
+		Spec: operatorv1alpha1.GatekeeperSpec{
+			MutatingWebhook: operatorv1alpha1.Enabled,
+		},
+	}
+
+	valObjDefault, err := util.GetManifestObject(ValidatingWebhookConfiguration)
+	g.Expect(err).ToNot(HaveOccurred())
+
+	err = crOverrides(
+		logr.Logger{}, gatekeeperDefault, ValidatingWebhookConfiguration, valObjDefault, namespace, false, false,
+	)
+	g.Expect(err).ToNot(HaveOccurred())
+	assertTimeoutSeconds(g, valObjDefault, ValidationGatekeeperWebhook, 3)
+
+	mutObjDefault, err := util.GetManifestObject(MutatingWebhookConfiguration)
+	g.Expect(err).ToNot(HaveOccurred())
+
+	err = crOverrides(
+		logr.Logger{}, gatekeeperDefault, MutatingWebhookConfiguration, mutObjDefault, namespace, false, false,
+	)
+	g.Expect(err).ToNot(HaveOccurred())
+	assertTimeoutSeconds(g, mutObjDefault, MutationGatekeeperWebhook, 1)
+}
+
+func assertTimeoutSeconds(g *WithT, obj *unstructured.Unstructured, webhookName string, expected int32) {
+	assertWebhooksWithFn(g, obj, func(webhook map[string]interface{}) {
+		if webhook["name"] == webhookName {
+			current, found, err := unstructured.NestedInt64(webhook, "timeoutSeconds")
+			g.Expect(err).ToNot(HaveOccurred())
+			g.Expect(found).To(BeTrue())
+			g.Expect(int32(current)).To(Equal(expected))
+		}
+	})
+}
+
 func getContainerArgumentsMap(g *WithT, obj *unstructured.Unstructured) map[string][]string {
 	argsMap := make(map[string][]string)
 
