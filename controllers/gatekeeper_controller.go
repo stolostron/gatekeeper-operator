@@ -799,6 +799,12 @@ func webhookConfigurationOverrides(
 	}
 
 	if whSpecConfig != nil {
+		if whSpecConfig.TimeoutSeconds > 0 {
+			if err := setTimeoutSeconds(obj, whSpecConfig.TimeoutSeconds, webhookName); err != nil {
+				return err
+			}
+		}
+
 		if updateFailurePolicy && !controllerDeploymentPending {
 			failurePolicy := whSpecConfig.FailurePolicy
 			if err := setFailurePolicy(obj, failurePolicy, webhookName); err != nil {
@@ -1328,6 +1334,18 @@ func setOperations(
 	}
 
 	return setWebhookConfigurationWithFn(obj, webhookName, setOperationsFn)
+}
+
+func setTimeoutSeconds(
+	obj *unstructured.Unstructured, timeoutSeconds int32, webhookName string,
+) error {
+	setTimeoutSecondsFn := func(webhook map[string]interface{}) error {
+		webhook["timeoutSeconds"] = int64(timeoutSeconds)
+
+		return nil
+	}
+
+	return setWebhookConfigurationWithFn(obj, webhookName, setTimeoutSecondsFn)
 }
 
 // Generic setters

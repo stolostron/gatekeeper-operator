@@ -483,6 +483,16 @@ var _ = Describe("Gatekeeper", func() {
 				controllers.MutationGatekeeperWebhook,
 				test.DefaultDeployment.NamespaceSelector)
 
+			byCheckingTimeoutSeconds(ctx, &validatingWebhookName, "default",
+				util.ValidatingWebhookConfigurationKind,
+				controllers.ValidationGatekeeperWebhook,
+				3)
+
+			byCheckingTimeoutSeconds(ctx, &mutatingWebhookName, "default",
+				util.MutatingWebhookConfigurationKind,
+				controllers.MutationGatekeeperWebhook,
+				1)
+
 			By("Checking default audit interval", func() {
 				_, found := getContainerArg(auditContainer.Args, controllers.AuditIntervalArg)
 				Expect(found).To(BeFalse())
@@ -605,6 +615,11 @@ var _ = Describe("Gatekeeper", func() {
 				util.ValidatingWebhookConfigurationKind,
 				controllers.ValidationGatekeeperWebhook,
 				gatekeeper.Spec.Webhook.NamespaceSelector)
+
+			byCheckingTimeoutSeconds(ctx, &validatingWebhookName, "expected",
+				util.ValidatingWebhookConfigurationKind,
+				controllers.ValidationGatekeeperWebhook,
+				gatekeeper.Spec.Webhook.TimeoutSeconds)
 
 			By("Checking expected audit interval", func() {
 				value, found := getContainerArg(auditContainer.Args, controllers.AuditIntervalArg)
@@ -763,6 +778,11 @@ var _ = Describe("Gatekeeper", func() {
 				controllers.MutationGatekeeperWebhook,
 				gatekeeper.Spec.Webhook.NamespaceSelector)
 
+			byCheckingTimeoutSeconds(ctx, &mutatingWebhookName, "expected",
+				util.MutatingWebhookConfigurationKind,
+				controllers.MutationGatekeeperWebhook,
+				gatekeeper.Spec.MutatingWebhookConfig.TimeoutSeconds)
+
 			By("Checking expected log-mutations setting", func() {
 				value, found := getContainerArg(webhookContainer.Args, controllers.LogMutationsArg)
 				Expect(found).To(BeTrue())
@@ -893,6 +913,68 @@ var _ = Describe("Gatekeeper", func() {
 				g.Expect(err).ShouldNot(HaveOccurred())
 				g.Expect(mutatingWebhookConfiguration.Webhooks[0].Rules[0].Operations).Should(HaveLen(3))
 			}, timeout, pollInterval).Should(Succeed())
+		})
+
+		It("Updates webhook timeout seconds", func(ctx SpecContext) {
+			gatekeeper := &v1alpha1.Gatekeeper{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: gatekeeperNamespace,
+					Name:      "gatekeeper",
+				},
+				Spec: v1alpha1.GatekeeperSpec{
+					Webhook: &v1alpha1.WebhookConfig{
+						WebhookSpecConfig: v1alpha1.WebhookSpecConfig{
+							TimeoutSeconds: 15,
+						},
+					},
+					MutatingWebhook: v1alpha1.Enabled,
+					MutatingWebhookConfig: &v1alpha1.MutatingWebhookConfig{
+						WebhookSpecConfig: v1alpha1.WebhookSpecConfig{
+							TimeoutSeconds: 8,
+						},
+					},
+				},
+			}
+			Expect(K8sClient.Create(ctx, gatekeeper)).Should(Succeed())
+
+			By("Wait until new Deployments loaded")
+			gatekeeperDeployments(ctx)
+
+			By("ValidatingWebhookConfiguration should have configured timeout")
+			byCheckingTimeoutSeconds(ctx, &validatingWebhookName, "initial validating",
+				util.ValidatingWebhookConfigurationKind,
+				controllers.ValidationGatekeeperWebhook,
+				15)
+
+			By("MutatingWebhookConfiguration should have configured timeout")
+			byCheckingTimeoutSeconds(ctx, &mutatingWebhookName, "initial mutating",
+				util.MutatingWebhookConfigurationKind,
+				controllers.MutationGatekeeperWebhook,
+				8)
+
+			By("Update Gatekeeper with new timeout values")
+			Eventually(func() error {
+				err := K8sClient.Get(ctx, gatekeeperName, gatekeeper)
+				if err != nil {
+					return err
+				}
+				gatekeeper.Spec.Webhook.TimeoutSeconds = 20
+				gatekeeper.Spec.MutatingWebhookConfig.TimeoutSeconds = 12
+
+				return K8sClient.Update(ctx, gatekeeper)
+			}, timeout, pollInterval).Should(Succeed())
+
+			By("ValidatingWebhookConfiguration should have updated timeout")
+			byCheckingTimeoutSeconds(ctx, &validatingWebhookName, "updated validating",
+				util.ValidatingWebhookConfigurationKind,
+				controllers.ValidationGatekeeperWebhook,
+				20)
+
+			By("MutatingWebhookConfiguration should have updated timeout")
+			byCheckingTimeoutSeconds(ctx, &mutatingWebhookName, "updated mutating",
+				util.MutatingWebhookConfigurationKind,
+				controllers.MutationGatekeeperWebhook,
+				12)
 		})
 	})
 
@@ -1186,6 +1268,22 @@ func byCheckingNamespaceSelector(ctx SpecContext, webhookNamespacedName *types.N
 	})
 }
 
+func byCheckingTimeoutSeconds(ctx SpecContext, webhookNamespacedName *types.NamespacedName,
+	testName, kind, webhookName string, timeoutSeconds int32,
+) {
+	By(fmt.Sprintf("Checking %s timeout seconds", testName), func() {
+		webhookConfiguration := &unstructured.Unstructured{}
+		webhookConfiguration.SetAPIVersion(admregv1.SchemeGroupVersion.String())
+		webhookConfiguration.SetKind(kind)
+		Eventually(func(g Gomega) {
+			err := K8sClient.Get(ctx, *webhookNamespacedName, webhookConfiguration)
+			g.Expect(err).NotTo(HaveOccurred())
+
+			assertTimeoutSeconds(g, webhookConfiguration, webhookName, timeoutSeconds)
+		}, timeout, pollInterval).Should(Succeed())
+	})
+}
+
 func assertNamespaceSelector(
 	g Gomega, obj *unstructured.Unstructured, webhookName string, expected *metav1.LabelSelector,
 ) {
@@ -1210,6 +1308,26 @@ func assertNamespaceSelector(
 			g.Expect(err).NotTo(HaveOccurred())
 
 			g.Expect(nsSelectorTyped).To(BeEquivalentTo(expected))
+		}
+	}
+}
+
+func assertTimeoutSeconds(
+	g Gomega, obj *unstructured.Unstructured, webhookName string, expected int32,
+) {
+	webhooks, found, err := unstructured.NestedSlice(obj.Object, "webhooks")
+	g.Expect(err).NotTo(HaveOccurred())
+	g.Expect(found).To(BeTrue())
+
+	for _, webhook := range webhooks {
+		w, ok := webhook.(map[string]any)
+		g.Expect(ok).To(BeTrue())
+
+		if w["name"] == webhookName {
+			timeout, found, err := unstructured.NestedInt64(w, "timeoutSeconds")
+			g.Expect(err).NotTo(HaveOccurred())
+			g.Expect(found).To(BeTrue())
+			g.Expect(int32(timeout)).To(Equal(expected))
 		}
 	}
 }
