@@ -31,24 +31,12 @@ const (
 	Disabled Mode = "Disabled"
 )
 
-func (m *Mode) DefaultEnabled() bool {
-	if m == nil {
-		return true
-	}
-
-	return *m == Enabled
-}
-
-func (m *Mode) DefaultDisabled() bool {
-	if m == nil {
-		return false
-	}
-
-	return *m == Enabled
+func (m Mode) IsEnabled() bool {
+	return m == Enabled
 }
 
 func (m Mode) ToBoolString() string {
-	if m.DefaultEnabled() {
+	if m.IsEnabled() {
 		return "true"
 	}
 
@@ -96,8 +84,8 @@ type CommonConfig struct {
 	// +optional
 	Resources *corev1.ResourceRequirements `json:"resources,omitempty"`
 
-	// +optional
-	LogLevel *LogLevelMode `json:"logLevel,omitempty"`
+	// +kubebuilder:default=INFO
+	LogLevel LogLevelMode `json:"logLevel,omitempty"`
 
 	// ContainerArguments is a list of argument names and values to pass to the container. Arguments
 	// provided are ignored if the flag is set previously by configurations from other fields.
@@ -162,9 +150,9 @@ type AuditConfig struct {
 	// default value is Disabled.
 	// See https://open-policy-agent.github.io/gatekeeper/website/docs/customize-startup/#alpha-emit-admission-and-audit-events.
 	//
-	// +optional
+	// +kubebuilder:default=Disabled
 	//nolint:lll
-	EmitAuditEvents *Mode `json:"emitAuditEvents,omitempty"`
+	EmitAuditEvents Mode `json:"emitAuditEvents,omitempty"`
 
 	// AuditEventsInvolvedNamespace controls in which namespace the audit events are created. When you
 	// set it to Enabled, audit events are created in the namespace of the object violating the
@@ -172,9 +160,9 @@ type AuditConfig struct {
 	// the Gatekeeper namespace. The default value is Disabled.
 	// See https://open-policy-agent.github.io/gatekeeper/website/docs/customize-startup/#alpha-emit-admission-and-audit-events.
 	//
-	// +optional
+	// +kubebuilder:default=Disabled
 	//nolint:lll
-	AuditEventsInvolvedNamespace *Mode `json:"auditEventsInvolvedNamespace,omitempty"`
+	AuditEventsInvolvedNamespace Mode `json:"auditEventsInvolvedNamespace,omitempty"`
 }
 
 // +kubebuilder:validation:Enum:=CONNECT;CREATE;UPDATE;DELETE;*
@@ -188,9 +176,9 @@ type WebhookConfig struct {
 	// The default value is Disabled.
 	// See https://open-policy-agent.github.io/gatekeeper/website/docs/customize-startup/#alpha-emit-admission-and-audit-events.
 	//
-	// +optional
+	// +kubebuilder:default=Disabled
 	//nolint:lll
-	EmitAdmissionEvents *Mode `json:"emitAdmissionEvents,omitempty"`
+	EmitAdmissionEvents Mode `json:"emitAdmissionEvents,omitempty"`
 
 	// AdmissionEventsInvolvedNamespace controls in which namespace admission events are created. When
 	// set to true, admission events are created in the namespace of the object violating the
@@ -198,9 +186,9 @@ type WebhookConfig struct {
 	// in the Gatekeeper namespace. The default value is Disabled.
 	// See https://open-policy-agent.github.io/gatekeeper/website/docs/customize-startup/#alpha-emit-admission-and-audit-events.
 	//
-	// +optional
+	// +kubebuilder:default=Disabled
 	//nolint:lll
-	AdmissionEventsInvolvedNamespace *Mode `json:"admissionEventsInvolvedNamespace,omitempty"`
+	AdmissionEventsInvolvedNamespace Mode `json:"admissionEventsInvolvedNamespace,omitempty"`
 
 	// DisabledBuiltins is a list of specific OPA built-in functions to disable. By default, http.send
 	// is disabled.
@@ -214,25 +202,25 @@ type WebhookConfig struct {
 	// LogMutations enables the logging of mutation events and errors. The default value is Disabled.
 	// See https://open-policy-agent.github.io/gatekeeper/website/docs/customize-startup#beta-enable-mutation-logging-and-annotations.
 	//
-	// +optional
+	// +kubebuilder:default=Disabled
 	//nolint:lll
-	LogMutations *Mode `json:"logMutations,omitempty"`
+	LogMutations Mode `json:"logMutations,omitempty"`
 
-	// Deprecated: spec.webhook.mutationAnnotations is deprecated. Use the newer field at
+	// Deprecated: spec.webhook.mutationAnnotations is deprecated. Use the field at
 	// spec.mutatingWebhookConfig.mutationAnnotations, which will override what is set here.
 	// MutationAnnotations adds the gatekeeper.sh/mutation-id and gatekeeper.sh/mutations annotations
 	// to mutated objects. The default value is Disabled.
 	// See https://open-policy-agent.github.io/gatekeeper/website/docs/customize-startup#beta-enable-mutation-logging-and-annotations.
 	//
-	// +optional
+	// +kubebuilder:default=Disabled
 	//nolint:lll
-	MutationAnnotations *Mode `json:"mutationAnnotations,omitempty"`
+	MutationAnnotations Mode `json:"mutationAnnotations,omitempty"`
 
 	// LogDenies enables the logging of all deny, dry run, and warn failures. The default value is
 	// Disabled.
 	// See https://open-policy-agent.github.io/gatekeeper/website/docs/violations/#log-denies
-	// +optional
-	LogDenies *Mode `json:"logDenies,omitempty"`
+	// +kubebuilder:default=Disabled
+	LogDenies Mode `json:"logDenies,omitempty"`
 }
 
 type MutatingWebhookConfig struct {
@@ -241,17 +229,17 @@ type MutatingWebhookConfig struct {
 	// LogMutations enables the logging of mutation events and errors. The default value is Disabled.
 	// See https://open-policy-agent.github.io/gatekeeper/website/docs/customize-startup#beta-enable-mutation-logging-and-annotations.
 	//
-	// +optional
+	// +kubebuilder:default=Disabled
 	//nolint:lll
-	LogMutations *Mode `json:"logMutations,omitempty"`
+	LogMutations Mode `json:"logMutations,omitempty"`
 
 	// MutationAnnotations adds the gatekeeper.sh/mutation-id and gatekeeper.sh/mutations annotations
 	// to mutated objects. The default value is Disabled.
 	// See https://open-policy-agent.github.io/gatekeeper/website/docs/customize-startup#beta-enable-mutation-logging-and-annotations.
 	//
-	// +optional
+	// +kubebuilder:default=Disabled
 	//nolint:lll
-	MutationAnnotations *Mode `json:"mutationAnnotations,omitempty"`
+	MutationAnnotations Mode `json:"mutationAnnotations,omitempty"`
 }
 
 type WebhookSpecConfig struct {
@@ -317,17 +305,17 @@ type GatekeeperSpec struct {
 	// ValidatingWebhook specifies whether the Gatekeeper validating admission webhook is enabled.
 	// The default value is Enabled.
 	//
-	// +optional
+	// +kubebuilder:default=Enabled
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Validating Webhook"
-	ValidatingWebhook *Mode `json:"validatingWebhook,omitempty"`
+	ValidatingWebhook Mode `json:"validatingWebhook,omitempty"`
 
 	// MutatingWebhook specifies whether the Gatekeeper mutating admission webhook is enabled.
 	// The default value is Enabled.
 	// See https://open-policy-agent.github.io/gatekeeper/website/docs/mutation.
 	//
-	// +optional
+	// +kubebuilder:default=Enabled
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Mutating Webhook"
-	MutatingWebhook *Mode `json:"mutatingWebhook,omitempty"`
+	MutatingWebhook Mode `json:"mutatingWebhook,omitempty"`
 
 	// Webhook specifies the configuration for the Gatekeeper webhooks. This includes configurations
 	// common to both the mutating and the validating webhooks, for example the replicas and

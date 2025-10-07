@@ -35,13 +35,28 @@ import (
 
 var namespace = "gatekeeper-system"
 
-func TestDeployWebhookConfigs(t *testing.T) {
-	g := NewWithT(t)
-	gatekeeper := &operatorv1alpha1.Gatekeeper{
+func defaultGatekeeper() *operatorv1alpha1.Gatekeeper {
+	return &operatorv1alpha1.Gatekeeper{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: "test",
 		},
+		Spec: operatorv1alpha1.GatekeeperSpec{
+			Audit: &operatorv1alpha1.AuditConfig{
+				CommonConfig: operatorv1alpha1.CommonConfig{
+					LogLevel: operatorv1alpha1.LogLevelInfo,
+				},
+				EmitAuditEvents:              operatorv1alpha1.Disabled,
+				AuditEventsInvolvedNamespace: operatorv1alpha1.Disabled,
+			},
+			ValidatingWebhook: operatorv1alpha1.Enabled,
+			MutatingWebhook:   operatorv1alpha1.Enabled,
+		},
 	}
+}
+
+func TestDeployWebhookConfigs(t *testing.T) {
+	g := NewWithT(t)
+	gatekeeper := defaultGatekeeper()
 	// Test default (nil) webhook configurations
 	// ValidatingWebhookConfiguration nil
 	// MutatingWebhookConfiguration nil
@@ -57,13 +72,10 @@ func TestDeployWebhookConfigs(t *testing.T) {
 	g.Expect(deleteWebhookAssets).NotTo(ContainElement(MutatingCRDs))
 	g.Expect(deleteCRDAssets).NotTo(ContainElements(MutatingCRDs))
 
-	webhookEnabled := operatorv1alpha1.Enabled
-	webhookDisabled := operatorv1alpha1.Disabled
-
 	// ValidatingWebhookConfiguration enabled
 	// MutatingWebhookConfiguration enabled
-	gatekeeper.Spec.ValidatingWebhook = &webhookEnabled
-	gatekeeper.Spec.MutatingWebhook = &webhookEnabled
+	gatekeeper.Spec.ValidatingWebhook = operatorv1alpha1.Enabled
+	gatekeeper.Spec.MutatingWebhook = operatorv1alpha1.Enabled
 	deleteWebhookAssets, applyOrderedAssets, applyWebhookAssets, deleteCRDAssets = getStaticAssets(gatekeeper, false)
 	g.Expect(applyOrderedAssets).To(ContainElements(MutatingCRDs))
 	g.Expect(applyOrderedAssets).NotTo(ContainElement(ValidatingWebhookConfiguration))
@@ -77,8 +89,8 @@ func TestDeployWebhookConfigs(t *testing.T) {
 
 	// ValidatingWebhookConfiguration enabled
 	// MutatingWebhookConfiguration disabled
-	gatekeeper.Spec.ValidatingWebhook = &webhookEnabled
-	gatekeeper.Spec.MutatingWebhook = &webhookDisabled
+	gatekeeper.Spec.ValidatingWebhook = operatorv1alpha1.Enabled
+	gatekeeper.Spec.MutatingWebhook = operatorv1alpha1.Disabled
 	deleteWebhookAssets, applyOrderedAssets, applyWebhookAssets, deleteCRDAssets = getStaticAssets(gatekeeper, false)
 	g.Expect(applyWebhookAssets).To(ContainElement(ValidatingWebhookConfiguration))
 	g.Expect(applyWebhookAssets).NotTo(ContainElement(MutatingWebhookConfiguration))
@@ -92,8 +104,8 @@ func TestDeployWebhookConfigs(t *testing.T) {
 
 	// ValidatingWebhookConfiguration disabled
 	// MutatingWebhookConfiguration enabled
-	gatekeeper.Spec.ValidatingWebhook = &webhookDisabled
-	gatekeeper.Spec.MutatingWebhook = &webhookEnabled
+	gatekeeper.Spec.ValidatingWebhook = operatorv1alpha1.Disabled
+	gatekeeper.Spec.MutatingWebhook = operatorv1alpha1.Enabled
 	deleteWebhookAssets, applyOrderedAssets, applyWebhookAssets, deleteCRDAssets = getStaticAssets(gatekeeper, false)
 	g.Expect(applyWebhookAssets).NotTo(ContainElement(ValidatingWebhookConfiguration))
 	g.Expect(applyWebhookAssets).To(ContainElement(MutatingWebhookConfiguration))
@@ -107,8 +119,8 @@ func TestDeployWebhookConfigs(t *testing.T) {
 
 	// ValidatingWebhookConfiguration disabled
 	// MutatingWebhookConfiguration disabled
-	gatekeeper.Spec.ValidatingWebhook = &webhookDisabled
-	gatekeeper.Spec.MutatingWebhook = &webhookDisabled
+	gatekeeper.Spec.ValidatingWebhook = operatorv1alpha1.Disabled
+	gatekeeper.Spec.MutatingWebhook = operatorv1alpha1.Disabled
 	deleteWebhookAssets, applyOrderedAssets, applyWebhookAssets, deleteCRDAssets = getStaticAssets(gatekeeper, false)
 	g.Expect(applyWebhookAssets).NotTo(ContainElement(ValidatingWebhookConfiguration))
 	g.Expect(applyWebhookAssets).NotTo(ContainElement(MutatingWebhookConfiguration))
@@ -123,11 +135,7 @@ func TestDeployWebhookConfigs(t *testing.T) {
 
 func TestCustomNamespace(t *testing.T) {
 	g := NewWithT(t)
-	gatekeeper := &operatorv1alpha1.Gatekeeper{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "test",
-		},
-	}
+	gatekeeper := defaultGatekeeper()
 	expectedNamespace := "otherNamespace"
 	// Rolebinding namespace overrides
 	rolebindingObj, err := util.GetManifestObject(RoleBindingFile)
@@ -183,11 +191,7 @@ func TestReplicas(t *testing.T) {
 	g := NewWithT(t)
 	auditReplicaOverride := int32(4)
 	webhookReplicaOverride := int32(7)
-	gatekeeper := &operatorv1alpha1.Gatekeeper{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "test",
-		},
-	}
+	gatekeeper := defaultGatekeeper()
 	// test default audit replicas
 	auditObj, err := util.GetManifestObject(AuditFile)
 	g.Expect(err).ToNot(HaveOccurred())
@@ -332,11 +336,7 @@ func TestAffinity(t *testing.T) {
 			},
 		},
 	}
-	gatekeeper := &operatorv1alpha1.Gatekeeper{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "test",
-		},
-	}
+	gatekeeper := defaultGatekeeper()
 	// test default affinity
 	auditObj, err := util.GetManifestObject(AuditFile)
 	g.Expect(err).ToNot(HaveOccurred())
@@ -399,11 +399,7 @@ func assertAffinity(g *WithT, expected *corev1.Affinity, current interface{}) {
 
 func TestOpenShiftOverrides(t *testing.T) {
 	g := NewWithT(t)
-	gatekeeper := &operatorv1alpha1.Gatekeeper{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "test",
-		},
-	}
+	gatekeeper := defaultGatekeeper()
 
 	auditObj, err := util.GetManifestObject(AuditFile)
 	g.Expect(err).ToNot(HaveOccurred())
@@ -461,11 +457,7 @@ func TestNodeSelector(t *testing.T) {
 		"region": "emea",
 	}
 
-	gatekeeper := &operatorv1alpha1.Gatekeeper{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "test",
-		},
-	}
+	gatekeeper := defaultGatekeeper()
 	// test default nodeSelector
 	auditObj, err := util.GetManifestObject(AuditFile)
 	g.Expect(err).ToNot(HaveOccurred())
@@ -516,11 +508,7 @@ func TestPodAnnotations(t *testing.T) {
 		"some.other.annotation/bar": "baz",
 	}
 
-	gatekeeper := &operatorv1alpha1.Gatekeeper{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "test",
-		},
-	}
+	gatekeeper := defaultGatekeeper()
 	// test default podAnnotations
 	auditObj, err := util.GetManifestObject(AuditFile)
 	g.Expect(err).ToNot(HaveOccurred())
@@ -579,11 +567,7 @@ func TestTolerations(t *testing.T) {
 		},
 	}
 
-	gatekeeper := &operatorv1alpha1.Gatekeeper{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "test",
-		},
-	}
+	gatekeeper := defaultGatekeeper()
 	// test default tolerations
 	auditObj, err := util.GetManifestObject(AuditFile)
 	g.Expect(err).ToNot(HaveOccurred())
@@ -657,11 +641,7 @@ func TestResources(t *testing.T) {
 			},
 		},
 	}
-	gatekeeper := &operatorv1alpha1.Gatekeeper{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "test",
-		},
-	}
+	gatekeeper := defaultGatekeeper()
 	// test default resources
 	auditObj, err := util.GetManifestObject(AuditFile)
 	g.Expect(err).ToNot(HaveOccurred())
@@ -729,11 +709,7 @@ func TestImage(t *testing.T) {
 		ImagePullPolicy: &imagePullPolicy,
 	}
 
-	gatekeeper := &operatorv1alpha1.Gatekeeper{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "test",
-		},
-	}
+	gatekeeper := defaultGatekeeper()
 
 	// test default image
 	auditObj, err := util.GetManifestObject(AuditFile)
@@ -838,15 +814,7 @@ func TestFailurePolicy(t *testing.T) {
 			FailurePolicy: &failurePolicy,
 		},
 	}
-	mutatingWebhook := operatorv1alpha1.Enabled
-	gatekeeper := &operatorv1alpha1.Gatekeeper{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "test",
-		},
-		Spec: operatorv1alpha1.GatekeeperSpec{
-			MutatingWebhook: &mutatingWebhook,
-		},
-	}
+	gatekeeper := defaultGatekeeper()
 	// test default failurePolicy
 	valObj, err := util.GetManifestObject(ValidatingWebhookConfiguration)
 	g.Expect(err).ToNot(HaveOccurred())
@@ -938,15 +906,8 @@ func TestNamespaceSelector(t *testing.T) {
 			NamespaceSelector: &namespaceSelector,
 		},
 	}
-	mutatingWebhook := operatorv1alpha1.Enabled
-	gatekeeper := &operatorv1alpha1.Gatekeeper{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "test",
-		},
-		Spec: operatorv1alpha1.GatekeeperSpec{
-			MutatingWebhook: &mutatingWebhook,
-		},
-	}
+
+	gatekeeper := defaultGatekeeper()
 	// test default namespaceSelector
 	valObj, err := util.GetManifestObject(ValidatingWebhookConfiguration)
 	g.Expect(err).ToNot(HaveOccurred())
@@ -1018,11 +979,7 @@ func TestAuditInterval(t *testing.T) {
 		AuditInterval: &auditInterval,
 	}
 
-	gatekeeper := &operatorv1alpha1.Gatekeeper{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "test",
-		},
-	}
+	gatekeeper := defaultGatekeeper()
 	// test default
 	auditObj, err := util.GetManifestObject(AuditFile)
 	g.Expect(err).ToNot(HaveOccurred())
@@ -1041,18 +998,8 @@ func TestAuditInterval(t *testing.T) {
 
 func TestAuditLogLevel(t *testing.T) {
 	g := NewWithT(t)
-	logLevel := operatorv1alpha1.LogLevelDEBUG
-	auditOverride := operatorv1alpha1.AuditConfig{
-		CommonConfig: operatorv1alpha1.CommonConfig{
-			LogLevel: &logLevel,
-		},
-	}
 
-	gatekeeper := &operatorv1alpha1.Gatekeeper{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "test",
-		},
-	}
+	gatekeeper := defaultGatekeeper()
 	// test default
 	auditObj, err := util.GetManifestObject(AuditFile)
 	g.Expect(err).ToNot(HaveOccurred())
@@ -1063,7 +1010,11 @@ func TestAuditLogLevel(t *testing.T) {
 	g.Expect(err).ToNot(HaveOccurred())
 	expectObjContainerArg(g, auditObj).NotTo(HaveKey(LogLevelArg))
 	// test override
-	gatekeeper.Spec.Audit = &auditOverride
+	gatekeeper.Spec.Audit = &operatorv1alpha1.AuditConfig{
+		CommonConfig: operatorv1alpha1.CommonConfig{
+			LogLevel: operatorv1alpha1.LogLevelDEBUG,
+		},
+	}
 	err = crOverrides(logr.Logger{}, gatekeeper, AuditFile, auditObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
 	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(LogLevelArg, ContainElement("DEBUG")))
@@ -1076,11 +1027,7 @@ func TestAuditConstraintViolationLimit(t *testing.T) {
 		ConstraintViolationLimit: &constraintViolationLimit,
 	}
 
-	gatekeeper := &operatorv1alpha1.Gatekeeper{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "test",
-		},
-	}
+	gatekeeper := defaultGatekeeper()
 	// test default
 	auditObj, err := util.GetManifestObject(AuditFile)
 	g.Expect(err).ToNot(HaveOccurred())
@@ -1104,11 +1051,7 @@ func TestAuditChunkSize(t *testing.T) {
 		AuditChunkSize: &auditChunkSize,
 	}
 
-	gatekeeper := &operatorv1alpha1.Gatekeeper{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "test",
-		},
-	}
+	gatekeeper := defaultGatekeeper()
 	// test default
 	auditObj, err := util.GetManifestObject(AuditFile)
 	g.Expect(err).ToNot(HaveOccurred())
@@ -1132,11 +1075,7 @@ func TestAuditFromCache(t *testing.T) {
 		AuditFromCache: &auditFromCache,
 	}
 
-	gatekeeper := &operatorv1alpha1.Gatekeeper{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "test",
-		},
-	}
+	gatekeeper := defaultGatekeeper()
 	// test default
 	auditObj, err := util.GetManifestObject(AuditFile)
 	g.Expect(err).ToNot(HaveOccurred())
@@ -1157,14 +1096,10 @@ func TestEmitAuditEvents(t *testing.T) {
 	g := NewWithT(t)
 	emitEvents := operatorv1alpha1.Enabled
 	auditOverride := operatorv1alpha1.AuditConfig{
-		EmitAuditEvents: &emitEvents,
+		EmitAuditEvents: emitEvents,
 	}
 
-	gatekeeper := &operatorv1alpha1.Gatekeeper{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "test",
-		},
-	}
+	gatekeeper := defaultGatekeeper()
 	// test default
 	auditObj, err := util.GetManifestObject(AuditFile)
 	g.Expect(err).ToNot(HaveOccurred())
@@ -1185,14 +1120,10 @@ func TestAuditEventsInvolvedNamespace(t *testing.T) {
 	g := NewWithT(t)
 	auditInvolvedNamespace := operatorv1alpha1.Enabled
 	auditOverride := operatorv1alpha1.AuditConfig{
-		AuditEventsInvolvedNamespace: &auditInvolvedNamespace,
+		AuditEventsInvolvedNamespace: auditInvolvedNamespace,
 	}
 
-	gatekeeper := &operatorv1alpha1.Gatekeeper{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "test",
-		},
-	}
+	gatekeeper := defaultGatekeeper()
 	// test default
 	auditObj, err := util.GetManifestObject(AuditFile)
 	g.Expect(err).ToNot(HaveOccurred())
@@ -1225,19 +1156,15 @@ func TestAllAuditArgs(t *testing.T) {
 		AuditChunkSize:               &auditChunkSize,
 		AuditFromCache:               &auditFromCache,
 		ConstraintViolationLimit:     &constraintViolationLimit,
-		EmitAuditEvents:              &emitEvents,
+		EmitAuditEvents:              emitEvents,
 		AuditInterval:                &auditInterval,
-		AuditEventsInvolvedNamespace: &auditInvolvedNamespace,
+		AuditEventsInvolvedNamespace: auditInvolvedNamespace,
 		CommonConfig: operatorv1alpha1.CommonConfig{
-			LogLevel: &logLevel,
+			LogLevel: logLevel,
 		},
 	}
 
-	gatekeeper := &operatorv1alpha1.Gatekeeper{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "test",
-		},
-	}
+	gatekeeper := defaultGatekeeper()
 	// test default
 	auditObj, err := util.GetManifestObject(AuditFile)
 	g.Expect(err).ToNot(HaveOccurred())
@@ -1274,8 +1201,7 @@ func TestAllAuditArgs(t *testing.T) {
 	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(AuditEventsInvolvedNamespaceArg, ContainElement("true")))
 	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(OperationArg, ContainElement(OperationMutationStatus)))
 	// test override with mutation
-	mutatingWebhook := operatorv1alpha1.Enabled
-	gatekeeper.Spec.MutatingWebhook = &mutatingWebhook
+	gatekeeper.Spec.MutatingWebhook = operatorv1alpha1.Enabled
 	err = crOverrides(logr.Logger{}, gatekeeper, AuditFile, auditObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
 	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(AuditChunkSizeArg, ContainElement("10")))
@@ -1290,16 +1216,11 @@ func TestAllAuditArgs(t *testing.T) {
 
 func TestEmitAdmissionEvents(t *testing.T) {
 	g := NewWithT(t)
-	emitEvents := operatorv1alpha1.Enabled
 	webhookOverride := operatorv1alpha1.WebhookConfig{
-		EmitAdmissionEvents: &emitEvents,
+		EmitAdmissionEvents: operatorv1alpha1.Enabled,
 	}
 
-	gatekeeper := &operatorv1alpha1.Gatekeeper{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "test",
-		},
-	}
+	gatekeeper := defaultGatekeeper()
 	// test default
 	webhookObj, err := util.GetManifestObject(WebhookFile)
 	g.Expect(err).ToNot(HaveOccurred())
@@ -1318,16 +1239,11 @@ func TestEmitAdmissionEvents(t *testing.T) {
 
 func TestAdmissionEventsInvolvedNamespace(t *testing.T) {
 	g := NewWithT(t)
-	admissionEventsInvolvedNamespace := operatorv1alpha1.Enabled
 	webhookOverride := operatorv1alpha1.WebhookConfig{
-		AdmissionEventsInvolvedNamespace: &admissionEventsInvolvedNamespace,
+		AdmissionEventsInvolvedNamespace: operatorv1alpha1.Enabled,
 	}
 
-	gatekeeper := &operatorv1alpha1.Gatekeeper{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "test",
-		},
-	}
+	gatekeeper := defaultGatekeeper()
 	// test default
 	webhookObj, err := util.GetManifestObject(WebhookFile)
 	g.Expect(err).ToNot(HaveOccurred())
@@ -1347,18 +1263,13 @@ func TestAdmissionEventsInvolvedNamespace(t *testing.T) {
 
 func TestWebhookLogLevel(t *testing.T) {
 	g := NewWithT(t)
-	logLevel := operatorv1alpha1.LogLevelDEBUG
 	webhookOverride := operatorv1alpha1.WebhookConfig{
 		CommonConfig: operatorv1alpha1.CommonConfig{
-			LogLevel: &logLevel,
+			LogLevel: operatorv1alpha1.LogLevelDEBUG,
 		},
 	}
 
-	gatekeeper := &operatorv1alpha1.Gatekeeper{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "test",
-		},
-	}
+	gatekeeper := defaultGatekeeper()
 	// test default
 	webhookObj, err := util.GetManifestObject(WebhookFile)
 	g.Expect(err).ToNot(HaveOccurred())
@@ -1378,11 +1289,7 @@ func TestWebhookLogLevel(t *testing.T) {
 func TestMutationArg(t *testing.T) {
 	g := NewWithT(t)
 
-	gatekeeper := &operatorv1alpha1.Gatekeeper{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "test",
-		},
-	}
+	gatekeeper := defaultGatekeeper()
 
 	// test default
 	webhookObj, err := util.GetManifestObject(WebhookFile)
@@ -1403,8 +1310,7 @@ func TestMutationArg(t *testing.T) {
 	g.Expect(err).ToNot(HaveOccurred())
 	expectObjContainerArg(g, auditObj).To(HaveKeyWithValue(OperationArg, ContainElement(OperationMutationStatus)))
 	// test disabled override
-	mutation := operatorv1alpha1.Disabled
-	gatekeeper.Spec.MutatingWebhook = &mutation
+	gatekeeper.Spec.MutatingWebhook = operatorv1alpha1.Disabled
 	err = crOverrides(logr.Logger{}, gatekeeper, WebhookFile, webhookObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
 	expectObjContainerArg(g, webhookObj).NotTo(HaveKeyWithValue(OperationArg, OperationMutationWebhook))
@@ -1413,7 +1319,7 @@ func TestMutationArg(t *testing.T) {
 	g.Expect(err).ToNot(HaveOccurred())
 	expectObjContainerArg(g, auditObj).NotTo(HaveKeyWithValue(OperationArg, OperationMutationStatus))
 	// test enabled override
-	mutation = operatorv1alpha1.Enabled
+	gatekeeper.Spec.MutatingWebhook = operatorv1alpha1.Enabled
 	err = crOverrides(logr.Logger{}, gatekeeper, WebhookFile, webhookObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
 	expectObjContainerArg(g, webhookObj).To(HaveKeyWithValue(OperationArg, ContainElement(OperationMutationWebhook)))
@@ -1432,11 +1338,7 @@ func TestDisabledBuiltins(t *testing.T) {
 		},
 	}
 
-	gatekeeper := &operatorv1alpha1.Gatekeeper{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "test",
-		},
-	}
+	gatekeeper := defaultGatekeeper()
 
 	// test default
 	webhookObj, err := util.GetManifestObject(WebhookFile)
@@ -1460,22 +1362,15 @@ func TestDisabledBuiltins(t *testing.T) {
 
 func TestAllWebhookArgs(t *testing.T) {
 	g := NewWithT(t)
-	emitEvents := operatorv1alpha1.Enabled
-	logLevel := operatorv1alpha1.LogLevelDEBUG
-	admissionEventsInvolvedNamespace := operatorv1alpha1.Enabled
 	webhookOverride := operatorv1alpha1.WebhookConfig{
-		EmitAdmissionEvents:              &emitEvents,
-		AdmissionEventsInvolvedNamespace: &admissionEventsInvolvedNamespace,
+		EmitAdmissionEvents:              operatorv1alpha1.Enabled,
+		AdmissionEventsInvolvedNamespace: operatorv1alpha1.Enabled,
 		CommonConfig: operatorv1alpha1.CommonConfig{
-			LogLevel: &logLevel,
+			LogLevel: operatorv1alpha1.LogLevelDEBUG,
 		},
 	}
 
-	gatekeeper := &operatorv1alpha1.Gatekeeper{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "test",
-		},
-	}
+	gatekeeper := defaultGatekeeper()
 	// test default
 	webhookObj, err := util.GetManifestObject(WebhookFile)
 	g.Expect(err).ToNot(HaveOccurred())
@@ -1504,8 +1399,7 @@ func TestAllWebhookArgs(t *testing.T) {
 	expectObjContainerArg(g, webhookObj).NotTo(HaveKey(LogMutationsArg))
 	expectObjContainerArg(g, webhookObj).NotTo(HaveKey(MutationAnnotationsArg))
 	// test override with mutation
-	enabled := operatorv1alpha1.Enabled
-	gatekeeper.Spec.MutatingWebhook = &enabled
+	gatekeeper.Spec.MutatingWebhook = operatorv1alpha1.Enabled
 	err = crOverrides(logr.Logger{}, gatekeeper, WebhookFile, webhookObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
 	expectObjContainerArg(g, webhookObj).To(HaveKeyWithValue(EmitAdmissionEventsArg, ContainElement("true")))
@@ -1517,9 +1411,9 @@ func TestAllWebhookArgs(t *testing.T) {
 	expectObjContainerArg(g, webhookObj).NotTo(HaveKey(MutationAnnotationsArg))
 
 	// test override with mutation flags
-	gatekeeper.Spec.MutatingWebhook = &enabled
-	gatekeeper.Spec.Webhook.LogMutations = &enabled        //nolint:staticcheck
-	gatekeeper.Spec.Webhook.MutationAnnotations = &enabled //nolint:staticcheck
+	gatekeeper.Spec.MutatingWebhook = operatorv1alpha1.Enabled
+	gatekeeper.Spec.Webhook.LogMutations = operatorv1alpha1.Enabled        //nolint:staticcheck
+	gatekeeper.Spec.Webhook.MutationAnnotations = operatorv1alpha1.Enabled //nolint:staticcheck
 	err = crOverrides(logr.Logger{}, gatekeeper, WebhookFile, webhookObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
 	expectObjContainerArg(g, webhookObj).To(HaveKeyWithValue(EmitAdmissionEventsArg, ContainElement("true")))
@@ -1542,16 +1436,10 @@ func TestWebhookOperations(t *testing.T) {
 
 	operations := []operatorv1alpha1.OperationType{"CREATE", "UPDATE", "DELETE"}
 
-	gatekeeper := &operatorv1alpha1.Gatekeeper{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "test",
-		},
-		Spec: operatorv1alpha1.GatekeeperSpec{
-			Webhook: &operatorv1alpha1.WebhookConfig{
-				WebhookSpecConfig: operatorv1alpha1.WebhookSpecConfig{
-					Operations: operations,
-				},
-			},
+	gatekeeper := defaultGatekeeper()
+	gatekeeper.Spec.Webhook = &operatorv1alpha1.WebhookConfig{
+		WebhookSpecConfig: operatorv1alpha1.WebhookSpecConfig{
+			Operations: operations,
 		},
 	}
 
@@ -1627,11 +1515,7 @@ func getContainerArgumentsSlice(g *WithT, obj *unstructured.Unstructured) []stri
 
 func TestSetCertNamespace(t *testing.T) {
 	g := NewWithT(t)
-	gatekeeper := &operatorv1alpha1.Gatekeeper{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "test",
-		},
-	}
+	gatekeeper := defaultGatekeeper()
 	// test default
 	serverCertObj, err := util.GetManifestObject(ServerCertFile)
 	g.Expect(err).ToNot(HaveOccurred())
@@ -1644,11 +1528,7 @@ func TestSetCertNamespace(t *testing.T) {
 func TestMutationRBACConfig(t *testing.T) {
 	g := NewWithT(t)
 
-	gatekeeper := &operatorv1alpha1.Gatekeeper{
-		ObjectMeta: metav1.ObjectMeta{
-			Name: "test",
-		},
-	}
+	gatekeeper := defaultGatekeeper()
 
 	clusterRoleObj, err := util.GetManifestObject(ClusterRoleFile)
 	g.Expect(err).ToNot(HaveOccurred())
@@ -1715,8 +1595,7 @@ func TestMutationRBACConfig(t *testing.T) {
 
 	// Test RBAC config when mutating webhook mode is disabled
 	obj = clusterRoleObj.DeepCopy()
-	mutation := operatorv1alpha1.Disabled
-	gatekeeper.Spec.MutatingWebhook = &mutation
+	gatekeeper.Spec.MutatingWebhook = operatorv1alpha1.Disabled
 	err = crOverrides(logr.Logger{}, gatekeeper, ClusterRoleFile, obj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
 	rules, found, err = unstructured.NestedSlice(obj.Object, "rules")
@@ -1735,8 +1614,7 @@ func TestMutationRBACConfig(t *testing.T) {
 
 	// Test RBAC config when mutating webhook mode is enabled
 	obj = clusterRoleObj.DeepCopy()
-	mutation = operatorv1alpha1.Enabled
-	gatekeeper.Spec.MutatingWebhook = &mutation
+	gatekeeper.Spec.MutatingWebhook = operatorv1alpha1.Enabled
 	err = crOverrides(logr.Logger{}, gatekeeper, ClusterRoleFile, obj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
 	rules, found, err = unstructured.NestedSlice(obj.Object, "rules")
@@ -1762,8 +1640,7 @@ func TestMutationRBACConfig(t *testing.T) {
 
 	// Test RBAC config when mutating webhook mode is disabled
 	obj = clusterRoleObj.DeepCopy()
-	mutation = operatorv1alpha1.Disabled
-	gatekeeper.Spec.MutatingWebhook = &mutation
+	gatekeeper.Spec.MutatingWebhook = operatorv1alpha1.Disabled
 	err = crOverrides(logr.Logger{}, gatekeeper, ClusterRoleFile, obj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
 	rules, found, err = unstructured.NestedSlice(obj.Object, "rules")
@@ -1782,8 +1659,7 @@ func TestMutationRBACConfig(t *testing.T) {
 
 	// Test RBAC config when mutating webhook mode is enabled
 	obj = clusterRoleObj.DeepCopy()
-	mutation = operatorv1alpha1.Enabled
-	gatekeeper.Spec.MutatingWebhook = &mutation
+	gatekeeper.Spec.MutatingWebhook = operatorv1alpha1.Enabled
 
 	err = crOverrides(logr.Logger{}, gatekeeper, ClusterRoleFile, obj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())

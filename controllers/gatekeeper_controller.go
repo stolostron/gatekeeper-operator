@@ -463,13 +463,13 @@ func getStaticAssets(
 ) (deleteWebhookAssets, applyOrderedAssets, applyWebhookAssets, deleteCRDAssets []string) {
 	applyOrderedAssets = append([]string{}, orderedStaticAssets...)
 
-	if gatekeeper.Spec.ValidatingWebhook.DefaultEnabled() {
+	if gatekeeper.Spec.ValidatingWebhook.IsEnabled() {
 		applyWebhookAssets = append(applyWebhookAssets, ValidatingWebhookConfiguration)
 	} else {
 		deleteWebhookAssets = append(deleteWebhookAssets, ValidatingWebhookConfiguration)
 	}
 
-	if gatekeeper.Spec.MutatingWebhook.DefaultEnabled() {
+	if gatekeeper.Spec.MutatingWebhook.IsEnabled() {
 		applyWebhookAssets = append(applyWebhookAssets, MutatingWebhookConfiguration)
 		applyOrderedAssets = append(applyOrderedAssets, MutatingCRDs...)
 	} else {
@@ -651,7 +651,7 @@ func crOverrides(
 		}
 	// ClusterRole overrides
 	case ClusterRoleFile:
-		if !gatekeeper.Spec.MutatingWebhook.DefaultEnabled() {
+		if !gatekeeper.Spec.MutatingWebhook.IsEnabled() {
 			if err := removeMutatingRBACRules(obj); err != nil {
 				return err
 			}
@@ -758,16 +758,16 @@ func webhookOverrides(log logr.Logger, obj *unstructured.Unstructured, spec oper
 			return err
 		}
 
-		logMutations = spec.Webhook.LogMutations.DefaultDisabled()               //nolint:staticcheck
-		mutationAnnotations = spec.Webhook.MutationAnnotations.DefaultDisabled() //nolint:staticcheck
+		logMutations = spec.Webhook.LogMutations.IsEnabled()               //nolint:staticcheck
+		mutationAnnotations = spec.Webhook.MutationAnnotations.IsEnabled() //nolint:staticcheck
 	}
 
 	if spec.MutatingWebhookConfig != nil {
-		if spec.MutatingWebhookConfig.LogMutations.DefaultDisabled() {
+		if spec.MutatingWebhookConfig.LogMutations.IsEnabled() {
 			logMutations = true
 		}
 
-		if spec.MutatingWebhookConfig.MutationAnnotations.DefaultDisabled() {
+		if spec.MutatingWebhookConfig.MutationAnnotations.IsEnabled() {
 			mutationAnnotations = true
 		}
 	}
@@ -932,8 +932,8 @@ func setCommonConfig(log logr.Logger, obj *unstructured.Unstructured, config ope
 	}
 
 	// Set --log-level flag
-	if config.LogLevel != nil {
-		if err := setContainerArg(obj, LogLevelArg, string(*config.LogLevel)); err != nil {
+	if config.LogLevel != "" && config.LogLevel != operatorv1alpha1.LogLevelInfo {
+		if err := setContainerArg(obj, LogLevelArg, string(config.LogLevel)); err != nil {
 			return err
 		}
 	}
@@ -1073,8 +1073,8 @@ func setMutationFlags(obj *unstructured.Unstructured, logMutations, mutationAnno
 }
 
 // Default is Disabled (false)
-func setLogDeniesFlag(obj *unstructured.Unstructured, logDenies *operatorv1alpha1.Mode) error {
-	if logDenies.DefaultDisabled() {
+func setLogDeniesFlag(obj *unstructured.Unstructured, logDenies operatorv1alpha1.Mode) error {
+	if logDenies.IsEnabled() {
 		err := setContainerArg(obj, LogDeniesArg, logDenies.ToBoolString())
 		if err != nil {
 			return err
@@ -1126,8 +1126,8 @@ func setAuditChunkSize(obj *unstructured.Unstructured, auditChunkSize *uint64) e
 	return nil
 }
 
-func setEmitEvents(obj *unstructured.Unstructured, argName string, emitEvents *operatorv1alpha1.Mode) error {
-	if emitEvents != nil {
+func setEmitEvents(obj *unstructured.Unstructured, argName string, emitEvents operatorv1alpha1.Mode) error {
+	if emitEvents.IsEnabled() {
 		emitArgValue := emitEvents.ToBoolString()
 
 		return setContainerArg(obj, argName, emitArgValue)
@@ -1136,10 +1136,10 @@ func setEmitEvents(obj *unstructured.Unstructured, argName string, emitEvents *o
 	return nil
 }
 
-func setEventsInvolvedNamespace(obj *unstructured.Unstructured,
-	argName string, eventsInvolvedNs *operatorv1alpha1.Mode,
+func setEventsInvolvedNamespace(
+	obj *unstructured.Unstructured, argName string, eventsInvolvedNs operatorv1alpha1.Mode,
 ) error {
-	if eventsInvolvedNs != nil {
+	if eventsInvolvedNs.IsEnabled() {
 		emitEventsInvolvedNsArgValue := eventsInvolvedNs.ToBoolString()
 
 		return setContainerArg(obj, argName, emitEventsInvolvedNsArgValue)
@@ -1159,7 +1159,7 @@ func setDisabledBuiltins(obj *unstructured.Unstructured, disabledBuiltins []stri
 }
 
 func setEnableMutation(obj *unstructured.Unstructured, spec operatorv1alpha1.GatekeeperSpec) error {
-	if spec.MutatingWebhook.DefaultEnabled() {
+	if spec.MutatingWebhook.IsEnabled() {
 		switch obj.GetName() {
 		case AuditDeploymentName:
 			return setContainerArg(obj, OperationArg, OperationMutationStatus)
