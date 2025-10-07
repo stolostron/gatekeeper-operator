@@ -682,7 +682,7 @@ var _ = Describe("Gatekeeper", func() {
 			gatekeeper := emptyGatekeeper()
 			By("Create Gatekeeper CR with validation disabled", func() {
 				webhookMode := v1alpha1.Disabled
-				gatekeeper.Spec.ValidatingWebhook = &webhookMode
+				gatekeeper.Spec.ValidatingWebhook = webhookMode
 				Expect(K8sClient.Create(ctx, gatekeeper)).Should(Succeed())
 			})
 
@@ -705,7 +705,7 @@ var _ = Describe("Gatekeeper", func() {
 
 			By("Updating Gatekeeper CR with validation disabled", func() {
 				webhookMode := v1alpha1.Disabled
-				gatekeeper.Spec.ValidatingWebhook = &webhookMode
+				gatekeeper.Spec.ValidatingWebhook = webhookMode
 				Expect(K8sClient.Update(ctx, gatekeeper)).Should(Succeed())
 				byCheckingValidation(ctx, webhookMode)
 			})
@@ -714,7 +714,7 @@ var _ = Describe("Gatekeeper", func() {
 		It("Enables Gatekeeper mutation with default values", func(ctx SpecContext) {
 			gatekeeper := emptyGatekeeper()
 			webhookMode := v1alpha1.Enabled
-			gatekeeper.Spec.MutatingWebhook = &webhookMode
+			gatekeeper.Spec.MutatingWebhook = webhookMode
 			Expect(K8sClient.Create(ctx, gatekeeper)).Should(Succeed())
 
 			_, webhookDeployment := gatekeeperDeployments(ctx)
@@ -744,7 +744,7 @@ var _ = Describe("Gatekeeper", func() {
 			err := loadGatekeeperFromFile(gatekeeper, gatekeeperWithAllValuesFile)
 			Expect(err).ToNot(HaveOccurred())
 			webhookMode := v1alpha1.Enabled
-			gatekeeper.Spec.MutatingWebhook = &webhookMode
+			gatekeeper.Spec.MutatingWebhook = webhookMode
 			Expect(K8sClient.Create(ctx, gatekeeper)).Should(Succeed())
 
 			_, webhookDeployment := gatekeeperDeployments(ctx)
@@ -783,7 +783,7 @@ var _ = Describe("Gatekeeper", func() {
 			gatekeeper := emptyGatekeeper()
 			By("Create Gatekeeper CR with mutation disabled", func() {
 				webhookMode := v1alpha1.Disabled
-				gatekeeper.Spec.MutatingWebhook = &webhookMode
+				gatekeeper.Spec.MutatingWebhook = webhookMode
 				Expect(K8sClient.Create(ctx, gatekeeper)).Should(Succeed())
 				byCheckingMutation(ctx, webhookMode)
 			})
@@ -793,7 +793,7 @@ var _ = Describe("Gatekeeper", func() {
 			gatekeeper := emptyGatekeeper()
 			By("First creating Gatekeeper CR with mutation enabled", func() {
 				webhookMode := v1alpha1.Enabled
-				gatekeeper.Spec.MutatingWebhook = &webhookMode
+				gatekeeper.Spec.MutatingWebhook = webhookMode
 				Expect(K8sClient.Create(ctx, gatekeeper)).Should(Succeed())
 				byCheckingMutation(ctx, webhookMode)
 			})
@@ -805,7 +805,7 @@ var _ = Describe("Gatekeeper", func() {
 
 			By("Updating Gatekeeper CR with mutation disabled", func() {
 				webhookMode := v1alpha1.Disabled
-				gatekeeper.Spec.MutatingWebhook = &webhookMode
+				gatekeeper.Spec.MutatingWebhook = webhookMode
 				Expect(K8sClient.Update(ctx, gatekeeper)).Should(Succeed())
 				byCheckingMutation(ctx, webhookMode)
 			})
@@ -1042,7 +1042,7 @@ func byCheckingValidation(ctx SpecContext, mode v1alpha1.Mode) {
 
 		Eventually(func() error {
 			err := K8sClient.Get(ctx, validatingWebhookName, validatingWebhookConfiguration)
-			if mode != v1alpha1.Enabled && apierrors.IsNotFound(err) {
+			if !mode.IsEnabled() && apierrors.IsNotFound(err) {
 				return nil
 			}
 
@@ -1056,7 +1056,7 @@ type getCRDFunc func(types.NamespacedName, *extv1.CustomResourceDefinition)
 func byCheckingMutation(ctx SpecContext, mode v1alpha1.Mode) {
 	msgNegation := ""
 
-	if mode != v1alpha1.Enabled {
+	if !mode.IsEnabled() {
 		msgNegation = "not "
 	}
 
@@ -1072,7 +1072,7 @@ func byCheckingMutation(ctx SpecContext, mode v1alpha1.Mode) {
 				controllers.OperationMutationWebhook,
 			)
 		},
-			timeout, pollInterval).Should(Equal(mode == v1alpha1.Enabled), fmt.Sprintf(
+			timeout, pollInterval).Should(Equal(mode.IsEnabled()), fmt.Sprintf(
 			"Argument %s=%s should %sbe set",
 			controllers.OperationArg, controllers.OperationMutationWebhook, msgNegation,
 		))
@@ -1088,7 +1088,7 @@ func byCheckingMutation(ctx SpecContext, mode v1alpha1.Mode) {
 			return findContainerArgValue(auditDeployment.Spec.Template.Spec.Containers[0].Args,
 				controllers.OperationMutationStatus)
 		},
-			timeout, pollInterval).Should(Equal(mode == v1alpha1.Enabled), fmt.Sprintf(
+			timeout, pollInterval).Should(Equal(mode.IsEnabled()), fmt.Sprintf(
 			"Argument %s=%s should %sbe set",
 			controllers.OperationArg, controllers.OperationMutationStatus, msgNegation,
 		))
@@ -1099,7 +1099,7 @@ func byCheckingMutation(ctx SpecContext, mode v1alpha1.Mode) {
 
 		Eventually(func() error {
 			err := K8sClient.Get(ctx, mutatingWebhookName, mutatingWebhookConfiguration)
-			if mode != v1alpha1.Enabled && apierrors.IsNotFound(err) {
+			if !mode.IsEnabled() && apierrors.IsNotFound(err) {
 				return nil
 			}
 
@@ -1111,7 +1111,7 @@ func byCheckingMutation(ctx SpecContext, mode v1alpha1.Mode) {
 	crdFn := func(crdName types.NamespacedName, mutatingCRD *extv1.CustomResourceDefinition) {
 		Eventually(func() error {
 			err := K8sClient.Get(ctx, crdName, mutatingCRD)
-			if mode != v1alpha1.Enabled && apierrors.IsNotFound(err) {
+			if !mode.IsEnabled() && apierrors.IsNotFound(err) {
 				return nil
 			}
 
