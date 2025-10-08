@@ -270,12 +270,21 @@ type WebhookSpecConfig struct {
 	NamespaceSelector *metav1.LabelSelector `json:"namespaceSelector,omitempty"`
 
 	// Operations specifies a list of API operations to be checked by the admission webhook. The
-	// default value is ["CREATE","UPDATE"].
+	// default value is ["CREATE","UPDATE"]. This is overridden if Rules is set.
 	// See https://open-policy-agent.github.io/gatekeeper/website/docs/customize-admission/#enable-validation-of-delete-operations.
 	//
 	// +optional
 	//nolint:lll
 	Operations []OperationType `json:"operations,omitempty"`
+
+	// Rules overwrites the rules configuration in the webhook configuration. When set, this field
+	// takes precedence over the Operations field.
+	// See https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/#matching-requests-rules.
+	//
+	// +optional
+	//nolint:lll
+	// +kubebuilder:validation:MinItems:=1
+	Rules []admregv1.RuleWithOperations `json:"rules,omitempty"`
 
 	// TimeoutSeconds specifies the timeout for the admission webhook in seconds.
 	// The default is 3 seconds for validating webhooks and 1 second for mutating webhooks.

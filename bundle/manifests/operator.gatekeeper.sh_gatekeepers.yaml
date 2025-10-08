@@ -1294,7 +1294,7 @@ spec:
                   operations:
                     description: |-
                       Operations specifies a list of API operations to be checked by the admission webhook. The
-                      default value is ["CREATE","UPDATE"].
+                      default value is ["CREATE","UPDATE"]. This is overridden if Rules is set.
                       See https://open-policy-agent.github.io/gatekeeper/website/docs/customize-admission/#enable-validation-of-delete-operations.
                     items:
                       description: OperationType specifies an operation for a request.
@@ -1305,6 +1305,81 @@ spec:
                       - DELETE
                       - '*'
                       type: string
+                    type: array
+                  rules:
+                    description: |-
+                      Rules overwrites the rules configuration in the webhook configuration. When set, this field
+                      takes precedence over the Operations field.
+                      See https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/#matching-requests-rules.
+                    items:
+                      description: |-
+                        RuleWithOperations is a tuple of Operations and Resources. It is recommended to make
+                        sure that all the tuple expansions are valid.
+                      properties:
+                        apiGroups:
+                          description: |-
+                            APIGroups is the API groups the resources belong to. '*' is all groups.
+                            If '*' is present, the length of the slice must be one.
+                            Required.
+                          items:
+                            type: string
+                          type: array
+                          x-kubernetes-list-type: atomic
+                        apiVersions:
+                          description: |-
+                            APIVersions is the API versions the resources belong to. '*' is all versions.
+                            If '*' is present, the length of the slice must be one.
+                            Required.
+                          items:
+                            type: string
+                          type: array
+                          x-kubernetes-list-type: atomic
+                        operations:
+                          description: |-
+                            Operations is the operations the admission hook cares about - CREATE, UPDATE, DELETE, CONNECT or *
+                            for all of those operations and any future admission operations that are added.
+                            If '*' is present, the length of the slice must be one.
+                            Required.
+                          items:
+                            description: OperationType specifies an operation for
+                              a request.
+                            type: string
+                          type: array
+                          x-kubernetes-list-type: atomic
+                        resources:
+                          description: |-
+                            Resources is a list of resources this rule applies to.
+
+                            For example:
+                            'pods' means pods.
+                            'pods/log' means the log subresource of pods.
+                            '*' means all resources, but not subresources.
+                            'pods/*' means all subresources of pods.
+                            '*/scale' means all scale subresources.
+                            '*/*' means all resources and their subresources.
+
+                            If wildcard is present, the validation rule will ensure resources do not
+                            overlap with each other.
+
+                            Depending on the enclosing object, subresources might not be allowed.
+                            Required.
+                          items:
+                            type: string
+                          type: array
+                          x-kubernetes-list-type: atomic
+                        scope:
+                          description: |-
+                            scope specifies the scope of this rule.
+                            Valid values are "Cluster", "Namespaced", and "*"
+                            "Cluster" means that only cluster-scoped resources will match this rule.
+                            Namespace API objects are cluster-scoped.
+                            "Namespaced" means that only namespaced resources will match this rule.
+                            "*" means that there are no scope restrictions.
+                            Subresources match the scope of their parent resource.
+                            Default is "*".
+                          type: string
+                      type: object
+                    minItems: 1
                     type: array
                   timeoutSeconds:
                     description: |-
@@ -1555,7 +1630,7 @@ spec:
                   operations:
                     description: |-
                       Operations specifies a list of API operations to be checked by the admission webhook. The
-                      default value is ["CREATE","UPDATE"].
+                      default value is ["CREATE","UPDATE"]. This is overridden if Rules is set.
                       See https://open-policy-agent.github.io/gatekeeper/website/docs/customize-admission/#enable-validation-of-delete-operations.
                     items:
                       description: OperationType specifies an operation for a request.
@@ -1639,6 +1714,81 @@ spec:
                           More info: https://kubernetes.io/docs/concepts/configuration/manage-resources-containers/
                         type: object
                     type: object
+                  rules:
+                    description: |-
+                      Rules overwrites the rules configuration in the webhook configuration. When set, this field
+                      takes precedence over the Operations field.
+                      See https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/#matching-requests-rules.
+                    items:
+                      description: |-
+                        RuleWithOperations is a tuple of Operations and Resources. It is recommended to make
+                        sure that all the tuple expansions are valid.
+                      properties:
+                        apiGroups:
+                          description: |-
+                            APIGroups is the API groups the resources belong to. '*' is all groups.
+                            If '*' is present, the length of the slice must be one.
+                            Required.
+                          items:
+                            type: string
+                          type: array
+                          x-kubernetes-list-type: atomic
+                        apiVersions:
+                          description: |-
+                            APIVersions is the API versions the resources belong to. '*' is all versions.
+                            If '*' is present, the length of the slice must be one.
+                            Required.
+                          items:
+                            type: string
+                          type: array
+                          x-kubernetes-list-type: atomic
+                        operations:
+                          description: |-
+                            Operations is the operations the admission hook cares about - CREATE, UPDATE, DELETE, CONNECT or *
+                            for all of those operations and any future admission operations that are added.
+                            If '*' is present, the length of the slice must be one.
+                            Required.
+                          items:
+                            description: OperationType specifies an operation for
+                              a request.
+                            type: string
+                          type: array
+                          x-kubernetes-list-type: atomic
+                        resources:
+                          description: |-
+                            Resources is a list of resources this rule applies to.
+
+                            For example:
+                            'pods' means pods.
+                            'pods/log' means the log subresource of pods.
+                            '*' means all resources, but not subresources.
+                            'pods/*' means all subresources of pods.
+                            '*/scale' means all scale subresources.
+                            '*/*' means all resources and their subresources.
+
+                            If wildcard is present, the validation rule will ensure resources do not
+                            overlap with each other.
+
+                            Depending on the enclosing object, subresources might not be allowed.
+                            Required.
+                          items:
+                            type: string
+                          type: array
+                          x-kubernetes-list-type: atomic
+                        scope:
+                          description: |-
+                            scope specifies the scope of this rule.
+                            Valid values are "Cluster", "Namespaced", and "*"
+                            "Cluster" means that only cluster-scoped resources will match this rule.
+                            Namespace API objects are cluster-scoped.
+                            "Namespaced" means that only namespaced resources will match this rule.
+                            "*" means that there are no scope restrictions.
+                            Subresources match the scope of their parent resource.
+                            Default is "*".
+                          type: string
+                      type: object
+                    minItems: 1
+                    type: array
                   timeoutSeconds:
                     description: |-
                       TimeoutSeconds specifies the timeout for the admission webhook in seconds.
