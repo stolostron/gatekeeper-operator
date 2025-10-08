@@ -243,14 +243,23 @@ type MutatingWebhookConfig struct {
 }
 
 type WebhookSpecConfig struct {
+	// FailurePolicy defines how unrecognized errors from the admission endpoint
+	// are handled - allowed values are Ignore or Fail. The default value for the
+	// validating and mutating webhooks is Ignore. The default value for the
+	// check-ignore-label webhook is Fail. Setting this value will override all
+	// webhook configurations.
+	// See https://open-policy-agent.github.io/gatekeeper/website/docs/customize-admission/.
+	//
 	// +optional
 	// +kubebuilder:validation:Enum:=Ignore;Fail
-	FailurePolicy *admregv1.FailurePolicyType `json:"failurePolicy,omitempty"`
+	FailurePolicy admregv1.FailurePolicyType `json:"failurePolicy,omitempty"`
 
 	// NamespaceSelector is a label selector to define which namespaces should be handled by the
 	// admission webhook.
+	// See https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/#matching-requests-namespaceselector.
 	//
 	// +optional
+	//nolint:lll
 	NamespaceSelector *metav1.LabelSelector `json:"namespaceSelector,omitempty"`
 
 	// Operations specifies a list of API operations to be checked by the admission webhook. The
@@ -326,8 +335,9 @@ type GatekeeperSpec struct {
 	MutatingWebhook Mode `json:"mutatingWebhook,omitempty"`
 
 	// Webhook specifies the configuration for the Gatekeeper webhooks. This includes configurations
-	// common to both the mutating and the validating webhooks, for example the replicas and
-	// resources of the gatekeeper container running the webhooks.
+	// common to both the mutating and the validating webhooks, for example the replicas and resources
+	// of the gatekeeper container running the webhooks. The failurePolicy and timeoutSeconds
+	// configurations also override the check-ignore-label webhook.
 	//
 	// +optional
 	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Webhook Config"

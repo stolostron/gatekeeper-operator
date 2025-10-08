@@ -1207,9 +1207,13 @@ spec:
                   configuration as the validating webhook.
                 properties:
                   failurePolicy:
-                    description: FailurePolicyType specifies a failure policy that
-                      defines how unrecognized errors from the admission endpoint
-                      are handled.
+                    description: |-
+                      FailurePolicy defines how unrecognized errors from the admission endpoint
+                      are handled - allowed values are Ignore or Fail. The default value for the
+                      validating and mutating webhooks is Ignore. The default value for the
+                      check-ignore-label webhook is Fail. Setting this value will override all
+                      webhook configurations.
+                      See https://open-policy-agent.github.io/gatekeeper/website/docs/customize-admission/.
                     enum:
                     - Ignore
                     - Fail
@@ -1237,6 +1241,7 @@ spec:
                     description: |-
                       NamespaceSelector is a label selector to define which namespaces should be handled by the
                       admission webhook.
+                      See https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/#matching-requests-namespaceselector.
                     properties:
                       matchExpressions:
                         description: matchExpressions is a list of label selector
@@ -1372,8 +1377,9 @@ spec:
               webhook:
                 description: |-
                   Webhook specifies the configuration for the Gatekeeper webhooks. This includes configurations
-                  common to both the mutating and the validating webhooks, for example the replicas and
-                  resources of the gatekeeper container running the webhooks.
+                  common to both the mutating and the validating webhooks, for example the replicas and resources
+                  of the gatekeeper container running the webhooks. The failurePolicy and timeoutSeconds
+                  configurations also override the check-ignore-label webhook.
                 properties:
                   admissionEventsInvolvedNamespace:
                     default: Disabled
@@ -1436,9 +1442,13 @@ spec:
                     - Disabled
                     type: string
                   failurePolicy:
-                    description: FailurePolicyType specifies a failure policy that
-                      defines how unrecognized errors from the admission endpoint
-                      are handled.
+                    description: |-
+                      FailurePolicy defines how unrecognized errors from the admission endpoint
+                      are handled - allowed values are Ignore or Fail. The default value for the
+                      validating and mutating webhooks is Ignore. The default value for the
+                      check-ignore-label webhook is Fail. Setting this value will override all
+                      webhook configurations.
+                      See https://open-policy-agent.github.io/gatekeeper/website/docs/customize-admission/.
                     enum:
                     - Ignore
                     - Fail
@@ -1492,6 +1502,7 @@ spec:
                     description: |-
                       NamespaceSelector is a label selector to define which namespaces should be handled by the
                       admission webhook.
+                      See https://kubernetes.io/docs/reference/access-authn-authz/extensible-admission-controllers/#matching-requests-namespaceselector.
                     properties:
                       matchExpressions:
                         description: matchExpressions is a list of label selector

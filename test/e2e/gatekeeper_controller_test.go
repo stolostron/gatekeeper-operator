@@ -466,7 +466,12 @@ var _ = Describe("Gatekeeper", func() {
 			byCheckingFailurePolicy(ctx, &validatingWebhookName, "default",
 				util.ValidatingWebhookConfigurationKind,
 				controllers.ValidationGatekeeperWebhook,
-				&test.DefaultDeployment.FailurePolicy)
+				test.DefaultDeployment.FailurePolicy)
+
+			byCheckingFailurePolicy(ctx, &validatingWebhookName, "default",
+				util.ValidatingWebhookConfigurationKind,
+				controllers.CheckIgnoreLabelGatekeeperWebhook,
+				admregv1.Fail)
 
 			byCheckingNamespaceSelector(ctx, &validatingWebhookName, "default",
 				util.ValidatingWebhookConfigurationKind,
@@ -476,7 +481,7 @@ var _ = Describe("Gatekeeper", func() {
 			byCheckingFailurePolicy(ctx, &mutatingWebhookName, "default",
 				util.MutatingWebhookConfigurationKind,
 				controllers.MutationGatekeeperWebhook,
-				&test.DefaultDeployment.FailurePolicy)
+				test.DefaultDeployment.FailurePolicy)
 
 			byCheckingNamespaceSelector(ctx, &mutatingWebhookName, "default",
 				util.MutatingWebhookConfigurationKind,
@@ -611,6 +616,11 @@ var _ = Describe("Gatekeeper", func() {
 				controllers.ValidationGatekeeperWebhook,
 				gatekeeper.Spec.Webhook.FailurePolicy)
 
+			byCheckingFailurePolicy(ctx, &validatingWebhookName, "default",
+				util.ValidatingWebhookConfigurationKind,
+				controllers.CheckIgnoreLabelGatekeeperWebhook,
+				gatekeeper.Spec.Webhook.FailurePolicy)
+
 			byCheckingNamespaceSelector(ctx, &validatingWebhookName, "expected",
 				util.ValidatingWebhookConfigurationKind,
 				controllers.ValidationGatekeeperWebhook,
@@ -741,7 +751,7 @@ var _ = Describe("Gatekeeper", func() {
 			byCheckingFailurePolicy(ctx, &mutatingWebhookName, "default",
 				util.MutatingWebhookConfigurationKind,
 				controllers.MutationGatekeeperWebhook,
-				&test.DefaultDeployment.FailurePolicy)
+				test.DefaultDeployment.FailurePolicy)
 
 			byCheckingNamespaceSelector(ctx, &mutatingWebhookName, "default",
 				util.MutatingWebhookConfigurationKind,
@@ -858,7 +868,8 @@ var _ = Describe("Gatekeeper", func() {
 				err := K8sClient.Get(ctx, validatingWebhookName, validatingWebhookConfiguration)
 				g.Expect(err).ShouldNot(HaveOccurred())
 				g.Expect(validatingWebhookConfiguration.Webhooks[0].Rules[0].Operations).Should(HaveLen(4))
-				g.Expect(validatingWebhookConfiguration.Webhooks[1].Rules[0].Operations).Should(HaveLen(4))
+				// Check ignore label webhook should always have 2 operations
+				g.Expect(validatingWebhookConfiguration.Webhooks[1].Rules[0].Operations).Should(HaveLen(2))
 			}, timeout, pollInterval).Should(Succeed())
 
 			By("MutatingWebhookConfiguration Rules should have 4 operations")
@@ -878,8 +889,10 @@ var _ = Describe("Gatekeeper", func() {
 				g.Expect(err).ShouldNot(HaveOccurred())
 				g.Expect(validatingWebhookConfiguration.Webhooks[0].Rules[0].Operations).Should(HaveLen(1))
 				g.Expect(validatingWebhookConfiguration.Webhooks[0].Rules[0].Operations[0]).Should(BeEquivalentTo("*"))
-				g.Expect(validatingWebhookConfiguration.Webhooks[1].Rules[0].Operations).Should(HaveLen(1))
-				g.Expect(validatingWebhookConfiguration.Webhooks[1].Rules[0].Operations[0]).Should(BeEquivalentTo("*"))
+				// Check ignore label webhook should always have 2 operations
+				g.Expect(validatingWebhookConfiguration.Webhooks[1].Rules[0].Operations).Should(HaveLen(2))
+				g.Expect(validatingWebhookConfiguration.Webhooks[1].Rules[0].Operations).Should(Equal(
+					[]admregv1.OperationType{"CREATE", "UPDATE"}))
 			}, timeout*2, pollInterval).Should(Succeed())
 
 			By("MutatingWebhookConfiguration Rules should have 1 operations")
@@ -903,8 +916,10 @@ var _ = Describe("Gatekeeper", func() {
 				g.Expect(err).ShouldNot(HaveOccurred())
 				g.Expect(validatingWebhookConfiguration.Webhooks[0].Rules[0].Operations).Should(HaveLen(1))
 				g.Expect(validatingWebhookConfiguration.Webhooks[0].Rules[0].Operations[0]).Should(BeEquivalentTo("*"))
-				g.Expect(validatingWebhookConfiguration.Webhooks[1].Rules[0].Operations).Should(HaveLen(1))
-				g.Expect(validatingWebhookConfiguration.Webhooks[1].Rules[0].Operations[0]).Should(BeEquivalentTo("*"))
+				// Check ignore label webhook should always have 2 operations
+				g.Expect(validatingWebhookConfiguration.Webhooks[1].Rules[0].Operations).Should(HaveLen(2))
+				g.Expect(validatingWebhookConfiguration.Webhooks[1].Rules[0].Operations).Should(Equal(
+					[]admregv1.OperationType{"CREATE", "UPDATE"}))
 			}, timeout*2, pollInterval).Should(Succeed())
 
 			By("MutatingWebhookConfiguration Rules should have 3 operations")
@@ -1220,7 +1235,7 @@ func byCheckingMutatingCRDs(deployMsg string, f getCRDFunc) {
 }
 
 func byCheckingFailurePolicy(ctx SpecContext, webhookNamespacedName *types.NamespacedName,
-	testName, kind, webhookName string, failurePolicy *admregv1.FailurePolicyType,
+	testName, kind, webhookName string, failurePolicy admregv1.FailurePolicyType,
 ) {
 	By(fmt.Sprintf("Checking %s failure policy", testName), func() {
 		webhookConfiguration := &unstructured.Unstructured{}
@@ -1236,7 +1251,7 @@ func byCheckingFailurePolicy(ctx SpecContext, webhookNamespacedName *types.Names
 }
 
 func assertFailurePolicy(
-	g Gomega, obj *unstructured.Unstructured, webhookName string, expected *admregv1.FailurePolicyType,
+	g Gomega, obj *unstructured.Unstructured, webhookName string, expected admregv1.FailurePolicyType,
 ) {
 	webhooks, found, err := unstructured.NestedSlice(obj.Object, "webhooks")
 	g.Expect(err).NotTo(HaveOccurred())
@@ -1247,7 +1262,7 @@ func assertFailurePolicy(
 		g.Expect(ok).To(BeTrue())
 
 		if w["name"] == webhookName {
-			g.Expect(w["failurePolicy"]).To(BeEquivalentTo(string(*expected)))
+			g.Expect(w["failurePolicy"]).To(BeEquivalentTo(string(expected)))
 		}
 	}
 }

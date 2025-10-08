@@ -617,13 +617,27 @@ func crOverrides(
 		}
 
 		err := webhookConfigurationOverrides(obj, whSpecConfig, namespace,
-			ValidationGatekeeperWebhook, true, controllerDeploymentPending)
+			ValidationGatekeeperWebhook, controllerDeploymentPending)
 		if err != nil {
 			return err
 		}
 
-		err = webhookConfigurationOverrides(obj, whSpecConfig, namespace,
-			CheckIgnoreLabelGatekeeperWebhook, false, controllerDeploymentPending)
+		// The ignore label webhook configuration only enables failure policy and timeout seconds
+		var timeoutSeconds int32
+		failurePolicy := admregv1.Fail
+
+		if whSpecConfig != nil {
+			timeoutSeconds = whSpecConfig.TimeoutSeconds
+			failurePolicy = whSpecConfig.FailurePolicy
+		}
+
+		checkIgnoreLabelWhSpecConfig := operatorv1alpha1.WebhookSpecConfig{
+			FailurePolicy:  failurePolicy,
+			TimeoutSeconds: timeoutSeconds,
+		}
+
+		err = webhookConfigurationOverrides(obj, &checkIgnoreLabelWhSpecConfig, namespace,
+			CheckIgnoreLabelGatekeeperWebhook, controllerDeploymentPending)
 		if err != nil {
 			return err
 		}
@@ -641,7 +655,7 @@ func crOverrides(
 		}
 
 		err := webhookConfigurationOverrides(obj, whSpecConfig, namespace,
-			MutationGatekeeperWebhook, true, controllerDeploymentPending)
+			MutationGatekeeperWebhook, controllerDeploymentPending)
 		if err != nil {
 			return err
 		}
@@ -785,15 +799,11 @@ func webhookConfigurationOverrides(
 	whSpecConfig *operatorv1alpha1.WebhookSpecConfig,
 	gatekeeperNamespace string,
 	webhookName string,
-	updateFailurePolicy bool,
 	controllerDeploymentPending bool,
 ) error {
 	// Set failure policy to ignore if deployment is still pending.
 	if controllerDeploymentPending {
-		ignore := admregv1.Ignore
-		failurePolicy := &ignore
-
-		if err := setFailurePolicy(obj, failurePolicy, webhookName); err != nil {
+		if err := setFailurePolicy(obj, admregv1.Ignore, webhookName); err != nil {
 			return err
 		}
 	}
@@ -805,9 +815,8 @@ func webhookConfigurationOverrides(
 			}
 		}
 
-		if updateFailurePolicy && !controllerDeploymentPending {
-			failurePolicy := whSpecConfig.FailurePolicy
-			if err := setFailurePolicy(obj, failurePolicy, webhookName); err != nil {
+		if !controllerDeploymentPending && whSpecConfig.FailurePolicy != "" {
+			if err := setFailurePolicy(obj, whSpecConfig.FailurePolicy, webhookName); err != nil {
 				return err
 			}
 		}
@@ -1211,14 +1220,10 @@ func setWebhookConfigurationWithFn(
 }
 
 func setFailurePolicy(
-	obj *unstructured.Unstructured, failurePolicy *admregv1.FailurePolicyType, webhookName string,
+	obj *unstructured.Unstructured, failurePolicy admregv1.FailurePolicyType, webhookName string,
 ) error {
-	if failurePolicy == nil {
-		return nil
-	}
-
 	setFailurePolicyFn := func(webhook map[string]interface{}) error {
-		if err := unstructured.SetNestedField(webhook, string(*failurePolicy), "failurePolicy"); err != nil {
+		if err := unstructured.SetNestedField(webhook, string(failurePolicy), "failurePolicy"); err != nil {
 			return errors.Wrapf(err, "Failed to set webhook failure policy")
 		}
 
