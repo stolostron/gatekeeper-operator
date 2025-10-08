@@ -6,7 +6,7 @@ set -e
 stage_operator_img="quay.io/redhat-user-workloads/gatekeeper-tenant/gatekeeper-operator-3-19/gatekeeper-operator-3-19@sha256:af84b87681768b80c073052669cb0106fc968c10be45a5b5f63cbae1f08fa769"
 operator_img="registry.redhat.io/gatekeeper/gatekeeper-rhel9-operator@${stage_operator_img##*@}"
 # Gatekeeper image
-stage_gatekeeper_img="quay.io/redhat-user-workloads/gatekeeper-tenant/gatekeeper-operator-3-19/gatekeeper-3-19@sha256:583d63090eccf767cd3a1cc153a995c6102e02a49aee1579edc7645e2aca1202"
+stage_gatekeeper_img="quay.io/redhat-user-workloads/gatekeeper-tenant/gatekeeper-operator-3-19/gatekeeper-3-19@sha256:3a27caeb9bfa0dbe3038d2f7c711f816771ba1412af37b2a87155ef452d49c04"
 gatekeeper_img="registry.redhat.io/gatekeeper/gatekeeper-rhel9@${stage_gatekeeper_img##*@}"
 
 base_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." >/dev/null 2>&1 && pwd)"
