@@ -1004,6 +1004,184 @@ var _ = Describe("Gatekeeper", func() {
 				controllers.MutationGatekeeperWebhook,
 				12)
 		})
+
+		It("Override webhook rules with custom rules", func(ctx SpecContext) {
+			// Custom rules for validating webhook
+			validatingRules := []admregv1.RuleWithOperations{
+				{
+					Operations: []admregv1.OperationType{"CREATE", "UPDATE"},
+					Rule: admregv1.Rule{
+						APIGroups:   []string{""},
+						APIVersions: []string{"v1"},
+						Resources:   []string{"pods"},
+					},
+				},
+			}
+
+			// Custom rules for mutating webhook
+			mutatingRules := []admregv1.RuleWithOperations{
+				{
+					Operations: []admregv1.OperationType{"CREATE"},
+					Rule: admregv1.Rule{
+						APIGroups:   []string{"apps"},
+						APIVersions: []string{"v1"},
+						Resources:   []string{"deployments"},
+					},
+				},
+			}
+
+			gatekeeper := &v1alpha1.Gatekeeper{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: gatekeeperNamespace,
+					Name:      "gatekeeper",
+				},
+				Spec: v1alpha1.GatekeeperSpec{
+					Webhook: &v1alpha1.WebhookConfig{
+						WebhookSpecConfig: v1alpha1.WebhookSpecConfig{
+							Operations: []v1alpha1.OperationType{"CONNECT"}, // This should be ignored
+							Rules:      validatingRules,
+						},
+					},
+					MutatingWebhook: v1alpha1.Enabled,
+					MutatingWebhookConfig: &v1alpha1.MutatingWebhookConfig{
+						WebhookSpecConfig: v1alpha1.WebhookSpecConfig{
+							Operations: []v1alpha1.OperationType{"DELETE"}, // This should also be ignored
+							Rules:      mutatingRules,
+						},
+					},
+				},
+			}
+			Expect(K8sClient.Create(ctx, gatekeeper)).Should(Succeed())
+
+			By("Wait until new Deployments loaded")
+			gatekeeperDeployments(ctx)
+
+			By("ValidatingWebhookConfiguration should have custom rules, not operations")
+			validatingWebhookConfiguration := &admregv1.ValidatingWebhookConfiguration{}
+			Eventually(func(g Gomega) {
+				err := K8sClient.Get(ctx, validatingWebhookName, validatingWebhookConfiguration)
+				g.Expect(err).ShouldNot(HaveOccurred())
+
+				// Verify the rules match what we specified
+				g.Expect(validatingWebhookConfiguration.Webhooks[0].Rules).Should(HaveLen(1))
+				rule := validatingWebhookConfiguration.Webhooks[0].Rules[0]
+				g.Expect(rule.Operations).Should(ConsistOf(admregv1.Create, admregv1.Update))
+				g.Expect(rule.APIGroups).Should(Equal([]string{""}))
+				g.Expect(rule.APIVersions).Should(Equal([]string{"v1"}))
+				g.Expect(rule.Resources).Should(Equal([]string{"pods"}))
+			}, timeout, pollInterval).Should(Succeed())
+
+			By("MutatingWebhookConfiguration should have custom rules, not operations")
+			mutatingWebhookConfiguration := &admregv1.MutatingWebhookConfiguration{}
+			Eventually(func(g Gomega) {
+				err := K8sClient.Get(ctx, mutatingWebhookName, mutatingWebhookConfiguration)
+				g.Expect(err).ShouldNot(HaveOccurred())
+
+				// Verify the rules match what we specified
+				g.Expect(mutatingWebhookConfiguration.Webhooks[0].Rules).Should(HaveLen(1))
+				rule := mutatingWebhookConfiguration.Webhooks[0].Rules[0]
+				g.Expect(rule.Operations).Should(ConsistOf(admregv1.Create))
+				g.Expect(rule.APIGroups).Should(Equal([]string{"apps"}))
+				g.Expect(rule.APIVersions).Should(Equal([]string{"v1"}))
+				g.Expect(rule.Resources).Should(Equal([]string{"deployments"}))
+			}, timeout, pollInterval).Should(Succeed())
+
+			By("Update rules and verify changes are propagated")
+			Eventually(func() error {
+				err := K8sClient.Get(ctx, gatekeeperName, gatekeeper)
+				if err != nil {
+					return err
+				}
+				gatekeeper.Spec.Webhook.Rules = []admregv1.RuleWithOperations{
+					{
+						Operations: []admregv1.OperationType{"DELETE"},
+						Rule: admregv1.Rule{
+							APIGroups:   []string{""},
+							APIVersions: []string{"v1"},
+							Resources:   []string{"configmaps"},
+						},
+					},
+				}
+
+				return K8sClient.Update(ctx, gatekeeper)
+			}, timeout, pollInterval).Should(Succeed())
+
+			By("ValidatingWebhookConfiguration should have updated rules")
+			Eventually(func(g Gomega) {
+				err := K8sClient.Get(ctx, validatingWebhookName, validatingWebhookConfiguration)
+				g.Expect(err).ShouldNot(HaveOccurred())
+
+				g.Expect(validatingWebhookConfiguration.Webhooks[0].Rules).Should(HaveLen(1))
+				rule := validatingWebhookConfiguration.Webhooks[0].Rules[0]
+				g.Expect(rule.Operations).Should(ConsistOf(admregv1.Delete))
+				g.Expect(rule.Resources).Should(Equal([]string{"configmaps"}))
+			}, timeout*2, pollInterval).Should(Succeed())
+		})
+
+		It("Webhook rules should only apply to validating webhook, not mutating webhook", func(ctx SpecContext) {
+			// Custom rules for validating webhook
+			validatingRules := []admregv1.RuleWithOperations{
+				{
+					Operations: []admregv1.OperationType{"CREATE", "UPDATE"},
+					Rule: admregv1.Rule{
+						APIGroups:   []string{""},
+						APIVersions: []string{"v1"},
+						Resources:   []string{"pods"},
+					},
+				},
+			}
+
+			gatekeeper := &v1alpha1.Gatekeeper{
+				ObjectMeta: metav1.ObjectMeta{
+					Namespace: gatekeeperNamespace,
+					Name:      "gatekeeper",
+				},
+				Spec: v1alpha1.GatekeeperSpec{
+					Webhook: &v1alpha1.WebhookConfig{
+						WebhookSpecConfig: v1alpha1.WebhookSpecConfig{
+							Rules: validatingRules,
+						},
+					},
+					MutatingWebhook: v1alpha1.Enabled,
+					// Note: MutatingWebhookConfig is NOT set, so it should use defaults
+				},
+			}
+			Expect(K8sClient.Create(ctx, gatekeeper)).Should(Succeed())
+
+			By("Wait until new Deployments loaded")
+			gatekeeperDeployments(ctx)
+
+			By("ValidatingWebhookConfiguration should have custom rules from spec.webhook")
+			validatingWebhookConfiguration := &admregv1.ValidatingWebhookConfiguration{}
+			Eventually(func(g Gomega) {
+				err := K8sClient.Get(ctx, validatingWebhookName, validatingWebhookConfiguration)
+				g.Expect(err).ShouldNot(HaveOccurred())
+
+				// Verify the rules match what we specified
+				g.Expect(validatingWebhookConfiguration.Webhooks[0].Rules).Should(HaveLen(1))
+				rule := validatingWebhookConfiguration.Webhooks[0].Rules[0]
+				g.Expect(rule.Operations).Should(ConsistOf(admregv1.Create, admregv1.Update))
+				g.Expect(rule.APIGroups).Should(Equal([]string{""}))
+				g.Expect(rule.APIVersions).Should(Equal([]string{"v1"}))
+				g.Expect(rule.Resources).Should(Equal([]string{"pods"}))
+			}, timeout, pollInterval).Should(Succeed())
+
+			By("MutatingWebhookConfiguration should NOT have rules from spec.webhook, should use default operations")
+			mutatingWebhookConfiguration := &admregv1.MutatingWebhookConfiguration{}
+			Eventually(func(g Gomega) {
+				err := K8sClient.Get(ctx, mutatingWebhookName, mutatingWebhookConfiguration)
+				g.Expect(err).ShouldNot(HaveOccurred())
+
+				// Verify the mutating webhook does NOT have the custom rules
+				// It should have default operations (CREATE, UPDATE) not the custom pod rules
+				g.Expect(mutatingWebhookConfiguration.Webhooks[0].Rules).Should(HaveLen(1))
+				rule := mutatingWebhookConfiguration.Webhooks[0].Rules[0]
+				// Should have default operations, not custom rules
+				g.Expect(rule.Operations).Should(ConsistOf(admregv1.Create, admregv1.Update))
+				// Should NOT be restricted to pods only
+				g.Expect(rule.Resources).Should(Equal([]string{"*"}))
+			}, timeout, pollInterval).Should(Succeed())
+		})
 	})
 
 	Describe("Test in Openshift Env", Label("openshift"), Ordered, Serial, func() {

@@ -651,7 +651,11 @@ func crOverrides(
 		if gatekeeper.Spec.MutatingWebhookConfig != nil {
 			whSpecConfig = &gatekeeper.Spec.MutatingWebhookConfig.WebhookSpecConfig
 		} else if gatekeeper.Spec.Webhook != nil {
-			whSpecConfig = &gatekeeper.Spec.Webhook.WebhookSpecConfig
+			// Use webhook config but exclude Rules field
+			// since Rules in spec.webhook should only apply to validating webhook
+			whSpecConfigCopy := gatekeeper.Spec.Webhook.WebhookSpecConfig
+			whSpecConfigCopy.Rules = nil
+			whSpecConfig = &whSpecConfigCopy
 		}
 
 		err := webhookConfigurationOverrides(obj, whSpecConfig, namespace,
@@ -821,8 +825,15 @@ func webhookConfigurationOverrides(
 			}
 		}
 
-		if err := setOperations(obj, whSpecConfig.Operations, webhookName); err != nil {
-			return err
+		// Rules takes precedence over Operations
+		if len(whSpecConfig.Rules) > 0 {
+			if err := setRules(obj, whSpecConfig.Rules, webhookName); err != nil {
+				return err
+			}
+		} else if whSpecConfig.Operations != nil {
+			if err := setOperations(obj, whSpecConfig.Operations, webhookName); err != nil {
+				return err
+			}
 		}
 
 		//nolint:lll
@@ -1339,6 +1350,30 @@ func setOperations(
 	}
 
 	return setWebhookConfigurationWithFn(obj, webhookName, setOperationsFn)
+}
+
+func setRules(
+	obj *unstructured.Unstructured, rules []admregv1.RuleWithOperations, webhookName string,
+) error {
+	// If no rules is provided, no override for rules
+	if rules == nil {
+		return nil
+	}
+
+	setRulesFn := func(webhook map[string]interface{}) error {
+		converted := make([]interface{}, 0, len(rules))
+		for _, rule := range rules {
+			converted = append(converted, util.ToMap(rule))
+		}
+
+		if err := unstructured.SetNestedSlice(webhook, converted, "rules"); err != nil {
+			return errors.Wrapf(err, "Failed to set webhook rules")
+		}
+
+		return nil
+	}
+
+	return setWebhookConfigurationWithFn(obj, webhookName, setRulesFn)
 }
 
 func setTimeoutSeconds(

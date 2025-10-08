@@ -22,6 +22,7 @@ package v1alpha1
 
 import (
 	configv1alpha1 "github.com/open-policy-agent/gatekeeper/v3/apis/config/v1alpha1"
+	admissionregistrationv1 "k8s.io/api/admissionregistration/v1"
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
@@ -342,6 +343,13 @@ func (in *WebhookSpecConfig) DeepCopyInto(out *WebhookSpecConfig) {
 		in, out := &in.Operations, &out.Operations
 		*out = make([]OperationType, len(*in))
 		copy(*out, *in)
+	}
+	if in.Rules != nil {
+		in, out := &in.Rules, &out.Rules
+		*out = make([]admissionregistrationv1.RuleWithOperations, len(*in))
+		for i := range *in {
+			(*in)[i].DeepCopyInto(&(*out)[i])
+		}
 	}
 }
 

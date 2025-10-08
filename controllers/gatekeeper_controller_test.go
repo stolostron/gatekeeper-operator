@@ -1625,6 +1625,153 @@ func overrideWebhookOperations(
 	})
 }
 
+func TestWebhookRules(t *testing.T) {
+	g := NewWithT(t)
+
+	// Create custom rules
+	rules := []admregv1.RuleWithOperations{
+		{
+			Operations: []admregv1.OperationType{"CREATE", "UPDATE"},
+			Rule: admregv1.Rule{
+				APIGroups:   []string{""},
+				APIVersions: []string{"v1"},
+				Resources:   []string{"pods"},
+			},
+		},
+		{
+			Operations: []admregv1.OperationType{"DELETE"},
+			Rule: admregv1.Rule{
+				APIGroups:   []string{"apps"},
+				APIVersions: []string{"v1"},
+				Resources:   []string{"deployments"},
+			},
+		},
+	}
+
+	// Test that Rules overrides Operations
+	operations := []operatorv1alpha1.OperationType{"CONNECT"}
+
+	gatekeeper := defaultGatekeeper()
+	gatekeeper.Spec.Webhook = &operatorv1alpha1.WebhookConfig{
+		WebhookSpecConfig: operatorv1alpha1.WebhookSpecConfig{
+			Operations: operations, // This should be ignored
+			Rules:      rules,
+		},
+	}
+
+	// Test validating webhook - should use rules from spec.webhook
+	valObj, err := util.GetManifestObject(ValidatingWebhookConfiguration)
+	g.Expect(err).ToNot(HaveOccurred())
+
+	err = crOverrides(logr.Logger{}, gatekeeper, ValidatingWebhookConfiguration, valObj, namespace, false, false)
+	g.Expect(err).ToNot(HaveOccurred())
+	assertWebhookRules(g, valObj, ValidationGatekeeperWebhook, rules)
+
+	// Test mutating webhook - should NOT use rules from spec.webhook
+	// Rules in spec.webhook should only apply to validating webhook
+	mutObj, err := util.GetManifestObject(MutatingWebhookConfiguration)
+	g.Expect(err).ToNot(HaveOccurred())
+
+	err = crOverrides(logr.Logger{}, gatekeeper, MutatingWebhookConfiguration, mutObj, namespace, false, false)
+	g.Expect(err).ToNot(HaveOccurred())
+	// Verify that rules from spec.webhook were NOT applied - should use configured operations
+	assertWebhookOperations(g, mutObj, MutationGatekeeperWebhook, operations)
+
+	// Test with separate mutating webhook config
+	gatekeeper.Spec.MutatingWebhookConfig = &operatorv1alpha1.MutatingWebhookConfig{
+		WebhookSpecConfig: operatorv1alpha1.WebhookSpecConfig{
+			Rules: []admregv1.RuleWithOperations{
+				{
+					Operations: []admregv1.OperationType{"CREATE"},
+					Rule: admregv1.Rule{
+						APIGroups:   []string{""},
+						APIVersions: []string{"v1"},
+						Resources:   []string{"configmaps"},
+					},
+				},
+			},
+		},
+	}
+
+	mutObj2, err := util.GetManifestObject(MutatingWebhookConfiguration)
+	g.Expect(err).ToNot(HaveOccurred())
+
+	err = crOverrides(logr.Logger{}, gatekeeper, MutatingWebhookConfiguration, mutObj2, namespace, false, false)
+	g.Expect(err).ToNot(HaveOccurred())
+	assertWebhookRules(g, mutObj2, MutationGatekeeperWebhook, gatekeeper.Spec.MutatingWebhookConfig.Rules)
+}
+
+func assertWebhookRules(
+	g *WithT, obj *unstructured.Unstructured, webhookName string, expected []admregv1.RuleWithOperations,
+) {
+	assertWebhooksWithFn(g, obj, func(webhook map[string]interface{}) {
+		if webhook["name"] == webhookName {
+			current, found, err := unstructured.NestedSlice(webhook, "rules")
+			g.Expect(err).ToNot(HaveOccurred())
+			g.Expect(found).To(BeTrue())
+			g.Expect(current).To(HaveLen(len(expected)))
+
+			for i, rule := range current {
+				ruleMap := rule.(map[string]interface{})
+				expectedRule := expected[i]
+
+				// Check operations
+				ops, found, err := unstructured.NestedStringSlice(ruleMap, "operations")
+				g.Expect(err).ToNot(HaveOccurred())
+				g.Expect(found).To(BeTrue())
+				g.Expect(ops).To(HaveLen(len(expectedRule.Operations)))
+
+				for j, op := range ops {
+					g.Expect(op).To(Equal(string(expectedRule.Operations[j])))
+				}
+
+				// Check apiGroups
+				apiGroups, found, err := unstructured.NestedStringSlice(ruleMap, "apiGroups")
+				g.Expect(err).ToNot(HaveOccurred())
+				g.Expect(found).To(BeTrue())
+				g.Expect(apiGroups).To(Equal(expectedRule.APIGroups))
+
+				// Check apiVersions
+				apiVersions, found, err := unstructured.NestedStringSlice(ruleMap, "apiVersions")
+				g.Expect(err).ToNot(HaveOccurred())
+				g.Expect(found).To(BeTrue())
+				g.Expect(apiVersions).To(Equal(expectedRule.APIVersions))
+
+				// Check resources
+				resources, found, err := unstructured.NestedStringSlice(ruleMap, "resources")
+				g.Expect(err).ToNot(HaveOccurred())
+				g.Expect(found).To(BeTrue())
+				g.Expect(resources).To(Equal(expectedRule.Resources))
+			}
+		}
+	})
+}
+
+func assertWebhookOperations(
+	g *WithT, obj *unstructured.Unstructured, webhookName string, expected []operatorv1alpha1.OperationType,
+) {
+	assertWebhooksWithFn(g, obj, func(webhook map[string]interface{}) {
+		if webhook["name"] == webhookName {
+			rules, found, err := unstructured.NestedSlice(webhook, "rules")
+			g.Expect(err).ToNot(HaveOccurred())
+			g.Expect(found).To(BeTrue())
+			g.Expect(rules).To(HaveLen(1))
+
+			ruleMap := rules[0].(map[string]interface{})
+
+			// Check operations
+			ops, found, err := unstructured.NestedStringSlice(ruleMap, "operations")
+			g.Expect(err).ToNot(HaveOccurred())
+			g.Expect(found).To(BeTrue())
+			g.Expect(ops).To(HaveLen(len(expected)))
+
+			for j, op := range ops {
+				g.Expect(op).To(Equal(string(expected[j])))
+			}
+		}
+	})
+}
+
 func TestWebhookTimeoutSeconds(t *testing.T) {
 	g := NewWithT(t)
 
