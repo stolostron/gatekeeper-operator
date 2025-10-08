@@ -853,10 +853,9 @@ func getDefaultImageConfig(g *WithT, obj *unstructured.Unstructured) (image stri
 func TestFailurePolicy(t *testing.T) {
 	g := NewWithT(t)
 
-	failurePolicy := admregv1.Fail
 	webhook := operatorv1alpha1.WebhookConfig{
 		WebhookSpecConfig: operatorv1alpha1.WebhookSpecConfig{
-			FailurePolicy: &failurePolicy,
+			FailurePolicy: admregv1.Fail,
 		},
 	}
 	gatekeeper := defaultGatekeeper()
@@ -865,51 +864,51 @@ func TestFailurePolicy(t *testing.T) {
 
 	valObj, err := util.GetManifestObject(ValidatingWebhookConfiguration)
 	g.Expect(err).ToNot(HaveOccurred())
-	assertFailurePolicy(g, valObj, ValidationGatekeeperWebhook, nil)
+	assertFailurePolicy(g, valObj, ValidationGatekeeperWebhook, "")
+	assertFailurePolicy(g, valObj, CheckIgnoreLabelGatekeeperWebhook, "")
 
 	mutObj, err := util.GetManifestObject(MutatingWebhookConfiguration)
 	g.Expect(err).ToNot(HaveOccurred())
-	assertFailurePolicy(g, mutObj, MutatingWebhookConfiguration, nil)
+	assertFailurePolicy(g, mutObj, MutatingWebhookConfiguration, "")
 
 	t.Log("test nil failurePolicy")
 
 	err = crOverrides(logr.Logger{}, gatekeeper, ValidatingWebhookConfiguration, valObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
-	assertFailurePolicy(g, valObj, ValidationGatekeeperWebhook, nil)
+	assertFailurePolicy(g, valObj, ValidationGatekeeperWebhook, "")
+	assertFailurePolicy(g, valObj, CheckIgnoreLabelGatekeeperWebhook, "")
 
 	err = crOverrides(logr.Logger{}, gatekeeper, MutatingWebhookConfiguration, mutObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
-	assertFailurePolicy(g, mutObj, MutationGatekeeperWebhook, nil)
+	assertFailurePolicy(g, mutObj, MutationGatekeeperWebhook, "")
 
 	t.Log("test failurePolicy override")
 
 	gatekeeper.Spec.Webhook = &webhook
 	err = crOverrides(logr.Logger{}, gatekeeper, ValidatingWebhookConfiguration, valObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
-	assertFailurePolicy(g, valObj, ValidationGatekeeperWebhook, &failurePolicy)
+	assertFailurePolicy(g, valObj, ValidationGatekeeperWebhook, admregv1.Fail)
+	assertFailurePolicy(g, valObj, CheckIgnoreLabelGatekeeperWebhook, admregv1.Fail)
 
 	err = crOverrides(logr.Logger{}, gatekeeper, MutatingWebhookConfiguration, mutObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
-	assertFailurePolicy(g, mutObj, MutationGatekeeperWebhook, &failurePolicy)
+	assertFailurePolicy(g, mutObj, MutationGatekeeperWebhook, admregv1.Fail)
 
 	t.Log("test controllerDeploymentPending override")
 
-	failurePolicyIgnore := admregv1.Ignore
 	gatekeeper.Spec.Webhook = &webhook
 	err = crOverrides(logr.Logger{}, gatekeeper, ValidatingWebhookConfiguration, valObj, namespace, false, true)
 	g.Expect(err).ToNot(HaveOccurred())
-	assertFailurePolicy(g, valObj, ValidationGatekeeperWebhook, &failurePolicyIgnore)
-	err = crOverrides(logr.Logger{}, gatekeeper, CheckIgnoreLabelGatekeeperWebhook, valObj, namespace, false, true)
-	g.Expect(err).ToNot(HaveOccurred())
-	assertFailurePolicy(g, valObj, CheckIgnoreLabelGatekeeperWebhook, &failurePolicyIgnore)
+	assertFailurePolicy(g, valObj, ValidationGatekeeperWebhook, admregv1.Ignore)
+	assertFailurePolicy(g, valObj, CheckIgnoreLabelGatekeeperWebhook, admregv1.Ignore)
 
 	err = crOverrides(logr.Logger{}, gatekeeper, MutatingWebhookConfiguration, mutObj, namespace, false, true)
 	g.Expect(err).ToNot(HaveOccurred())
-	assertFailurePolicy(g, mutObj, MutationGatekeeperWebhook, &failurePolicyIgnore)
+	assertFailurePolicy(g, mutObj, MutationGatekeeperWebhook, admregv1.Ignore)
 }
 
 func assertFailurePolicy(
-	g *WithT, obj *unstructured.Unstructured, webhookName string, expected *admregv1.FailurePolicyType,
+	g *WithT, obj *unstructured.Unstructured, webhookName string, expected admregv1.FailurePolicyType,
 ) {
 	assertWebhooksWithFn(g, obj, func(webhook map[string]interface{}) {
 		if webhook["name"] == webhookName {
@@ -917,10 +916,15 @@ func assertFailurePolicy(
 			g.Expect(err).ToNot(HaveOccurred())
 			g.Expect(found).To(BeTrue())
 
-			if expected == nil {
-				g.Expect(test.DefaultDeployment.FailurePolicy).To(BeEquivalentTo(current))
+			if expected == "" {
+				expected = test.DefaultDeployment.FailurePolicy
+				if webhookName == CheckIgnoreLabelGatekeeperWebhook {
+					expected = admregv1.Fail
+				}
+
+				g.Expect(expected).To(BeEquivalentTo(current))
 			} else {
-				g.Expect(*expected).To(BeEquivalentTo(current))
+				g.Expect(expected).To(BeEquivalentTo(current))
 			}
 		}
 	})
