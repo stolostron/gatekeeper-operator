@@ -53,6 +53,11 @@ spec:
           function. See https://open-policy-agent.github.io/gatekeeper/website/docs/audit.
         displayName: Audit Configuration
         path: audit
+      - description: PodAnnotations is a map of additional annotations to be added
+          to the deployment pods. When the same keys are defined here and in spec.podAnnotations,
+          these annotations take precedence.
+        displayName: Pod Annotations
+        path: audit.podAnnotations
       - description: Config specifies configurations for the configs.config.gatekeeper.sh
           API, allowing high-level configuration of Gatekeeper.
         displayName: Config Configuration
@@ -95,6 +100,11 @@ spec:
           also override the check-ignore-label webhook.
         displayName: Webhook Config
         path: webhook
+      - description: PodAnnotations is a map of additional annotations to be added
+          to the deployment pods. When the same keys are defined here and in spec.podAnnotations,
+          these annotations take precedence.
+        displayName: Pod Annotations
+        path: webhook.podAnnotations
       version: v1alpha1
   description: |
     Open Policy Agent Gatekeeper enforces CRD-based policies.

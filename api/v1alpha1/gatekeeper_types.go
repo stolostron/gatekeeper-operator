@@ -101,6 +101,13 @@ type CommonConfig struct {
 	//
 	// +optional
 	ContainerArguments []Arg `json:"containerArguments,omitempty"`
+
+	// PodAnnotations is a map of additional annotations to be added to the deployment pods.
+	// When the same keys are defined here and in spec.podAnnotations, these annotations take precedence.
+	//
+	// +optional
+	// +operator-sdk:csv:customresourcedefinitions:type=spec,displayName="Pod Annotations"
+	PodAnnotations map[string]string `json:"podAnnotations,omitempty"`
 }
 
 // +kubebuilder:validation:Enum:=Enabled;Disabled;Automatic

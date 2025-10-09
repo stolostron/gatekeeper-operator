@@ -1072,6 +1072,13 @@ spec:
                     - WARNING
                     - ERROR
                     type: string
+                  podAnnotations:
+                    additionalProperties:
+                      type: string
+                    description: |-
+                      PodAnnotations is a map of additional annotations to be added to the deployment pods.
+                      When the same keys are defined here and in spec.podAnnotations, these annotations take precedence.
+                    type: object
                   replicas:
                     description: Replicas is the number of desired pods.
                     format: int32
@@ -1562,6 +1569,13 @@ spec:
                       - '*'
                       type: string
                     type: array
+                  podAnnotations:
+                    additionalProperties:
+                      type: string
+                    description: |-
+                      PodAnnotations is a map of additional annotations to be added to the deployment pods.
+                      When the same keys are defined here and in spec.podAnnotations, these annotations take precedence.
+                    type: object
                   replicas:
                     description: Replicas is the number of desired pods.
                     format: int32
