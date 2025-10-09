@@ -579,8 +579,21 @@ var _ = Describe("Gatekeeper", func() {
 			})
 
 			By("Checking expected pod annotations", func() {
-				Expect(auditTemplate.Annotations).To(BeEquivalentTo(gatekeeper.Spec.PodAnnotations))
-				Expect(webhookTemplate.Annotations).To(BeEquivalentTo(gatekeeper.Spec.PodAnnotations))
+				mergedAudit := make(map[string]string)
+				mergedWebhook := make(map[string]string)
+
+				for k, v := range gatekeeper.Spec.PodAnnotations {
+					mergedAudit[k], mergedWebhook[k] = v, v
+				}
+				for k, v := range gatekeeper.Spec.Audit.PodAnnotations {
+					mergedAudit[k] = v
+				}
+				for k, v := range gatekeeper.Spec.Webhook.PodAnnotations {
+					mergedWebhook[k] = v
+				}
+
+				Expect(auditTemplate.Annotations).To(BeEquivalentTo(mergedAudit))
+				Expect(webhookTemplate.Annotations).To(BeEquivalentTo(mergedWebhook))
 			})
 
 			By("Checking expected tolerations", func() {
