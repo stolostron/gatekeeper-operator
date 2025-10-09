@@ -572,6 +572,95 @@ func TestPodAnnotations(t *testing.T) {
 	assertPodAnnotations(g, webhookObj, podAnnotations)
 }
 
+func TestComponentSpecificPodAnnotations(t *testing.T) {
+	g := NewWithT(t)
+	globalAnnotations := map[string]string{
+		"global.annotation":    "applied-to-all",
+		"monitoring.io/scrape": "true",
+	}
+	auditAnnotations := map[string]string{
+		"audit.annotation":     "audit-specific",
+		"monitoring.io/scrape": "false",
+	}
+	webhookAnnotations := map[string]string{
+		"webhook.annotation":   "webhook-specific",
+		"monitoring.io/scrape": "false",
+	}
+
+	gatekeeper := defaultGatekeeper()
+	gatekeeper.Spec.PodAnnotations = globalAnnotations
+	gatekeeper.Spec.Audit = &operatorv1alpha1.AuditConfig{
+		CommonConfig: operatorv1alpha1.CommonConfig{
+			PodAnnotations: auditAnnotations,
+		},
+	}
+	gatekeeper.Spec.Webhook = &operatorv1alpha1.WebhookConfig{
+		CommonConfig: operatorv1alpha1.CommonConfig{
+			PodAnnotations: webhookAnnotations,
+		},
+	}
+
+	auditObj, err := util.GetManifestObject(AuditFile)
+	g.Expect(err).ToNot(HaveOccurred())
+	webhookObj, err := util.GetManifestObject(WebhookFile)
+	g.Expect(err).ToNot(HaveOccurred())
+
+	expectedAuditAnnotations := map[string]string{
+		"global.annotation":    "applied-to-all",
+		"audit.annotation":     "audit-specific",
+		"monitoring.io/scrape": "false",
+	}
+	expectedWebhookAnnotations := map[string]string{
+		"global.annotation":    "applied-to-all",
+		"webhook.annotation":   "webhook-specific",
+		"monitoring.io/scrape": "false",
+	}
+
+	err = crOverrides(logr.Logger{}, gatekeeper, AuditFile, auditObj, namespace, false, false)
+	g.Expect(err).ToNot(HaveOccurred())
+	assertPodAnnotations(g, auditObj, expectedAuditAnnotations)
+
+	err = crOverrides(logr.Logger{}, gatekeeper, WebhookFile, webhookObj, namespace, false, false)
+	g.Expect(err).ToNot(HaveOccurred())
+	assertPodAnnotations(g, webhookObj, expectedWebhookAnnotations)
+
+	// Test nil global annotations with component-specific annotations
+	gatekeeperNilGlobal := defaultGatekeeper()
+	gatekeeperNilGlobal.Spec.PodAnnotations = nil
+	gatekeeperNilGlobal.Spec.Audit = &operatorv1alpha1.AuditConfig{
+		CommonConfig: operatorv1alpha1.CommonConfig{
+			PodAnnotations: auditAnnotations,
+		},
+	}
+	gatekeeperNilGlobal.Spec.Webhook = &operatorv1alpha1.WebhookConfig{
+		CommonConfig: operatorv1alpha1.CommonConfig{
+			PodAnnotations: webhookAnnotations,
+		},
+	}
+
+	auditObjNilGlobal, err := util.GetManifestObject(AuditFile)
+	g.Expect(err).ToNot(HaveOccurred())
+	webhookObjNilGlobal, err := util.GetManifestObject(WebhookFile)
+	g.Expect(err).ToNot(HaveOccurred())
+
+	expectedAuditAnnotationsNilGlobal := map[string]string{
+		"audit.annotation":     "audit-specific",
+		"monitoring.io/scrape": "false",
+	}
+	expectedWebhookAnnotationsNilGlobal := map[string]string{
+		"webhook.annotation":   "webhook-specific",
+		"monitoring.io/scrape": "false",
+	}
+
+	err = crOverrides(logr.Logger{}, gatekeeperNilGlobal, AuditFile, auditObjNilGlobal, namespace, false, false)
+	g.Expect(err).ToNot(HaveOccurred())
+	assertPodAnnotations(g, auditObjNilGlobal, expectedAuditAnnotationsNilGlobal)
+
+	err = crOverrides(logr.Logger{}, gatekeeperNilGlobal, WebhookFile, webhookObjNilGlobal, namespace, false, false)
+	g.Expect(err).ToNot(HaveOccurred())
+	assertPodAnnotations(g, webhookObjNilGlobal, expectedWebhookAnnotationsNilGlobal)
+}
+
 func assertPodAnnotations(g *WithT, obj *unstructured.Unstructured, expected map[string]string) {
 	g.Expect(obj).NotTo(BeNil())
 	current, found, err := unstructured.NestedStringMap(obj.Object, "spec", "template", "metadata", "annotations")
