@@ -1382,13 +1382,38 @@ func setNodeSelector(obj *unstructured.Unstructured, spec operatorv1alpha1.Gatek
 }
 
 func setPodAnnotations(obj *unstructured.Unstructured, spec operatorv1alpha1.GatekeeperSpec) error {
-	if spec.PodAnnotations != nil {
-		err := unstructured.SetNestedStringMap(
-			obj.Object, spec.PodAnnotations, "spec", "template", "metadata", "annotations",
-		)
-		if err != nil {
-			return errors.Wrapf(err, "Failed to set podAnnotations")
+	globalAnnotations := spec.PodAnnotations
+
+	var componentAnnotations map[string]string
+
+	switch obj.GetName() {
+	case AuditDeploymentName:
+		if spec.Audit != nil {
+			componentAnnotations = spec.Audit.PodAnnotations
 		}
+	case WebhookDeploymentName:
+		if spec.Webhook != nil {
+			componentAnnotations = spec.Webhook.PodAnnotations
+		}
+	}
+
+	if globalAnnotations == nil && componentAnnotations == nil {
+		return nil
+	}
+
+	mergedAnnotations := make(map[string]string)
+
+	for k, v := range globalAnnotations {
+		mergedAnnotations[k] = v
+	}
+
+	for k, v := range componentAnnotations {
+		mergedAnnotations[k] = v
+	}
+
+	err := unstructured.SetNestedStringMap(obj.Object, mergedAnnotations, "spec", "template", "metadata", "annotations")
+	if err != nil {
+		return errors.Wrapf(err, "Failed to set podAnnotations")
 	}
 
 	return nil

@@ -25,6 +25,9 @@ spec:
       - name: log-level
         value: INFO
       - name: enable-k8s-native-validation
+    podAnnotations:
+      audit.annotation: "audit-specific"
+      monitoring.io/scrape: "false"
   validatingWebhook: Enabled
   mutatingWebhook: Enabled
   webhook:
@@ -55,6 +58,9 @@ spec:
       - name: log-level
         value: INFO
       - name: enable-k8s-native-validation
+    podAnnotations:
+      webhook.annotation: "webhook-specific"
+      monitoring.io/scrape: "true"
   mutatingWebhookConfig:
     operations:
       - CREATE
@@ -80,6 +86,8 @@ spec:
       operator: "Exists"
       effect: "NoSchedule"
   podAnnotations:
+    global.annotation: "applied-to-all"
+    monitoring.io/scrape: "true"
     some-annotation: "this is a test"
     other-annotation: "another test"
   config:
