@@ -5,7 +5,7 @@ metadata:
 spec:
   image:
     image: docker.io/openpolicyagent/gatekeeper:v3.17.1
-    imagePullPolicy: Always
+    imagePullPolicy: IfNotPresent
   audit:
     replicas: 1
     logLevel: DEBUG

@@ -607,10 +607,10 @@ var _ = Describe("Gatekeeper", func() {
 			})
 
 			By("Checking expected image", func() {
-				Expect(auditContainer.Image).ToNot(Equal(*gatekeeper.Spec.Image.Image)) //nolint:staticcheck
-				Expect(auditContainer.ImagePullPolicy).To(Equal(*gatekeeper.Spec.Image.ImagePullPolicy))
-				Expect(webhookContainer.Image).ToNot(Equal(*gatekeeper.Spec.Image.Image)) //nolint:staticcheck
-				Expect(webhookContainer.ImagePullPolicy).To(Equal(*gatekeeper.Spec.Image.ImagePullPolicy))
+				Expect(auditContainer.Image).ToNot(Equal(gatekeeper.Spec.Image.Image)) //nolint:staticcheck
+				Expect(auditContainer.ImagePullPolicy).To(Equal(gatekeeper.Spec.Image.ImagePullPolicy))
+				Expect(webhookContainer.Image).ToNot(Equal(gatekeeper.Spec.Image.Image)) //nolint:staticcheck
+				Expect(webhookContainer.ImagePullPolicy).To(Equal(gatekeeper.Spec.Image.ImagePullPolicy))
 			})
 
 			By("Checking ready replicas", func() {

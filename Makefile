@@ -160,7 +160,6 @@ import-manifests: kustomize ## Import Gatekeeper manifests.
 	fi 
 	if [ "$${IMPORT_MANIFESTS_PATH#https://}" != "$(IMPORT_MANIFESTS_PATH)" ]; then \
 		git clone --depth=1 --branch $(GATEKEEPER_TAG) $(IMPORT_MANIFESTS_PATH) $(TMP_IMPORT_MANIFESTS_PATH) ; \
-		cd $(TMP_IMPORT_MANIFESTS_PATH) && make patch-image ; \
 		$(KUSTOMIZE) build --load-restrictor LoadRestrictionsNone $(TMP_IMPORT_MANIFESTS_PATH)/config/default -o $(MAKEFILE_DIR)/$(GATEKEEPER_MANIFEST_DIR); \
 		rm -rf $(TMP_IMPORT_MANIFESTS_PATH) ; \
 	else \
@@ -269,7 +268,7 @@ undeploy: ## Undeploy controller from the the currently configured Kubernetes cl
 	$(KUSTOMIZE) build config/default | kubectl delete -f -
 
 .PHONY: deploy-ci
-deploy-ci: install patch-image deploy unpatch-image ## Deploys the controller with a patched pull policy.
+deploy-ci: install deploy ## Deploys the controller with a patched pull policy.
 
 .PHONY: deploy-olm
 deploy-olm: operator-sdk
@@ -281,14 +280,6 @@ deploy-using-olm:
 	$(SED) -i 's#channel: stable#channel: $(DEFAULT_CHANNEL)#g' config/olm-install/kustomization.yaml
 	cd config/olm-install && $(KUSTOMIZE) edit set namespace $(NAMESPACE)
 	$(KUSTOMIZE) build config/olm-install | kubectl apply -f -
-
-.PHONY: patch-image
-patch-image:
-	$(SED) -i 's/imagePullPolicy: Always/imagePullPolicy: IfNotPresent/g' config/manager/manager.yaml
-
-.PHONY: unpatch-image
-unpatch-image:
-	$(SED) -i 's/imagePullPolicy: IfNotPresent/imagePullPolicy: Always/g' config/manager/manager.yaml
 
 ############################################################
 ##@ Operator Bundling

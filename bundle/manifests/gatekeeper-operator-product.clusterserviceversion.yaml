@@ -391,7 +391,7 @@ spec:
                 - name: RELATED_IMAGE_GATEKEEPER
                   value: quay.io/gatekeeper/gatekeeper:v3.20.1
                 image: quay.io/gatekeeper/gatekeeper-operator:v3.20.0
-                imagePullPolicy: Always
+                imagePullPolicy: IfNotPresent
                 livenessProbe:
                   httpGet:
                     path: /healthz
