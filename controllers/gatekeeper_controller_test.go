@@ -57,7 +57,8 @@ func defaultGatekeeper() *operatorv1alpha1.Gatekeeper {
 func TestDeployWebhookConfigs(t *testing.T) {
 	g := NewWithT(t)
 	gatekeeper := defaultGatekeeper()
-	// Test default (nil) webhook configurations
+
+	t.Log("test default (nil) webhook configurations")
 	// ValidatingWebhookConfiguration nil
 	// MutatingWebhookConfiguration nil
 	deleteWebhookAssets, applyOrderedAssets, applyWebhookAssets, deleteCRDAssets := getStaticAssets(gatekeeper, false)
@@ -72,6 +73,7 @@ func TestDeployWebhookConfigs(t *testing.T) {
 	g.Expect(deleteWebhookAssets).NotTo(ContainElement(MutatingCRDs))
 	g.Expect(deleteCRDAssets).NotTo(ContainElements(MutatingCRDs))
 
+	t.Log("test both webhook configurations enabled")
 	// ValidatingWebhookConfiguration enabled
 	// MutatingWebhookConfiguration enabled
 	gatekeeper.Spec.ValidatingWebhook = operatorv1alpha1.Enabled
@@ -87,6 +89,7 @@ func TestDeployWebhookConfigs(t *testing.T) {
 	g.Expect(deleteWebhookAssets).NotTo(ContainElement(MutatingCRDs))
 	g.Expect(deleteCRDAssets).NotTo(ContainElements(MutatingCRDs))
 
+	t.Log("test MutatingWebhookConfiguration disabled")
 	// ValidatingWebhookConfiguration enabled
 	// MutatingWebhookConfiguration disabled
 	gatekeeper.Spec.ValidatingWebhook = operatorv1alpha1.Enabled
@@ -102,6 +105,7 @@ func TestDeployWebhookConfigs(t *testing.T) {
 	g.Expect(deleteWebhookAssets).NotTo(ContainElement(MutatingCRDs))
 	g.Expect(deleteCRDAssets).To(ContainElements(MutatingCRDs))
 
+	t.Log("test ValidatingWebhookConfiguration disabled")
 	// ValidatingWebhookConfiguration disabled
 	// MutatingWebhookConfiguration enabled
 	gatekeeper.Spec.ValidatingWebhook = operatorv1alpha1.Disabled
@@ -117,6 +121,7 @@ func TestDeployWebhookConfigs(t *testing.T) {
 	g.Expect(deleteWebhookAssets).NotTo(ContainElement(MutatingCRDs))
 	g.Expect(deleteCRDAssets).NotTo(ContainElements(MutatingCRDs))
 
+	t.Log("test both webhook configurations disabled")
 	// ValidatingWebhookConfiguration disabled
 	// MutatingWebhookConfiguration disabled
 	gatekeeper.Spec.ValidatingWebhook = operatorv1alpha1.Disabled
@@ -137,7 +142,9 @@ func TestCustomNamespace(t *testing.T) {
 	g := NewWithT(t)
 	gatekeeper := defaultGatekeeper()
 	expectedNamespace := "otherNamespace"
-	// Rolebinding namespace overrides
+
+	t.Log("test Rolebinding namespace overrides")
+
 	rolebindingObj, err := util.GetManifestObject(RoleBindingFile)
 	g.Expect(err).ToNot(HaveOccurred())
 	g.Expect(rolebindingObj).ToNot(BeNil())
@@ -158,7 +165,8 @@ func TestCustomNamespace(t *testing.T) {
 		g.Expect(ns).To(Equal(expectedNamespace))
 	}
 
-	// WebhookFile namespace overrides
+	t.Log("test WebhookFile namespace overrides")
+
 	webhookObj, err := util.GetManifestObject(WebhookFile)
 	g.Expect(err).ToNot(HaveOccurred())
 	g.Expect(webhookObj).ToNot(BeNil())
@@ -166,7 +174,8 @@ func TestCustomNamespace(t *testing.T) {
 	g.Expect(err).ToNot(HaveOccurred())
 	expectObjContainerArg(g, webhookObj).To(HaveKeyWithValue(ExemptNamespaceArg, ContainElement(expectedNamespace)))
 
-	// ValidatingWebhookConfiguration and MutatingWebhookConfiguration namespace overrides
+	t.Log("test ValidatingWebhookConfiguration and MutatingWebhookConfiguration namespace overrides")
+
 	webhookConfigs := []string{
 		ValidatingWebhookConfiguration,
 		MutatingWebhookConfiguration,
@@ -192,32 +201,43 @@ func TestReplicas(t *testing.T) {
 	auditReplicaOverride := int32(4)
 	webhookReplicaOverride := int32(7)
 	gatekeeper := defaultGatekeeper()
-	// test default audit replicas
+
+	t.Log("test default audit replicas")
+
 	auditObj, err := util.GetManifestObject(AuditFile)
 	g.Expect(err).ToNot(HaveOccurred())
 	g.Expect(auditObj).ToNot(BeNil())
 	testObjReplicas(g, auditObj, test.DefaultDeployment.AuditReplicas)
-	// test nil audit replicas
+
+	t.Log("test nil audit replicas")
+
 	err = crOverrides(logr.Logger{}, gatekeeper, AuditFile, auditObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
 	testObjReplicas(g, auditObj, test.DefaultDeployment.AuditReplicas)
-	// test audit replicas override
+
+	t.Log("test audit replicas override")
+
 	gatekeeper.Spec.Audit = &operatorv1alpha1.AuditConfig{}
 	gatekeeper.Spec.Audit.Replicas = &auditReplicaOverride
 	err = crOverrides(logr.Logger{}, gatekeeper, AuditFile, auditObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
 	testObjReplicas(g, auditObj, auditReplicaOverride)
 
-	// test default webhook replicas
+	t.Log("test default webhook replicas")
+
 	webhookObj, err := util.GetManifestObject(WebhookFile)
 	g.Expect(err).ToNot(HaveOccurred())
 	g.Expect(webhookObj).ToNot(BeNil())
 	testObjReplicas(g, webhookObj, test.DefaultDeployment.WebhookReplicas)
-	// test nil webhook replicas
+
+	t.Log("test nil webhook replicas")
+
 	err = crOverrides(logr.Logger{}, gatekeeper, WebhookFile, webhookObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
 	testObjReplicas(g, webhookObj, test.DefaultDeployment.WebhookReplicas)
-	// test webhook replicas override
+
+	t.Log("test webhook replicas override")
+
 	gatekeeper.Spec.Webhook = &operatorv1alpha1.WebhookConfig{}
 	gatekeeper.Spec.Webhook.Replicas = &webhookReplicaOverride
 	err = crOverrides(logr.Logger{}, gatekeeper, WebhookFile, webhookObj, namespace, false, false)
@@ -337,7 +357,9 @@ func TestAffinity(t *testing.T) {
 		},
 	}
 	gatekeeper := defaultGatekeeper()
-	// test default affinity
+
+	t.Log("test default affinity")
+
 	auditObj, err := util.GetManifestObject(AuditFile)
 	g.Expect(err).ToNot(HaveOccurred())
 	assertAuditAffinity(g, auditObj, nil)
@@ -346,7 +368,8 @@ func TestAffinity(t *testing.T) {
 	g.Expect(err).ToNot(HaveOccurred())
 	assertWebhookAffinity(g, webhookObj, nil)
 
-	// test nil affinity
+	t.Log("test nil affinity")
+
 	err = crOverrides(logr.Logger{}, gatekeeper, AuditFile, auditObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
 	assertAuditAffinity(g, auditObj, nil)
@@ -355,7 +378,8 @@ func TestAffinity(t *testing.T) {
 	g.Expect(err).ToNot(HaveOccurred())
 	assertWebhookAffinity(g, webhookObj, nil)
 
-	// test affinity override
+	t.Log("test affinity override")
+
 	gatekeeper.Spec.Affinity = affinity
 
 	err = crOverrides(logr.Logger{}, gatekeeper, AuditFile, auditObj, namespace, false, false)
@@ -407,7 +431,8 @@ func TestOpenShiftOverrides(t *testing.T) {
 	webhookObj, err := util.GetManifestObject(WebhookFile)
 	g.Expect(err).ToNot(HaveOccurred())
 
-	// Test that no OpenShift overrides take place when it's not OpenShift
+	t.Log("test that no OpenShift overrides take place when it's not OpenShift")
+
 	err = crOverrides(logr.Logger{}, gatekeeper, AuditFile, auditObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
 	assertOverrides(g, auditObj, true)
@@ -416,7 +441,8 @@ func TestOpenShiftOverrides(t *testing.T) {
 	g.Expect(err).ToNot(HaveOccurred())
 	assertOverrides(g, webhookObj, true)
 
-	// Test that OpenShift overrides take place
+	t.Log("test that OpenShift overrides take place")
+
 	err = crOverrides(logr.Logger{}, gatekeeper, AuditFile, auditObj, namespace, true, false)
 	g.Expect(err).ToNot(HaveOccurred())
 	assertOverrides(g, auditObj, false)
@@ -458,7 +484,9 @@ func TestNodeSelector(t *testing.T) {
 	}
 
 	gatekeeper := defaultGatekeeper()
-	// test default nodeSelector
+
+	t.Log("test default nodeSelector")
+
 	auditObj, err := util.GetManifestObject(AuditFile)
 	g.Expect(err).ToNot(HaveOccurred())
 	assertNodeSelector(g, auditObj, nil)
@@ -468,7 +496,8 @@ func TestNodeSelector(t *testing.T) {
 	assertNodeSelector(g, auditObj, nil)
 	assertNodeSelector(g, webhookObj, nil)
 
-	// test nil nodeSelector
+	t.Log("test nil nodeSelector")
+
 	err = crOverrides(logr.Logger{}, gatekeeper, AuditFile, auditObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
 	assertNodeSelector(g, auditObj, nil)
@@ -477,7 +506,8 @@ func TestNodeSelector(t *testing.T) {
 	g.Expect(err).ToNot(HaveOccurred())
 	assertNodeSelector(g, webhookObj, nil)
 
-	// test nodeSelector override
+	t.Log("test nodeSelector override")
+
 	gatekeeper.Spec.NodeSelector = nodeSelector
 	err = crOverrides(logr.Logger{}, gatekeeper, AuditFile, auditObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
@@ -509,7 +539,9 @@ func TestPodAnnotations(t *testing.T) {
 	}
 
 	gatekeeper := defaultGatekeeper()
-	// test default podAnnotations
+
+	t.Log("test default podAnnotations")
+
 	auditObj, err := util.GetManifestObject(AuditFile)
 	g.Expect(err).ToNot(HaveOccurred())
 	assertPodAnnotations(g, auditObj, nil)
@@ -518,7 +550,8 @@ func TestPodAnnotations(t *testing.T) {
 	g.Expect(err).ToNot(HaveOccurred())
 	assertPodAnnotations(g, webhookObj, nil)
 
-	// test nil podAnnotations
+	t.Log("test nil podAnnotations")
+
 	err = crOverrides(logr.Logger{}, gatekeeper, AuditFile, auditObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
 	assertPodAnnotations(g, auditObj, nil)
@@ -527,7 +560,8 @@ func TestPodAnnotations(t *testing.T) {
 	g.Expect(err).ToNot(HaveOccurred())
 	assertPodAnnotations(g, webhookObj, nil)
 
-	// test podAnnotations override
+	t.Log("test podAnnotations override")
+
 	gatekeeper.Spec.PodAnnotations = podAnnotations
 	err = crOverrides(logr.Logger{}, gatekeeper, AuditFile, auditObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
@@ -568,7 +602,9 @@ func TestTolerations(t *testing.T) {
 	}
 
 	gatekeeper := defaultGatekeeper()
-	// test default tolerations
+
+	t.Log("test default tolerations")
+
 	auditObj, err := util.GetManifestObject(AuditFile)
 	g.Expect(err).ToNot(HaveOccurred())
 	assertTolerations(g, auditObj, nil)
@@ -577,7 +613,8 @@ func TestTolerations(t *testing.T) {
 	g.Expect(err).ToNot(HaveOccurred())
 	assertTolerations(g, webhookObj, nil)
 
-	// test nil tolerations
+	t.Log("test nil tolerations")
+
 	err = crOverrides(logr.Logger{}, gatekeeper, AuditFile, auditObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
 	assertTolerations(g, auditObj, nil)
@@ -586,7 +623,8 @@ func TestTolerations(t *testing.T) {
 	g.Expect(err).ToNot(HaveOccurred())
 	assertTolerations(g, webhookObj, nil)
 
-	// test tolerations override
+	t.Log("test tolerations override")
+
 	gatekeeper.Spec.Tolerations = tolerations
 	err = crOverrides(logr.Logger{}, gatekeeper, AuditFile, auditObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
@@ -642,7 +680,9 @@ func TestResources(t *testing.T) {
 		},
 	}
 	gatekeeper := defaultGatekeeper()
-	// test default resources
+
+	t.Log("test default resources")
+
 	auditObj, err := util.GetManifestObject(AuditFile)
 	g.Expect(err).ToNot(HaveOccurred())
 	assertResources(g, auditObj, test.DefaultDeployment.AuditResources)
@@ -651,7 +691,8 @@ func TestResources(t *testing.T) {
 	g.Expect(err).ToNot(HaveOccurred())
 	assertResources(g, webhookObj, test.DefaultDeployment.WebResources)
 
-	// test nil resources
+	t.Log("test nil resources")
+
 	err = crOverrides(logr.Logger{}, gatekeeper, AuditFile, auditObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
 	assertResources(g, auditObj, test.DefaultDeployment.AuditResources)
@@ -660,7 +701,8 @@ func TestResources(t *testing.T) {
 	g.Expect(err).ToNot(HaveOccurred())
 	assertResources(g, webhookObj, test.DefaultDeployment.WebResources)
 
-	// test resources override
+	t.Log("test resources override")
+
 	gatekeeper.Spec.Audit = audit
 	err = crOverrides(logr.Logger{}, gatekeeper, AuditFile, auditObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
@@ -711,7 +753,8 @@ func TestImage(t *testing.T) {
 
 	gatekeeper := defaultGatekeeper()
 
-	// test default image
+	t.Log("test default image")
+
 	auditObj, err := util.GetManifestObject(AuditFile)
 	g.Expect(err).ToNot(HaveOccurred())
 
@@ -724,7 +767,8 @@ func TestImage(t *testing.T) {
 	webhookObjCopy := webhookObj.DeepCopy()
 	assertImage(g, webhookObj, webhookObjCopy, nil, "")
 
-	// test nil image
+	t.Log("test nil image")
+
 	auditObjCopy = auditObj.DeepCopy()
 	err = crOverrides(logr.Logger{}, gatekeeper, AuditFile, auditObjCopy, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
@@ -735,7 +779,8 @@ func TestImage(t *testing.T) {
 	g.Expect(err).ToNot(HaveOccurred())
 	assertImage(g, webhookObj, webhookObjCopy, nil, "")
 
-	// test image override
+	t.Log("test image override")
+
 	gatekeeper.Spec.Image = imageConfig
 	image := "mycustom-image/the-gatekeeper:v1.0.0"
 	t.Setenv(GatekeeperImageEnvVar, image)
@@ -815,7 +860,9 @@ func TestFailurePolicy(t *testing.T) {
 		},
 	}
 	gatekeeper := defaultGatekeeper()
-	// test default failurePolicy
+
+	t.Log("test default failurePolicy")
+
 	valObj, err := util.GetManifestObject(ValidatingWebhookConfiguration)
 	g.Expect(err).ToNot(HaveOccurred())
 	assertFailurePolicy(g, valObj, ValidationGatekeeperWebhook, nil)
@@ -824,7 +871,8 @@ func TestFailurePolicy(t *testing.T) {
 	g.Expect(err).ToNot(HaveOccurred())
 	assertFailurePolicy(g, mutObj, MutatingWebhookConfiguration, nil)
 
-	// test nil failurePolicy
+	t.Log("test nil failurePolicy")
+
 	err = crOverrides(logr.Logger{}, gatekeeper, ValidatingWebhookConfiguration, valObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
 	assertFailurePolicy(g, valObj, ValidationGatekeeperWebhook, nil)
@@ -833,7 +881,8 @@ func TestFailurePolicy(t *testing.T) {
 	g.Expect(err).ToNot(HaveOccurred())
 	assertFailurePolicy(g, mutObj, MutationGatekeeperWebhook, nil)
 
-	// test failurePolicy override
+	t.Log("test failurePolicy override")
+
 	gatekeeper.Spec.Webhook = &webhook
 	err = crOverrides(logr.Logger{}, gatekeeper, ValidatingWebhookConfiguration, valObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
@@ -843,7 +892,8 @@ func TestFailurePolicy(t *testing.T) {
 	g.Expect(err).ToNot(HaveOccurred())
 	assertFailurePolicy(g, mutObj, MutationGatekeeperWebhook, &failurePolicy)
 
-	// test controllerDeploymentPending override
+	t.Log("test controllerDeploymentPending override")
+
 	failurePolicyIgnore := admregv1.Ignore
 	gatekeeper.Spec.Webhook = &webhook
 	err = crOverrides(logr.Logger{}, gatekeeper, ValidatingWebhookConfiguration, valObj, namespace, false, true)
@@ -906,9 +956,10 @@ func TestNamespaceSelector(t *testing.T) {
 			NamespaceSelector: &namespaceSelector,
 		},
 	}
-
 	gatekeeper := defaultGatekeeper()
-	// test default namespaceSelector
+
+	t.Log("test default namespaceSelector")
+
 	valObj, err := util.GetManifestObject(ValidatingWebhookConfiguration)
 	g.Expect(err).ToNot(HaveOccurred())
 	assertNamespaceSelector(g, valObj, ValidationGatekeeperWebhook, &defExpectedNamespaceSelector)
@@ -917,7 +968,8 @@ func TestNamespaceSelector(t *testing.T) {
 	g.Expect(err).ToNot(HaveOccurred())
 	assertNamespaceSelector(g, mutObj, MutationGatekeeperWebhook, &defExpectedNamespaceSelector)
 
-	// test nil namespaceSelector
+	t.Log("test nil namespaceSelector")
+
 	err = crOverrides(logr.Logger{}, gatekeeper, ValidatingWebhookConfiguration, valObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
 	assertNamespaceSelector(g, valObj, ValidationGatekeeperWebhook, nil)
@@ -926,7 +978,8 @@ func TestNamespaceSelector(t *testing.T) {
 	g.Expect(err).ToNot(HaveOccurred())
 	assertNamespaceSelector(g, mutObj, MutationGatekeeperWebhook, nil)
 
-	// test namespaceSelector override
+	t.Log("test namespaceSelector override")
+
 	gatekeeper.Spec.Webhook = &webhook
 	err = crOverrides(logr.Logger{}, gatekeeper, ValidatingWebhookConfiguration, valObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
@@ -978,18 +1031,23 @@ func TestAuditInterval(t *testing.T) {
 	auditOverride := operatorv1alpha1.AuditConfig{
 		AuditInterval: &auditInterval,
 	}
-
 	gatekeeper := defaultGatekeeper()
-	// test default
+
+	t.Log("test default")
+
 	auditObj, err := util.GetManifestObject(AuditFile)
 	g.Expect(err).ToNot(HaveOccurred())
 	g.Expect(auditObj).ToNot(BeNil())
 	expectObjContainerArg(g, auditObj).NotTo(HaveKey(AuditIntervalArg))
-	// test nil
+
+	t.Log("test nil")
+
 	err = crOverrides(logr.Logger{}, gatekeeper, AuditFile, auditObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
 	expectObjContainerArg(g, auditObj).NotTo(HaveKey(AuditIntervalArg))
-	// test override
+
+	t.Log("test override")
+
 	gatekeeper.Spec.Audit = &auditOverride
 	err = crOverrides(logr.Logger{}, gatekeeper, AuditFile, auditObj, namespace, false, false)
 	g.Expect(err).ToNot(HaveOccurred())
