@@ -8,7 +8,8 @@ OLM_VERSION ?= v0.27.0
 # https://github.com/operator-framework/operator-sdk/releases/latest
 OPERATOR_SDK_VERSION ?= v1.34.1
 # https://github.com/kubernetes/kubernetes/releases/latest
-KUBERNETES_VERSION ?= v1.29.4
+# https://hub.docker.com/r/kindest/node/tags
+KUBERNETES_VERSION ?= v1.33.4
 # https://github.com/bats-core/bats-core/releases/latest
 BATS_VERSION ?= 1.11.0
 
@@ -446,11 +447,11 @@ kind-load-image:
 	kind load docker-image $(IMG) --name $(KIND_NAME)
 
 .PHONY: kind-bootstrap-cluster
-kind-bootstrap-cluster: test-cluster install dev-build kind-load-image
+kind-bootstrap-cluster: test-cluster install docker-build kind-load-image
+	$(MAKE) deploy-ci NAMESPACE=$(NAMESPACE) IMG=$(IMG)
 	kubectl label ns $(NAMESPACE)  --overwrite pod-security.kubernetes.io/audit=privileged
 	kubectl label ns $(NAMESPACE)  --overwrite pod-security.kubernetes.io/enforce=privileged
 	kubectl label ns $(NAMESPACE)  --overwrite pod-security.kubernetes.io/warn=privileged
-	$(MAKE) deploy-ci NAMESPACE=$(NAMESPACE) IMG=$(IMG)
 	kubectl -n $(NAMESPACE) wait deployment/gatekeeper-operator-controller --for condition=Available --timeout=90s
 
 CLUSTER_NAME = kind
