@@ -1187,6 +1187,10 @@ spec:
                   imagePullPolicy:
                     description: PullPolicy describes a policy for if/when to pull
                       a container image
+                    enum:
+                    - Always
+                    - IfNotPresent
+                    - Never
                     type: string
                 type: object
               mutatingWebhook:

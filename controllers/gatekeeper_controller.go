@@ -237,7 +237,7 @@ func (r *GatekeeperReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 	}
 
 	//nolint:staticcheck
-	if gatekeeper.Spec.Image != nil && gatekeeper.Spec.Image.Image != nil {
+	if gatekeeper.Spec.Image != nil && gatekeeper.Spec.Image.Image != "" {
 		logger.Info("WARNING: operator.gatekeeper.sh/v1alpha1 Gatekeeper spec.image.image field "+
 			"is no longer supported and will be removed in a future release.",
 			"spec.image.image", gatekeeper.Spec.Image.Image)
@@ -1451,8 +1451,8 @@ func setImage(container map[string]interface{}, spec operatorv1alpha1.Gatekeeper
 		return nil
 	}
 
-	if spec.Image.ImagePullPolicy != nil {
-		err := unstructured.SetNestedField(container, string(*spec.Image.ImagePullPolicy), "imagePullPolicy")
+	if spec.Image.ImagePullPolicy != "" {
+		err := unstructured.SetNestedField(container, string(spec.Image.ImagePullPolicy), "imagePullPolicy")
 		if err != nil {
 			return errors.Wrapf(err, "Failed to set container image pull policy")
 		}

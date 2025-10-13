@@ -835,9 +835,8 @@ func assertResource(g *WithT, expected *corev1.ResourceRequirements, current map
 
 func TestImage(t *testing.T) {
 	g := NewWithT(t)
-	imagePullPolicy := corev1.PullIfNotPresent
 	imageConfig := &operatorv1alpha1.ImageConfig{
-		ImagePullPolicy: &imagePullPolicy,
+		ImagePullPolicy: corev1.PullIfNotPresent,
 	}
 
 	gatekeeper := defaultGatekeeper()
@@ -913,7 +912,7 @@ func assertImage(
 		if expected == nil {
 			g.Expect(defaultImagePullPolicy).To(BeEquivalentTo(currentImagePullPolicy))
 		} else {
-			g.Expect(*expected.ImagePullPolicy).To(BeEquivalentTo(currentImagePullPolicy))
+			g.Expect(expected.ImagePullPolicy).To(BeEquivalentTo(currentImagePullPolicy))
 		}
 	}
 }

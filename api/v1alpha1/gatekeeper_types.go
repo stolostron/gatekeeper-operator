@@ -295,10 +295,11 @@ type ImageConfig struct {
 	// e.g. quay.io/gatekeeper/gatekeeper-operator:latest
 	//
 	// +optional
-	Image *string `json:"image,omitempty"`
+	Image string `json:"image,omitempty"`
 
 	// +optional
-	ImagePullPolicy *corev1.PullPolicy `json:"imagePullPolicy,omitempty"`
+	// +kubebuilder:validation:Enum:=Always;IfNotPresent;Never
+	ImagePullPolicy corev1.PullPolicy `json:"imagePullPolicy,omitempty"`
 }
 
 type ConfigConfig struct {
