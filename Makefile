@@ -1,12 +1,12 @@
 ## CLI versions (with links to the latest releases)
 # https://github.com/operator-framework/operator-registry/releases/latest
-OPM_VERSION ?= v1.39.0
+OPM_VERSION ?= v1.55.0
 # https://github.com/go-bindata/go-bindata/releases/latest
 GO_BINDATA_VERSION ?= v3.1.3
 # https://github.com/operator-framework/operator-lifecycle-manager/releases/latest
 OLM_VERSION ?= v0.27.0
 # https://github.com/operator-framework/operator-sdk/releases/latest
-OPERATOR_SDK_VERSION ?= v1.40.0
+OPERATOR_SDK_VERSION ?= v1.41.1
 # https://github.com/kubernetes/kubernetes/releases/latest
 KUBERNETES_VERSION ?= $(shell go list -m -f "{{ .Version }}" k8s.io/api | awk -F'[v.]' '{printf "v1.%d.%d", $$3, $$4}')
 # https://github.com/bats-core/bats-core/releases/latest
