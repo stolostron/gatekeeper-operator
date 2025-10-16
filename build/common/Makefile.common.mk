@@ -15,7 +15,7 @@ GCI_VERSION := v0.13.7
 # https://github.com/securego/gosec/releases/latest
 GOSEC_VERSION := v2.22.9
 # https://github.com/kubernetes-sigs/kubebuilder/releases/latest
-KBVERSION := 3.15.1
+KBVERSION := 4.9.0
 # https://github.com/kubernetes/kubernetes/releases/latest
 ENVTEST_K8S_VERSION := 1.34.x
 

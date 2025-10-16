@@ -33,10 +33,11 @@ spec:
   apiservicedefinitions: {}
   customresourcedefinitions:
     owned:
-    - description: Gatekeeper is the schema for the gatekeepers API. Gatekeeper contains
-        configurations for the Gatekeeper operator, which deploys Open Policy Agent
-        Gatekeeper, a policy engine that enforces policies through admission controller
-        webhooks. See https://github.com/open-policy-agent/gatekeeper.
+    - description: |-
+        Gatekeeper is the schema for the gatekeepers API. Gatekeeper contains configurations for the Gatekeeper operator,
+        which deploys Open Policy Agent Gatekeeper, a policy engine that enforces policies through admission controller
+        webhooks.
+        See https://github.com/open-policy-agent/gatekeeper.
       displayName: Gatekeeper
       kind: Gatekeeper
       name: gatekeepers.operator.gatekeeper.sh
@@ -45,21 +46,24 @@ spec:
         name: gatekeeper-deployment
         version: v1
       specDescriptors:
-      - description: Affinity is a node affinity specification to add to the Gatekeeper
-          deployment Pods. See https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/.
+      - description: |-
+          Affinity is a node affinity specification to add to the Gatekeeper deployment Pods.
+          See https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/.
         displayName: Affinity
         path: affinity
-      - description: Audit specifies the configuration for the Gatekeeper auditing
-          function. See https://open-policy-agent.github.io/gatekeeper/website/docs/audit.
+      - description: |-
+          Audit specifies the configuration for the Gatekeeper auditing function.
+          See https://open-policy-agent.github.io/gatekeeper/website/docs/audit.
         displayName: Audit Configuration
         path: audit
-      - description: PodAnnotations is a map of additional annotations to be added
-          to the deployment pods. When the same keys are defined here and in spec.podAnnotations,
-          these annotations take precedence.
+      - description: |-
+          PodAnnotations is a map of additional annotations to be added to the deployment pods.
+          When the same keys are defined here and in spec.podAnnotations, these annotations take precedence.
         displayName: Pod Annotations
         path: audit.podAnnotations
-      - description: Config specifies configurations for the configs.config.gatekeeper.sh
-          API, allowing high-level configuration of Gatekeeper.
+      - description: |-
+          Config specifies configurations for the configs.config.gatekeeper.sh API, allowing
+          high-level configuration of Gatekeeper.
         displayName: Config Configuration
         path: config
       - description: Image specifies the configuration for handling Gatekeeper deployment
@@ -68,41 +72,48 @@ spec:
         path: image
         x-descriptors:
         - urn:alm:descriptor:com.tectonic.ui:hidden
-      - description: MutatingWebhook specifies whether the Gatekeeper mutating admission
-          webhook is enabled. The default value is Enabled. See https://open-policy-agent.github.io/gatekeeper/website/docs/mutation.
+      - description: |-
+          MutatingWebhook specifies whether the Gatekeeper mutating admission webhook is enabled.
+          The default value is Enabled.
+          See https://open-policy-agent.github.io/gatekeeper/website/docs/mutation.
         displayName: Mutating Webhook
         path: mutatingWebhook
-      - description: MutatingWebhookConfig specifies configuration specific to, or
-          overrides for, the mutating admission webhook. If this field is empty, the
-          mutating webhook will use the same configuration as the validating webhook.
+      - description: |-
+          MutatingWebhookConfig specifies configuration specific to, or overrides for, the mutating
+          admission webhook. If this field is empty, the mutating webhook will use the same
+          configuration as the validating webhook.
         displayName: Mutating Webhook Config
         path: mutatingWebhookConfig
-      - description: NodeSelector is a map of node selectors to add to the Gatekeeper
-          deployment Pods. See https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/.
+      - description: |-
+          NodeSelector is a map of node selectors to add to the Gatekeeper deployment Pods.
+          See https://kubernetes.io/docs/concepts/scheduling-eviction/assign-pod-node/.
         displayName: Node Selector
         path: nodeSelector
-      - description: PodAnnotations is a map of additional annotations to be added
-          to the Gatekeeper deployment Pods.
+      - description: |-
+          PodAnnotations is a map of additional annotations to be added to the Gatekeeper deployment
+          Pods.
         displayName: Pod Annotations
         path: podAnnotations
-      - description: Tolerations is an array of tolerations to add to the Gatekeeper
-          deployment Pods. See https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/.
+      - description: |-
+          Tolerations is an array of tolerations to add to the Gatekeeper deployment Pods.
+          See https://kubernetes.io/docs/concepts/scheduling-eviction/taint-and-toleration/.
         displayName: Tolerations
         path: tolerations
-      - description: ValidatingWebhook specifies whether the Gatekeeper validating
-          admission webhook is enabled. The default value is Enabled.
+      - description: |-
+          ValidatingWebhook specifies whether the Gatekeeper validating admission webhook is enabled.
+          The default value is Enabled.
         displayName: Validating Webhook
         path: validatingWebhook
-      - description: Webhook specifies the configuration for the Gatekeeper webhooks.
-          This includes configurations common to both the mutating and the validating
-          webhooks, for example the replicas and resources of the gatekeeper container
-          running the webhooks. The failurePolicy and timeoutSeconds configurations
-          also override the check-ignore-label webhook.
+      - description: |-
+          Webhook specifies the configuration for the Gatekeeper webhooks. This includes configurations
+          common to both the mutating and the validating webhooks, for example the replicas and resources
+          of the gatekeeper container running the webhooks. The failurePolicy and timeoutSeconds
+          configurations also override the check-ignore-label webhook.
         displayName: Webhook Config
         path: webhook
-      - description: PodAnnotations is a map of additional annotations to be added
-          to the deployment pods. When the same keys are defined here and in spec.podAnnotations,
-          these annotations take precedence.
+      - description: |-
+          PodAnnotations is a map of additional annotations to be added to the deployment pods.
+          When the same keys are defined here and in spec.podAnnotations, these annotations take precedence.
         displayName: Pod Annotations
         path: webhook.podAnnotations
       version: v1alpha1
