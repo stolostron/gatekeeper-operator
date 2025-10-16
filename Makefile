@@ -6,10 +6,9 @@ GO_BINDATA_VERSION ?= v3.1.3
 # https://github.com/operator-framework/operator-lifecycle-manager/releases/latest
 OLM_VERSION ?= v0.27.0
 # https://github.com/operator-framework/operator-sdk/releases/latest
-OPERATOR_SDK_VERSION ?= v1.38.0
+OPERATOR_SDK_VERSION ?= v1.40.0
 # https://github.com/kubernetes/kubernetes/releases/latest
-# https://hub.docker.com/r/kindest/node/tags
-KUBERNETES_VERSION ?= v1.33.4
+KUBERNETES_VERSION ?= $(shell go list -m -f "{{ .Version }}" k8s.io/api | awk -F'[v.]' '{printf "v1.%d.%d", $$3, $$4}')
 # https://github.com/bats-core/bats-core/releases/latest
 BATS_VERSION ?= 1.11.0
 

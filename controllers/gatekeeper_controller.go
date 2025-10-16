@@ -285,6 +285,7 @@ func (r *GatekeeperReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 func (r *GatekeeperReconciler) SetupWithManager(mgr ctrl.Manager, fromCPSMgrSource source.Source) error {
 	return ctrl.NewControllerManagedBy(mgr).
 		WithOptions(controller.Options{MaxConcurrentReconciles: 1}).
+		Named("gatekeeper_reconciler").
 		For(&operatorv1alpha1.Gatekeeper{}).
 		WithEventFilter(predicate.GenerationChangedPredicate{}).
 		WatchesRawSource(fromCPSMgrSource).
