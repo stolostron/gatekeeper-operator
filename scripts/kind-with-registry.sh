@@ -35,11 +35,10 @@ fi
 
 kind version
 
-KIND_CMD=
-if [[ -z "${KIND_CLUSTER_VERSION}" ]]; then
-  KIND_CMD="kind create cluster --name ${KIND_NAME} --wait=5m --config=-"
-else
-  KIND_CMD="kind create cluster --image kindest/node:${KIND_CLUSTER_VERSION} --name ${KIND_NAME} --wait=5m --config=-"
+KIND_CMD="kind create cluster --name ${KIND_NAME} --wait=5m --config=-"
+
+if [[ ${KIND_CLUSTER_VERSION} != "latest" ]]; then
+  KIND_CMD="${KIND_CMD} --image kindest/node:${KIND_CLUSTER_VERSION}"
 fi
 
 # create a cluster with the local registry enabled in containerd
