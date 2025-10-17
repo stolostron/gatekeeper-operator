@@ -8,7 +8,7 @@ OLM_VERSION ?= v0.27.0
 # https://github.com/operator-framework/operator-sdk/releases/latest
 OPERATOR_SDK_VERSION ?= v1.41.1
 # https://github.com/kubernetes/kubernetes/releases/latest
-KUBERNETES_VERSION ?= $(shell go list -m -f "{{ .Version }}" k8s.io/api | awk -F'[v.]' '{printf "v1.%d.%d", $$3, $$4}')
+KUBERNETES_VERSION ?= latest
 # https://github.com/bats-core/bats-core/releases/latest
 BATS_VERSION ?= 1.11.0
 
@@ -416,7 +416,7 @@ test: manifests generate fmt vet envtest test-unit ## Run tests.
 
 .PHONY: test-unit
 test-unit:
-	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(KUBERNETES_VERSION:v%=%) -p path)" GOFLAGS=$(GOFLAGS) go test $(TESTARGS) $$(go list ./... | grep -v /test/)
+	KUBEBUILDER_ASSETS="$(shell $(ENVTEST) use $(ENVTEST_K8S_VERSION) -p path)" GOFLAGS=$(GOFLAGS) go test $(TESTARGS) $$(go list ./... | grep -v /test/)
 
 .PHONY: test-coverage
 test-coverage: TESTARGS = -json -cover -covermode=atomic -coverprofile=coverage_unit.out
