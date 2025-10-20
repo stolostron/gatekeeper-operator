@@ -4,7 +4,7 @@ OPM_VERSION ?= v1.55.0
 # https://github.com/go-bindata/go-bindata/releases/latest
 GO_BINDATA_VERSION ?= v3.1.3
 # https://github.com/operator-framework/operator-lifecycle-manager/releases/latest
-OLM_VERSION ?= v0.27.0
+OLM_VERSION ?= v0.35.0
 # https://github.com/operator-framework/operator-sdk/releases/latest
 OPERATOR_SDK_VERSION ?= v1.41.1
 # https://github.com/kubernetes/kubernetes/releases/latest
