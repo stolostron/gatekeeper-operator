@@ -75,12 +75,11 @@ jobs:
           echo "::group:Deployments"
           kubectl -n mygatekeeper get all
           echo "---"
-          kubectl -n mygatekeeper get deployment/gatekeeper-operator-controller -o yaml
+          kubectl -n mygatekeeper get deployments -o yaml --ignore-not-found
           echo "::endgroup::"
           echo "::group::Operator Logs"
           cat operator.log
           echo "::endgroup::"
-
-          echo "::group::Deployments"
-          kubectl -n mygatekeeper get deployments -o yaml
+          echo "::group::OLM objects"
+          kubectl -n mygatekeeper get catalogsource,operatorgroup,subscription -o yaml --ignore-not-found
           echo "::endgroup::"
