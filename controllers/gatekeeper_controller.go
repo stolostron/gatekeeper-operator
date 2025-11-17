@@ -56,10 +56,13 @@ const (
 	NamespaceFile                       = "v1_namespace_gatekeeper-system.yaml"
 	crdFilePrefix                       = "apiextensions.k8s.io_v1_customresourcedefinition_"
 	AssignCRDFile                       = crdFilePrefix + "assign.mutations.gatekeeper.sh.yaml"
+	AssignImageCRDFile                  = crdFilePrefix + "assignimage.mutations.gatekeeper.sh.yaml"
 	AssignMetadataCRDFile               = crdFilePrefix + "assignmetadata.mutations.gatekeeper.sh.yaml"
-	ConfigPodStatusCRDFile              = crdFilePrefix + "configpodstatuses.status.gatekeeper.sh.yaml"
-	MutatorPodStatusCRDFile             = crdFilePrefix + "mutatorpodstatuses.status.gatekeeper.sh.yaml"
 	ModifySetCRDFile                    = crdFilePrefix + "modifyset.mutations.gatekeeper.sh.yaml"
+	ConfigPodStatusCRDFile              = crdFilePrefix + "configpodstatuses.status.gatekeeper.sh.yaml"
+	ConnectionPodStatusCRDFile          = crdFilePrefix + "connectionpodstatuses.status.gatekeeper.sh.yaml"
+	MutatorPodStatusCRDFile             = crdFilePrefix + "mutatorpodstatuses.status.gatekeeper.sh.yaml"
+	ConnectionCRDFile                   = crdFilePrefix + "connections.connection.gatekeeper.sh.yaml"
 	ProviderCRDFile                     = crdFilePrefix + "providers.externaldata.gatekeeper.sh.yaml"
 	AuditFile                           = "apps_v1_deployment_gatekeeper-audit.yaml"
 	WebhookFile                         = "apps_v1_deployment_gatekeeper-controller-manager.yaml"
@@ -111,10 +114,10 @@ var (
 		"apiextensions.k8s.io_v1_customresourcedefinition_constraintpodstatuses.status.gatekeeper.sh.yaml",
 		"apiextensions.k8s.io_v1_customresourcedefinition_expansiontemplate.expansion.gatekeeper.sh.yaml",
 		"apiextensions.k8s.io_v1_customresourcedefinition_expansiontemplatepodstatuses.status.gatekeeper.sh.yaml",
-		"apiextensions.k8s.io_v1_customresourcedefinition_assignimage.mutations.gatekeeper.sh.yaml",
 		"apiextensions.k8s.io_v1_customresourcedefinition_syncsets.syncset.gatekeeper.sh.yaml",
 		ConfigPodStatusCRDFile,
-		ModifySetCRDFile,
+		ConnectionCRDFile,
+		ConnectionPodStatusCRDFile,
 		ProviderCRDFile,
 		"v1_serviceaccount_gatekeeper-admin.yaml",
 		"policy_v1_poddisruptionbudget_gatekeeper-controller-manager.yaml",
@@ -129,7 +132,9 @@ var (
 	}
 	MutatingCRDs = []string{
 		AssignCRDFile,
+		AssignImageCRDFile,
 		AssignMetadataCRDFile,
+		ModifySetCRDFile,
 		MutatorPodStatusCRDFile,
 	}
 )
