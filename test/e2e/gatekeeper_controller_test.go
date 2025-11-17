@@ -22,6 +22,7 @@ import (
 	"io"
 	"os"
 	"strings"
+	"time"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
@@ -37,6 +38,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/yaml"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/stolostron/gatekeeper-operator/api/v1alpha1"
 	"github.com/stolostron/gatekeeper-operator/controllers"
@@ -713,6 +715,35 @@ var _ = Describe("Gatekeeper", func() {
 				value, found := getContainerArg(webhookContainer.Args, "--enable-k8s-native-validation")
 				Expect(found).To(BeTrue())
 				Expect(value).To(Equal("--enable-k8s-native-validation=true"))
+			})
+		})
+
+		It("Should have stable pods without restarts", func(ctx SpecContext) {
+			gatekeeper := emptyGatekeeper()
+			By("Creating Gatekeeper resource", func() {
+				Expect(K8sClient.Create(ctx, gatekeeper)).Should(Succeed())
+			})
+
+			By("Waiting for gatekeeper-controller-manager deployment to be ready", func() {
+				gkDeployment := &appsv1.Deployment{}
+				Eventually(func() (int32, error) {
+					return getDeploymentReadyReplicas(ctx, controllerManagerName, gkDeployment)
+				}, timeout, pollInterval).Should(Equal(test.DefaultDeployment.WebhookReplicas))
+			})
+
+			By("Waiting for gatekeeper-audit deployment to be ready", func() {
+				gkDeployment := &appsv1.Deployment{}
+				Eventually(func() (int32, error) {
+					return getDeploymentReadyReplicas(ctx, auditName, gkDeployment)
+				}, timeout, pollInterval).Should(Equal(test.DefaultDeployment.AuditReplicas))
+			})
+
+			By("Checking gatekeeper-controller-manager pods are stable", func() {
+				checkPodsStable(ctx, "gatekeeper.sh/operation=webhook", "gatekeeper-controller-manager")
+			})
+
+			By("Checking gatekeeper-audit pods are stable", func() {
+				checkPodsStable(ctx, "gatekeeper.sh/operation=audit", "gatekeeper-audit")
 			})
 		})
 
@@ -1592,6 +1623,53 @@ func getDeploymentReadyReplicas(ctx SpecContext, name types.NamespacedName,
 	}
 
 	return deploy.Status.ReadyReplicas, nil
+}
+
+func checkPodsStable(ctx SpecContext, labelSelector, deploymentName string) {
+	podList := &corev1.PodList{}
+	// Parse label selector string (e.g., "gatekeeper.sh/operation=webhook")
+	labelSelectorObj, err := metav1.ParseToLabelSelector(labelSelector)
+	Expect(err).NotTo(HaveOccurred())
+	selector, err := metav1.LabelSelectorAsSelector(labelSelectorObj)
+	Expect(err).NotTo(HaveOccurred())
+
+	// Map of pod name to container name to restart count
+	restartMap := map[string]map[string]int32{}
+
+	Consistently(func(g Gomega) {
+		err := K8sClient.List(
+			ctx, podList,
+			client.InNamespace(gatekeeperNamespace),
+			client.MatchingLabelsSelector{Selector: selector},
+		)
+		g.Expect(err).NotTo(HaveOccurred())
+		g.Expect(podList.Items).NotTo(BeEmpty(), "Should have at least one pod for %s", deploymentName)
+
+		for _, pod := range podList.Items {
+			if _, ok := restartMap[pod.Name]; !ok {
+				restartMap[pod.Name] = map[string]int32{}
+			}
+			g.Expect(pod.Status.Phase).To(Equal(corev1.PodRunning), "Pod %s should be Running", pod.Name)
+			g.Expect(pod.Status.ContainerStatuses).NotTo(
+				BeEmpty(),
+				"Pod %s should have at least one container status", pod.Name,
+			)
+			containerStatus := pod.Status.ContainerStatuses[0]
+			if _, ok := restartMap[pod.Name][containerStatus.Name]; !ok {
+				restartMap[pod.Name][containerStatus.Name] = containerStatus.RestartCount
+			}
+			expectedRestarts := restartMap[pod.Name][containerStatus.Name]
+			g.Expect(containerStatus.State.Waiting).To(BeNil(), "Pod %s should not be in waiting state", pod.Name)
+			g.Expect(containerStatus.RestartCount).To(
+				Equal(
+					expectedRestarts,
+				), "Pod %s should have restart count of %d", pod.Name, expectedRestarts,
+			)
+		}
+	}, 2*time.Minute, 10*time.Second).Should(
+		Succeed(),
+		"Pods for %s should remain stable without restarts", deploymentName,
+	)
 }
 
 func emptyGatekeeper() *v1alpha1.Gatekeeper {
