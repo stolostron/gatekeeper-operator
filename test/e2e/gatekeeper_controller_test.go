@@ -149,6 +149,46 @@ var _ = Describe("Gatekeeper", func() {
 			})
 		})
 
+		It("Recovers audit Deployment after manual deletion", func(ctx SpecContext) {
+			gatekeeper := emptyGatekeeper()
+			By("Creating Gatekeeper resource", func() {
+				Expect(K8sClient.Create(ctx, gatekeeper)).Should(Succeed())
+			})
+
+			By("Waiting for gatekeeper-audit deployment to be ready", func() {
+				gkDeployment := &appsv1.Deployment{}
+				Eventually(func() (int32, error) {
+					return getDeploymentReadyReplicas(ctx, auditName, gkDeployment)
+				}, timeout, pollInterval).Should(Equal(test.DefaultDeployment.AuditReplicas))
+			})
+
+			By("Deleting the gatekeeper-audit Deployment")
+			toDelete := &appsv1.Deployment{}
+			Expect(K8sClient.Get(ctx, auditName, toDelete)).To(Succeed())
+			Expect(K8sClient.Delete(ctx, toDelete)).To(Succeed())
+
+			By("Confirming the gatekeeper-audit Deployment is deleted")
+			Eventually(func() bool {
+				err := K8sClient.Get(ctx, auditName, &appsv1.Deployment{})
+				if err == nil {
+					return false
+				}
+
+				return apierrors.IsNotFound(err)
+			}, timeout, pollInterval).Should(BeTrue(), "Deployment "+auditName.Name+" should be deleted.")
+
+			By("Verifying the operator recreates gatekeeper-audit Deployment and it becomes ready")
+			// Wait for the Deployment to reappear
+			Eventually(func() error {
+				return K8sClient.Get(ctx, auditName, &appsv1.Deployment{})
+			}, timeout*2, pollInterval).Should(Succeed())
+			// And reach the expected ready replicas
+			recreated := &appsv1.Deployment{}
+			Eventually(func() (int32, error) {
+				return getDeploymentReadyReplicas(ctx, auditName, recreated)
+			}, timeout*2, pollInterval).Should(Equal(test.DefaultDeployment.AuditReplicas))
+		})
+
 		It("Should update config when the gatekeeper.config.match is not nil", func(ctx SpecContext) {
 			var originalNs wildcard.Wildcard = "mynamespace"
 
