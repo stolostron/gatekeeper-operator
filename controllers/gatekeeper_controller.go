@@ -29,6 +29,10 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/pkg/errors"
 	admregv1 "k8s.io/api/admissionregistration/v1"
+	appsv1 "k8s.io/api/apps/v1"
+	corev1 "k8s.io/api/core/v1"
+	policyv1 "k8s.io/api/policy/v1"
+	rbacv1 "k8s.io/api/rbac/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -37,6 +41,7 @@ import (
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/rest"
 	ctrl "sigs.k8s.io/controller-runtime"
+	"sigs.k8s.io/controller-runtime/pkg/builder"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller"
 	"sigs.k8s.io/controller-runtime/pkg/event"
@@ -288,10 +293,45 @@ func (r *GatekeeperReconciler) Reconcile(ctx context.Context, req ctrl.Request) 
 
 // SetupWithManager sets up the controller with the Manager.
 func (r *GatekeeperReconciler) SetupWithManager(mgr ctrl.Manager, fromCPSMgrSource source.Source) error {
+	// Delete-only predicate for specific, cluster-scoped RBAC managed by this operator
+	deleteOnlyClusterRBAC := builder.WithPredicates(predicate.Funcs{
+		CreateFunc:  func(_ event.CreateEvent) bool { return false },
+		UpdateFunc:  func(_ event.UpdateEvent) bool { return false },
+		GenericFunc: func(_ event.GenericEvent) bool { return false },
+		DeleteFunc: func(e event.DeleteEvent) bool {
+			name := e.Object.GetName()
+
+			return name == "gatekeeper-manager-role" || name == "gatekeeper-manager-rolebinding"
+		},
+	})
+
+	// Reusable delete-only, namespace-scoped predicate for namespaced resources
+	nsDeleteOnly := builder.WithPredicates(predicate.Funcs{
+		CreateFunc:  func(_ event.CreateEvent) bool { return false },
+		UpdateFunc:  func(_ event.UpdateEvent) bool { return false },
+		GenericFunc: func(_ event.GenericEvent) bool { return false },
+		DeleteFunc: func(e event.DeleteEvent) bool {
+			return e.Object.GetNamespace() == r.Namespace
+		},
+	})
+
 	return ctrl.NewControllerManagedBy(mgr).
 		WithOptions(controller.Options{MaxConcurrentReconciles: 1}).
 		Named("gatekeeper_reconciler").
 		For(&operatorv1alpha1.Gatekeeper{}).
+		// WebhookConfigurations are cluster-scoped and get updated frequently
+		// by CABundle injection controllers.
+		// If we Own() them, every injection update would enqueue a reconcile, creating a lot of churn.
+		Owns(&appsv1.Deployment{}, nsDeleteOnly).
+		Owns(&corev1.Service{}, nsDeleteOnly).
+		Owns(&corev1.Secret{}, nsDeleteOnly).
+		Owns(&corev1.ServiceAccount{}, nsDeleteOnly).
+		Owns(&policyv1.PodDisruptionBudget{}, nsDeleteOnly).
+		Owns(&rbacv1.Role{}, nsDeleteOnly).
+		Owns(&rbacv1.RoleBinding{}, nsDeleteOnly).
+		// Watch cluster-scoped RBAC delete events only (avoid update churn)
+		Owns(&rbacv1.ClusterRole{}, deleteOnlyClusterRBAC).
+		Owns(&rbacv1.ClusterRoleBinding{}, deleteOnlyClusterRBAC).
 		WithEventFilter(predicate.GenerationChangedPredicate{}).
 		WatchesRawSource(fromCPSMgrSource).
 		Complete(r)
