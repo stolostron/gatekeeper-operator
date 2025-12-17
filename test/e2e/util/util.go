@@ -145,7 +145,7 @@ func GetWithTimeout(
 		}
 
 		return nil
-	}, timeout, 1).Should(BeNil())
+	}, timeout, 1).Should(Succeed())
 
 	if wantFound {
 		return obj

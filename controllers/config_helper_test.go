@@ -1,7 +1,6 @@
 package controllers
 
 import (
-	"context"
 	"testing"
 
 	"github.com/go-logr/logr"
@@ -21,7 +20,7 @@ func TestAddDefaultExemptNamespaces(t *testing.T) {
 		Client: fake.NewClientBuilder().Build(),
 	}
 	g := NewWithT(t)
-	ctx := context.TODO()
+	ctx := t.Context()
 
 	var Log logr.Logger
 

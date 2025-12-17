@@ -1,6 +1,6 @@
 module github.com/stolostron/gatekeeper-operator
 
-go 1.23.8
+go 1.25.0
 
 require (
 	github.com/go-bindata/go-bindata v3.1.2+incompatible
@@ -10,7 +10,6 @@ require (
 	github.com/open-policy-agent/frameworks/constraint v0.0.0-20250328190153-08aa5ffa6033
 	github.com/open-policy-agent/gatekeeper/v3 v3.19.3
 	github.com/pkg/errors v0.9.1
-	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56
 	k8s.io/api v0.32.3
 	k8s.io/apiextensions-apiserver v0.32.3
 	k8s.io/apimachinery v0.32.3
@@ -67,6 +66,7 @@ require (
 	go.opentelemetry.io/otel/trace v1.35.0 // indirect
 	go.uber.org/multierr v1.11.0 // indirect
 	go.uber.org/zap v1.27.0 // indirect
+	golang.org/x/exp v0.0.0-20240719175910-8a7402abbf56 // indirect
 	golang.org/x/net v0.39.0 // indirect
 	golang.org/x/oauth2 v0.29.0 // indirect
 	golang.org/x/sync v0.14.0 // indirect

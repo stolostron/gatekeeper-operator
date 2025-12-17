@@ -1,12 +1,12 @@
 package e2e
 
 import (
+	"slices"
 	"time"
 
 	. "github.com/onsi/ginkgo/v2"
 	. "github.com/onsi/gomega"
 	"github.com/open-policy-agent/gatekeeper/v3/apis/config/v1alpha1"
-	"golang.org/x/exp/slices"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
