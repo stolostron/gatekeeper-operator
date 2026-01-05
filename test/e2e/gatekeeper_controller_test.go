@@ -1361,6 +1361,50 @@ var _ = Describe("Gatekeeper", func() {
 				}, 5, pollInterval).Should(BeTrue())
 			})
 		})
+
+		Describe("Test PodAnnotations", func() {
+			It("Should propagate PodAnnotations to Gatekeeper deployments", func(ctx SpecContext) {
+				gatekeeper := emptyGatekeeper()
+				annotations := map[string]string{
+					"test-annotation": "test-value",
+				}
+				gatekeeper.Spec.PodAnnotations = annotations
+
+				By("Creating Gatekeeper resource with PodAnnotations", func() {
+					Expect(K8sClient.Create(ctx, gatekeeper)).Should(Succeed())
+				})
+
+				By("Checking audit deployment annotations", func() {
+					Eventually(func(g Gomega) {
+						audit := &appsv1.Deployment{}
+						err := K8sClient.Get(ctx, types.NamespacedName{
+							Namespace: openshiftNamespace,
+							Name:      "gatekeeper-audit",
+						}, audit)
+						g.Expect(err).ShouldNot(HaveOccurred())
+						g.Expect(audit.Spec.Template.Annotations).
+							Should(HaveKeyWithValue("test-annotation", "test-value"))
+						g.Expect(audit.Spec.Template.Annotations).
+							ShouldNot(HaveKey("container.seccomp.security.alpha.kubernetes.io/manager"))
+					}, timeout, pollInterval).Should(Succeed())
+				})
+
+				By("Checking webhook deployment annotations", func() {
+					Eventually(func(g Gomega) {
+						webhook := &appsv1.Deployment{}
+						err := K8sClient.Get(ctx, types.NamespacedName{
+							Namespace: openshiftNamespace,
+							Name:      "gatekeeper-controller-manager",
+						}, webhook)
+						g.Expect(err).ShouldNot(HaveOccurred())
+						g.Expect(webhook.Spec.Template.Annotations).
+							Should(HaveKeyWithValue("test-annotation", "test-value"))
+						g.Expect(webhook.Spec.Template.Annotations).
+							ShouldNot(HaveKey("container.seccomp.security.alpha.kubernetes.io/manager"))
+					}, timeout, pollInterval).Should(Succeed())
+				})
+			})
+		})
 	})
 })
 

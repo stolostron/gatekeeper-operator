@@ -1051,7 +1051,8 @@ func setCommonConfig(log logr.Logger, obj *unstructured.Unstructured, config ope
 // profile unless there is a ClusterServiceVersion present, which is not the case for the Gatekeeper operand namespace.
 // Add --disable-cert-rotation arguments
 func openShiftDeploymentOverrides(obj *unstructured.Unstructured) error {
-	unstructured.RemoveNestedField(obj.Object, "spec", "template", "metadata", "annotations")
+	unstructured.RemoveNestedField(obj.Object, "spec", "template", "metadata",
+		"annotations", "container.seccomp.security.alpha.kubernetes.io/manager")
 
 	containers, _, err := unstructured.NestedSlice(obj.Object, "spec", "template", "spec", "containers")
 	if err != nil {
