@@ -674,10 +674,6 @@ func crOverrides(
 		}
 
 		if isOpenshift {
-			if err := removeAnnotations(obj); err != nil {
-				return err
-			}
-
 			if err := openShiftDeploymentOverrides(obj); err != nil {
 				return err
 			}
@@ -693,10 +689,6 @@ func crOverrides(
 		}
 
 		if isOpenshift {
-			if err := removeAnnotations(obj); err != nil {
-				return err
-			}
-
 			if err := openShiftDeploymentOverrides(obj); err != nil {
 				return err
 			}
@@ -1045,17 +1037,6 @@ func setCommonConfig(log logr.Logger, obj *unstructured.Unstructured, config ope
 	return nil
 }
 
-func removeAnnotations(obj *unstructured.Unstructured) error {
-	err := unstructured.SetNestedField(
-		obj.Object, map[string]interface{}{}, "spec", "template", "metadata", "annotations",
-	)
-	if err != nil {
-		return errors.Wrapf(err, "Failed to remove annotations")
-	}
-
-	return nil
-}
-
 // openShiftDeploymentOverrides will remove runAsUser, runAsGroup, and seccompProfile on every container in the
 // Deployment manifest. The seccompProfile is removed for backwards compatibility with OpenShift <= v4.10. Setting
 // seccompProfile=runtime/default in such versions explicitly disqualified the workload from the restricted SCC.
@@ -1063,6 +1044,9 @@ func removeAnnotations(obj *unstructured.Unstructured) error {
 // profile unless there is a ClusterServiceVersion present, which is not the case for the Gatekeeper operand namespace.
 // Add --disable-cert-rotation arguments
 func openShiftDeploymentOverrides(obj *unstructured.Unstructured) error {
+	unstructured.RemoveNestedField(obj.Object, "spec", "template", "metadata",
+		"annotations", "container.seccomp.security.alpha.kubernetes.io/manager")
+
 	containers, _, err := unstructured.NestedSlice(obj.Object, "spec", "template", "spec", "containers")
 	if err != nil {
 		return errors.Wrapf(err, "Failed to parse the deployment's containers")
