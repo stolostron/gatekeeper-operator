@@ -48,7 +48,7 @@ spec:
       - name: revision
         value: main
       - name: pathInRepo
-        value: pipelines/common.yaml
+        value: pipelines/common-base.yaml
   taskRunTemplate:
     serviceAccountName: build-pipeline-gatekeeper-operator-3-20
   workspaces:
