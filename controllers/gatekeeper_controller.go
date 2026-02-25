@@ -69,6 +69,7 @@ const (
 	MutatorPodStatusCRDFile             = crdFilePrefix + "mutatorpodstatuses.status.gatekeeper.sh.yaml"
 	ConnectionCRDFile                   = crdFilePrefix + "connections.connection.gatekeeper.sh.yaml"
 	ProviderCRDFile                     = crdFilePrefix + "providers.externaldata.gatekeeper.sh.yaml"
+	ProviderPodStatusCRDFile            = crdFilePrefix + "providerpodstatuses.status.gatekeeper.sh.yaml"
 	AuditFile                           = "apps_v1_deployment_gatekeeper-audit.yaml"
 	WebhookFile                         = "apps_v1_deployment_gatekeeper-controller-manager.yaml"
 	rbacFilePrefix                      = "rbac.authorization.k8s.io_v1_"
@@ -124,6 +125,7 @@ var (
 		ConnectionCRDFile,
 		ConnectionPodStatusCRDFile,
 		ProviderCRDFile,
+		ProviderPodStatusCRDFile,
 		"v1_serviceaccount_gatekeeper-admin.yaml",
 		"policy_v1_poddisruptionbudget_gatekeeper-controller-manager.yaml",
 		ClusterRoleFile,

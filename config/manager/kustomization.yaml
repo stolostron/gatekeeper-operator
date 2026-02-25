@@ -10,4 +10,4 @@ generatorOptions:
 images:
 - name: controller
   newName: quay.io/gatekeeper/gatekeeper-operator
-  newTag: v3.20.0
+  newTag: v3.21.0

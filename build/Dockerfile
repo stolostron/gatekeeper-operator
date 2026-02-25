@@ -35,10 +35,10 @@ ENTRYPOINT ["/manager"]
 LABEL name=gatekeeper/gatekeeper-rhel9-operator
 LABEL summary="Red Hat Gatekeeper Operator"
 LABEL description="The Gatekeeper Operator installs and configures Open Policy Agent Gatekeeper."
-LABEL version=v3.20.0
+LABEL version=v3.21.0
 LABEL maintainer="acm-component-maintainers@redhat.com"
 LABEL com.redhat.component=gatekeeper-operator-container
 LABEL io.openshift.tags="data,images"
 LABEL io.k8s.display-name="Gatekeeper Operator"
 LABEL io.k8s.description="The Gatekeeper Operator installs and configures Open Policy Agent Gatekeeper."
-LABEL cpe="cpe:/a:redhat:gatekeeper:3.20::el9"
+LABEL cpe="cpe:/a:redhat:gatekeeper:3.21::el9"

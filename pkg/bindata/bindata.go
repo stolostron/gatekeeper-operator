@@ -17,6 +17,7 @@
 // config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_expansiontemplatepodstatuses.status.gatekeeper.sh.yaml
 // config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_modifyset.mutations.gatekeeper.sh.yaml
 // config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_mutatorpodstatuses.status.gatekeeper.sh.yaml
+// config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_providerpodstatuses.status.gatekeeper.sh.yaml
 // config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_providers.externaldata.gatekeeper.sh.yaml
 // config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_syncsets.syncset.gatekeeper.sh.yaml
 // config/gatekeeper-rendered/apps_v1_deployment_gatekeeper-audit.yaml
@@ -243,7 +244,7 @@ var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_assi
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.19.0
   labels:
     gatekeeper.sh/system: "yes"
   name: assign.mutations.gatekeeper.sh
@@ -535,6 +536,8 @@ spec:
                             description: Provider is the name of the external data
                               provider.
                             type: string
+                        required:
+                        - provider
                         type: object
                       fromMetadata:
                         description: FromMetadata assigns a value from the specified
@@ -560,7 +563,6 @@ spec:
                         not applied. All ` + "`" + `subPath` + "`" + ` entries must be a prefix of ` + "`" + `location` + "`" + `. Any
                         glob characters will take on the same value as was used to
                         expand the matching glob in ` + "`" + `location` + "`" + `.
-
 
                         Available Tests:
                         * MustExist    - the path must exist or do not mutate
@@ -902,6 +904,8 @@ spec:
                             description: Provider is the name of the external data
                               provider.
                             type: string
+                        required:
+                        - provider
                         type: object
                       fromMetadata:
                         description: FromMetadata assigns a value from the specified
@@ -927,7 +931,6 @@ spec:
                         not applied. All ` + "`" + `subPath` + "`" + ` entries must be a prefix of ` + "`" + `location` + "`" + `. Any
                         glob characters will take on the same value as was used to
                         expand the matching glob in ` + "`" + `location` + "`" + `.
-
 
                         Available Tests:
                         * MustExist    - the path must exist or do not mutate
@@ -1269,6 +1272,8 @@ spec:
                             description: Provider is the name of the external data
                               provider.
                             type: string
+                        required:
+                        - provider
                         type: object
                       fromMetadata:
                         description: FromMetadata assigns a value from the specified
@@ -1294,7 +1299,6 @@ spec:
                         not applied. All ` + "`" + `subPath` + "`" + ` entries must be a prefix of ` + "`" + `location` + "`" + `. Any
                         glob characters will take on the same value as was used to
                         expand the matching glob in ` + "`" + `location` + "`" + `.
-
 
                         Available Tests:
                         * MustExist    - the path must exist or do not mutate
@@ -1383,7 +1387,7 @@ var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_assi
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.19.0
   labels:
     gatekeeper.sh/system: "yes"
   name: assignimage.mutations.gatekeeper.sh
@@ -1664,7 +1668,6 @@ spec:
                         glob characters will take on the same value as was used to
                         expand the matching glob in ` + "`" + `location` + "`" + `.
 
-
                         Available Tests:
                         * MustExist    - the path must exist or do not mutate
                         * MustNotExist - the path must not exist or do not mutate.
@@ -1752,7 +1755,7 @@ var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_assi
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.19.0
   labels:
     gatekeeper.sh/system: "yes"
   name: assignmetadata.mutations.gatekeeper.sh
@@ -2014,6 +2017,8 @@ spec:
                             description: Provider is the name of the external data
                               provider.
                             type: string
+                        required:
+                        - provider
                         type: object
                       fromMetadata:
                         description: FromMetadata assigns a value from the specified
@@ -2328,6 +2333,8 @@ spec:
                             description: Provider is the name of the external data
                               provider.
                             type: string
+                        required:
+                        - provider
                         type: object
                       fromMetadata:
                         description: FromMetadata assigns a value from the specified
@@ -2642,6 +2649,8 @@ spec:
                             description: Provider is the name of the external data
                               provider.
                             type: string
+                        required:
+                        - provider
                         type: object
                       fromMetadata:
                         description: FromMetadata assigns a value from the specified
@@ -2733,7 +2742,7 @@ var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_conf
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.19.0
   labels:
     gatekeeper.sh/system: "yes"
   name: configpodstatuses.status.gatekeeper.sh
@@ -2821,7 +2830,7 @@ var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_conf
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.19.0
   labels:
     gatekeeper.sh/system: "yes"
   name: configs.config.gatekeeper.sh
@@ -2992,7 +3001,7 @@ var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_conn
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.19.0
   labels:
     gatekeeper.sh/system: "yes"
   name: connectionpodstatuses.status.gatekeeper.sh
@@ -3010,7 +3019,7 @@ spec:
     schema:
       openAPIV3Schema:
         description: ConnectionPodStatus is the Schema for the connectionpodstatuses
-          API
+          API.
         properties:
           apiVersion:
             description: |-
@@ -3090,7 +3099,7 @@ var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_conn
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.19.0
   labels:
     gatekeeper.sh/system: "yes"
   name: connections.connection.gatekeeper.sh
@@ -3107,7 +3116,7 @@ spec:
   - name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: Connection is the Schema for the connections API
+        description: Connection is the Schema for the connections API.
         properties:
           apiVersion:
             description: |-
@@ -3127,7 +3136,7 @@ spec:
           metadata:
             type: object
           spec:
-            description: ConnectionSpec defines the desired state of Connection
+            description: ConnectionSpec defines the desired state of Connection.
             properties:
               config:
                 x-kubernetes-preserve-unknown-fields: true
@@ -3140,12 +3149,12 @@ spec:
             - driver
             type: object
           status:
-            description: ConnectionStatus defines the observed state of Connection
+            description: ConnectionStatus defines the observed state of Connection.
             properties:
               byPod:
                 items:
                   description: ConnectionPodStatusStatus defines the observed state
-                    of ConnectionPodStatus
+                    of ConnectionPodStatus.
                   properties:
                     active:
                       description: Indicator for alive connection with at least one
@@ -3209,7 +3218,7 @@ var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_cons
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.19.0
   labels:
     gatekeeper.sh/system: "yes"
   name: constraintpodstatuses.status.gatekeeper.sh
@@ -3326,7 +3335,7 @@ var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_cons
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.19.0
   labels:
     gatekeeper.sh/system: "yes"
   name: constrainttemplatepodstatuses.status.gatekeeper.sh
@@ -3436,7 +3445,7 @@ var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_cons
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.19.0
   labels:
     gatekeeper.sh/system: "yes"
   name: constrainttemplates.templates.gatekeeper.sh
@@ -3528,6 +3537,17 @@ spec:
                       x-kubernetes-list-type: map
                     libs:
                       items:
+                        type: string
+                      type: array
+                    operations:
+                      items:
+                        description: OperationType specifies an operation for a request.
+                        enum:
+                        - '*'
+                        - CREATE
+                        - DELETE
+                        - UPDATE
+                        - CONNECT
                         type: string
                       type: array
                     rego:
@@ -3660,6 +3680,17 @@ spec:
                       items:
                         type: string
                       type: array
+                    operations:
+                      enum:
+                      - '*'
+                      - CREATE
+                      - DELETE
+                      - UPDATE
+                      - CONNECT
+                      items:
+                        description: OperationType specifies an operation for a request.
+                        type: string
+                      type: array
                     rego:
                       type: string
                     target:
@@ -3790,6 +3821,17 @@ spec:
                       items:
                         type: string
                       type: array
+                    operations:
+                      items:
+                        description: OperationType specifies an operation for a request.
+                        enum:
+                        - '*'
+                        - CREATE
+                        - DELETE
+                        - UPDATE
+                        - CONNECT
+                        type: string
+                      type: array
                     rego:
                       type: string
                     target:
@@ -3861,7 +3903,7 @@ var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_expa
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.19.0
   labels:
     gatekeeper.sh/system: "yes"
   name: expansiontemplate.expansion.gatekeeper.sh
@@ -4134,7 +4176,7 @@ var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_expa
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.19.0
   labels:
     gatekeeper.sh/system: "yes"
   name: expansiontemplatepodstatuses.status.gatekeeper.sh
@@ -4228,7 +4270,7 @@ var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_modi
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.19.0
   labels:
     gatekeeper.sh/system: "yes"
   name: modifyset.mutations.gatekeeper.sh
@@ -4508,7 +4550,6 @@ spec:
                         glob characters will take on the same value as was used to
                         expand the matching glob in ` + "`" + `location` + "`" + `.
 
-
                         Available Tests:
                         * MustExist    - the path must exist or do not mutate
                         * MustNotExist - the path must not exist or do not mutate.
@@ -4842,7 +4883,6 @@ spec:
                         glob characters will take on the same value as was used to
                         expand the matching glob in ` + "`" + `location` + "`" + `.
 
-
                         Available Tests:
                         * MustExist    - the path must exist or do not mutate
                         * MustNotExist - the path must not exist or do not mutate.
@@ -5176,7 +5216,6 @@ spec:
                         glob characters will take on the same value as was used to
                         expand the matching glob in ` + "`" + `location` + "`" + `.
 
-
                         Available Tests:
                         * MustExist    - the path must exist or do not mutate
                         * MustNotExist - the path must not exist or do not mutate.
@@ -5269,7 +5308,7 @@ var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_muta
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.19.0
   labels:
     gatekeeper.sh/system: "yes"
   name: mutatorpodstatuses.status.gatekeeper.sh
@@ -5362,11 +5401,122 @@ func configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_muta
 	return a, nil
 }
 
+var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_providerpodstatusesStatusGatekeeperShYaml = []byte(`apiVersion: apiextensions.k8s.io/v1
+kind: CustomResourceDefinition
+metadata:
+  annotations:
+    controller-gen.kubebuilder.io/version: v0.19.0
+  labels:
+    gatekeeper.sh/system: "yes"
+  name: providerpodstatuses.status.gatekeeper.sh
+spec:
+  group: status.gatekeeper.sh
+  names:
+    kind: ProviderPodStatus
+    listKind: ProviderPodStatusList
+    plural: providerpodstatuses
+    singular: providerpodstatus
+  preserveUnknownFields: false
+  scope: Namespaced
+  versions:
+  - name: v1beta1
+    schema:
+      openAPIV3Schema:
+        description: ProviderPodStatus is the Schema for the providerpodstatuses API.
+        properties:
+          apiVersion:
+            description: |-
+              APIVersion defines the versioned schema of this representation of an object.
+              Servers should convert recognized schemas to the latest internal value, and
+              may reject unrecognized values.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#resources
+            type: string
+          kind:
+            description: |-
+              Kind is a string value representing the REST resource this object represents.
+              Servers may infer this from the endpoint the client submits requests to.
+              Cannot be updated.
+              In CamelCase.
+              More info: https://git.k8s.io/community/contributors/devel/sig-architecture/api-conventions.md#types-kinds
+            type: string
+          metadata:
+            type: object
+          status:
+            description: No spec field is defined here, as this is a status-only resource.
+            properties:
+              active:
+                type: boolean
+              errors:
+                items:
+                  description: ProviderError represents a single error caught while
+                    managing providers.
+                  properties:
+                    errorTimestamp:
+                      format: date-time
+                      type: string
+                    message:
+                      type: string
+                    retryable:
+                      type: boolean
+                    type:
+                      description: |-
+                        Type indicates a specific class of error for use by controller code.
+                        If not present, the error should be treated as not matching any known type.
+                      type: string
+                  required:
+                  - errorTimestamp
+                  - message
+                  - retryable
+                  - type
+                  type: object
+                type: array
+              id:
+                type: string
+              lastCacheUpdateTime:
+                format: date-time
+                type: string
+              lastTransitionTime:
+                format: date-time
+                type: string
+              observedGeneration:
+                format: int64
+                type: integer
+              operations:
+                items:
+                  type: string
+                type: array
+              providerUID:
+                description: |-
+                  Storing the provider UID allows us to detect drift, such as
+                  when a provider has been recreated after its CRD was deleted
+                  out from under it, interrupting the watch
+                type: string
+            type: object
+        type: object
+    served: true
+    storage: true
+`)
+
+func configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_providerpodstatusesStatusGatekeeperShYamlBytes() ([]byte, error) {
+	return _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_providerpodstatusesStatusGatekeeperShYaml, nil
+}
+
+func configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_providerpodstatusesStatusGatekeeperShYaml() (*asset, error) {
+	bytes, err := configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_providerpodstatusesStatusGatekeeperShYamlBytes()
+	if err != nil {
+		return nil, err
+	}
+
+	info := bindataFileInfo{name: "config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_providerpodstatuses.status.gatekeeper.sh.yaml", size: 0, mode: os.FileMode(0), modTime: time.Unix(0, 0)}
+	a := &asset{bytes: bytes, info: info}
+	return a, nil
+}
+
 var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_providersExternaldataGatekeeperShYaml = []byte(`apiVersion: apiextensions.k8s.io/v1
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.19.0
   labels:
     gatekeeper.sh/system: "yes"
   name: providers.externaldata.gatekeeper.sh
@@ -5421,9 +5571,67 @@ spec:
                   https://.
                 type: string
             type: object
+          status:
+            description: ProviderStatus defines the observed state of Provider.
+            properties:
+              byPod:
+                description: ByPod is the status of the provider by pod
+                items:
+                  description: ProviderPodStatusStatus defines the observed state
+                    of ProviderPodStatus.
+                  properties:
+                    active:
+                      type: boolean
+                    errors:
+                      items:
+                        description: ProviderError represents a single error caught
+                          while managing providers.
+                        properties:
+                          errorTimestamp:
+                            format: date-time
+                            type: string
+                          message:
+                            type: string
+                          retryable:
+                            type: boolean
+                          type:
+                            description: |-
+                              Type indicates a specific class of error for use by controller code.
+                              If not present, the error should be treated as not matching any known type.
+                            type: string
+                        required:
+                        - message
+                        type: object
+                      type: array
+                    id:
+                      type: string
+                    lastCacheUpdateTime:
+                      format: date-time
+                      type: string
+                    lastTransitionTime:
+                      format: date-time
+                      type: string
+                    observedGeneration:
+                      format: int64
+                      type: integer
+                    operations:
+                      items:
+                        type: string
+                      type: array
+                    providerUID:
+                      description: |-
+                        Storing the provider UID allows us to detect drift, such as
+                        when a provider has been recreated after its CRD was deleted
+                        out from under it, interrupting the watch
+                      type: string
+                  type: object
+                type: array
+            type: object
         type: object
     served: true
     storage: false
+    subresources:
+      status: {}
   - name: v1beta1
     schema:
       openAPIV3Schema:
@@ -5462,9 +5670,67 @@ spec:
                   https://.
                 type: string
             type: object
+          status:
+            description: ProviderStatus defines the observed state of Provider.
+            properties:
+              byPod:
+                description: ByPod is the status of the provider by pod
+                items:
+                  description: ProviderPodStatusStatus defines the observed state
+                    of ProviderPodStatus.
+                  properties:
+                    active:
+                      type: boolean
+                    errors:
+                      items:
+                        description: ProviderError represents a single error caught
+                          while managing providers.
+                        properties:
+                          errorTimestamp:
+                            format: date-time
+                            type: string
+                          message:
+                            type: string
+                          retryable:
+                            type: boolean
+                          type:
+                            description: |-
+                              Type indicates a specific class of error for use by controller code.
+                              If not present, the error should be treated as not matching any known type.
+                            type: string
+                        required:
+                        - message
+                        type: object
+                      type: array
+                    id:
+                      type: string
+                    lastCacheUpdateTime:
+                      format: date-time
+                      type: string
+                    lastTransitionTime:
+                      format: date-time
+                      type: string
+                    observedGeneration:
+                      format: int64
+                      type: integer
+                    operations:
+                      items:
+                        type: string
+                      type: array
+                    providerUID:
+                      description: |-
+                        Storing the provider UID allows us to detect drift, such as
+                        when a provider has been recreated after its CRD was deleted
+                        out from under it, interrupting the watch
+                      type: string
+                  type: object
+                type: array
+            type: object
         type: object
     served: true
     storage: true
+    subresources:
+      status: {}
 `)
 
 func configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_providersExternaldataGatekeeperShYamlBytes() ([]byte, error) {
@@ -5486,7 +5752,7 @@ var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_sync
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.19.0
   labels:
     gatekeeper.sh/system: "yes"
   name: syncsets.syncset.gatekeeper.sh
@@ -5615,7 +5881,7 @@ spec:
           value: manager
         - name: OTEL_RESOURCE_ATTRIBUTES
           value: k8s.pod.name=$(POD_NAME),k8s.namespace.name=$(NAMESPACE),k8s.container.name=$(CONTAINER_NAME)
-        image: quay.io/gatekeeper/gatekeeper:v3.20.1
+        image: quay.io/gatekeeper/gatekeeper:v3.21.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -5751,7 +6017,7 @@ spec:
           value: manager
         - name: OTEL_RESOURCE_ATTRIBUTES
           value: k8s.pod.name=$(POD_NAME),k8s.namespace.name=$(NAMESPACE),k8s.container.name=$(CONTAINER_NAME)
-        image: quay.io/gatekeeper/gatekeeper:v3.20.1
+        image: quay.io/gatekeeper/gatekeeper:v3.21.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -5900,6 +6166,14 @@ rules:
   - update
   - watch
 - apiGroups:
+  - admissionregistration.k8s.io
+  resources:
+  - validatingwebhookconfigurations
+  verbs:
+  - get
+  - list
+  - watch
+- apiGroups:
   - apiextensions.k8s.io
   resources:
   - customresourcedefinitions
@@ -5915,17 +6189,6 @@ rules:
   - config.gatekeeper.sh
   resources:
   - '*'
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - config.gatekeeper.sh
-  resources:
   - configs
   verbs:
   - create
@@ -5945,30 +6208,10 @@ rules:
   - update
 - apiGroups:
   - connection.gatekeeper.sh
-  resources:
-  - '*'
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
   - constraints.gatekeeper.sh
-  resources:
-  - '*'
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
   - expansion.gatekeeper.sh
+  - mutations.gatekeeper.sh
+  - status.gatekeeper.sh
   resources:
   - '*'
   verbs:
@@ -5992,32 +6235,10 @@ rules:
   - update
   - watch
 - apiGroups:
-  - mutations.gatekeeper.sh
+  - externaldata.gatekeeper.sh
   resources:
-  - '*'
+  - providers/status
   verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - policy
-  resourceNames:
-  - gatekeeper-admin
-  resources:
-  - podsecuritypolicies
-  verbs:
-  - use
-- apiGroups:
-  - status.gatekeeper.sh
-  resources:
-  - '*'
-  verbs:
-  - create
-  - delete
   - get
   - list
   - patch
@@ -6400,6 +6621,7 @@ var _bindata = map[string]func() (*asset, error){
 	"config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_expansiontemplatepodstatuses.status.gatekeeper.sh.yaml":         configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_expansiontemplatepodstatusesStatusGatekeeperShYaml,
 	"config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_modifyset.mutations.gatekeeper.sh.yaml":                         configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_modifysetMutationsGatekeeperShYaml,
 	"config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_mutatorpodstatuses.status.gatekeeper.sh.yaml":                   configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_mutatorpodstatusesStatusGatekeeperShYaml,
+	"config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_providerpodstatuses.status.gatekeeper.sh.yaml":                  configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_providerpodstatusesStatusGatekeeperShYaml,
 	"config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_providers.externaldata.gatekeeper.sh.yaml":                      configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_providersExternaldataGatekeeperShYaml,
 	"config/gatekeeper-rendered/apiextensions.k8s.io_v1_customresourcedefinition_syncsets.syncset.gatekeeper.sh.yaml":                            configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_syncsetsSyncsetGatekeeperShYaml,
 	"config/gatekeeper-rendered/apps_v1_deployment_gatekeeper-audit.yaml":                                                                        configGatekeeperRenderedApps_v1_deployment_gatekeeperAuditYaml,
@@ -6477,6 +6699,7 @@ var _bintree = &bintree{nil, map[string]*bintree{
 			"apiextensions.k8s.io_v1_customresourcedefinition_expansiontemplatepodstatuses.status.gatekeeper.sh.yaml":         {configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_expansiontemplatepodstatusesStatusGatekeeperShYaml, map[string]*bintree{}},
 			"apiextensions.k8s.io_v1_customresourcedefinition_modifyset.mutations.gatekeeper.sh.yaml":                         {configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_modifysetMutationsGatekeeperShYaml, map[string]*bintree{}},
 			"apiextensions.k8s.io_v1_customresourcedefinition_mutatorpodstatuses.status.gatekeeper.sh.yaml":                   {configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_mutatorpodstatusesStatusGatekeeperShYaml, map[string]*bintree{}},
+			"apiextensions.k8s.io_v1_customresourcedefinition_providerpodstatuses.status.gatekeeper.sh.yaml":                  {configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_providerpodstatusesStatusGatekeeperShYaml, map[string]*bintree{}},
 			"apiextensions.k8s.io_v1_customresourcedefinition_providers.externaldata.gatekeeper.sh.yaml":                      {configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_providersExternaldataGatekeeperShYaml, map[string]*bintree{}},
 			"apiextensions.k8s.io_v1_customresourcedefinition_syncsets.syncset.gatekeeper.sh.yaml":                            {configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_syncsetsSyncsetGatekeeperShYaml, map[string]*bintree{}},
 			"apps_v1_deployment_gatekeeper-audit.yaml":                                                                        {configGatekeeperRenderedApps_v1_deployment_gatekeeperAuditYaml, map[string]*bintree{}},
