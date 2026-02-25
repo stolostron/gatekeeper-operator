@@ -942,7 +942,7 @@ func matchGatekeeperMutatingRBACRule(rule map[string]interface{}) (bool, error) 
 		return false, errors.Wrapf(err, "Failed to retrieve apiGroups from rule")
 	}
 
-	if apiGroups[0] == "mutations.gatekeeper.sh" {
+	if slices.Contains(apiGroups, "mutations.gatekeeper.sh") {
 		return true, nil
 	}
 
@@ -960,8 +960,8 @@ func matchMutatingWebhookConfigurationRBACRule(rule map[string]interface{}) (boo
 		return false, errors.Wrapf(err, "Failed to retrieve resources from rule")
 	}
 
-	if apiGroups[0] == "admissionregistration.k8s.io" &&
-		resources[0] == "mutatingwebhookconfigurations" {
+	if slices.Contains(apiGroups, "admissionregistration.k8s.io") &&
+		slices.Contains(resources, "mutatingwebhookconfigurations") {
 		return true, nil
 	}
 
