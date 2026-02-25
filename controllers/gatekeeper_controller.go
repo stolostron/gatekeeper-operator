@@ -56,35 +56,19 @@ import (
 )
 
 const (
-	defaultGatekeeperCrName             = "gatekeeper"
-	GatekeeperImageEnvVar               = "RELATED_IMAGE_GATEKEEPER"
-	NamespaceFile                       = "v1_namespace_gatekeeper-system.yaml"
-	crdFilePrefix                       = "apiextensions.k8s.io_v1_customresourcedefinition_"
-	AssignCRDFile                       = crdFilePrefix + "assign.mutations.gatekeeper.sh.yaml"
-	AssignImageCRDFile                  = crdFilePrefix + "assignimage.mutations.gatekeeper.sh.yaml"
-	AssignMetadataCRDFile               = crdFilePrefix + "assignmetadata.mutations.gatekeeper.sh.yaml"
-	ModifySetCRDFile                    = crdFilePrefix + "modifyset.mutations.gatekeeper.sh.yaml"
-	ConfigPodStatusCRDFile              = crdFilePrefix + "configpodstatuses.status.gatekeeper.sh.yaml"
-	ConnectionPodStatusCRDFile          = crdFilePrefix + "connectionpodstatuses.status.gatekeeper.sh.yaml"
-	MutatorPodStatusCRDFile             = crdFilePrefix + "mutatorpodstatuses.status.gatekeeper.sh.yaml"
-	ConnectionCRDFile                   = crdFilePrefix + "connections.connection.gatekeeper.sh.yaml"
-	ProviderCRDFile                     = crdFilePrefix + "providers.externaldata.gatekeeper.sh.yaml"
-	ProviderPodStatusCRDFile            = crdFilePrefix + "providerpodstatuses.status.gatekeeper.sh.yaml"
-	AuditFile                           = "apps_v1_deployment_gatekeeper-audit.yaml"
-	WebhookFile                         = "apps_v1_deployment_gatekeeper-controller-manager.yaml"
-	rbacFilePrefix                      = "rbac.authorization.k8s.io_v1_"
-	ClusterRoleFile                     = rbacFilePrefix + "clusterrole_gatekeeper-manager-role.yaml"
-	ClusterRoleBindingFile              = rbacFilePrefix + "clusterrolebinding_gatekeeper-manager-rolebinding.yaml"
-	RoleFile                            = rbacFilePrefix + "role_gatekeeper-manager-role.yaml"
-	RoleBindingFile                     = rbacFilePrefix + "rolebinding_gatekeeper-manager-rolebinding.yaml"
-	ServerCertFile                      = "v1_secret_gatekeeper-webhook-server-cert.yaml"
-	ServiceFile                         = "v1_service_gatekeeper-webhook-service.yaml"
-	ValidationGatekeeperWebhook         = "validation.gatekeeper.sh"
-	CheckIgnoreLabelGatekeeperWebhook   = "check-ignore-label.gatekeeper.sh"
-	MutationGatekeeperWebhook           = "mutation.gatekeeper.sh"
-	AuditDeploymentName                 = "gatekeeper-audit"
-	WebhookDeploymentName               = "gatekeeper-controller-manager"
-	managerContainer                    = "manager"
+	GatekeeperImageEnvVar = "RELATED_IMAGE_GATEKEEPER"
+
+	// Default object names
+	defaultGatekeeperCrName           = "gatekeeper"
+	ValidationGatekeeperWebhook       = "validation.gatekeeper.sh"
+	CheckIgnoreLabelGatekeeperWebhook = "check-ignore-label.gatekeeper.sh"
+	MutationGatekeeperWebhook         = "mutation.gatekeeper.sh"
+	AuditDeploymentName               = "gatekeeper-audit"
+	WebhookDeploymentName             = "gatekeeper-controller-manager"
+	managerContainer                  = "manager"
+	OpenshiftSecretName               = "gatekeeper-webhook-server-cert-ocp"
+
+	// Container arguments
 	LogLevelArg                         = "--log-level"
 	AuditIntervalArg                    = "--audit-interval"
 	ConstraintViolationLimitArg         = "--constraint-violations-limit"
@@ -102,47 +86,58 @@ const (
 	LogMutationsArg                     = "--log-mutations"
 	MutationAnnotationsArg              = "--mutation-annotations"
 	LogDeniesArg                        = "--log-denies"
-	OpenshiftSecretName                 = "gatekeeper-webhook-server-cert-ocp"
+)
 
-	//nolint:lll
+// Manifest file references
+//
+//nolint:lll
+const (
+	NamespaceFile                  = "v1_namespace_gatekeeper-system.yaml"
+	AuditFile                      = "apps_v1_deployment_gatekeeper-audit.yaml"
+	WebhookFile                    = "apps_v1_deployment_gatekeeper-controller-manager.yaml"
+	ClusterRoleFile                = "rbac.authorization.k8s.io_v1_clusterrole_gatekeeper-manager-role.yaml"
+	ClusterRoleBindingFile         = "rbac.authorization.k8s.io_v1_clusterrolebinding_gatekeeper-manager-rolebinding.yaml"
+	RoleBindingFile                = "rbac.authorization.k8s.io_v1_rolebinding_gatekeeper-manager-rolebinding.yaml"
+	ServerCertFile                 = "v1_secret_gatekeeper-webhook-server-cert.yaml"
+	ServiceFile                    = "v1_service_gatekeeper-webhook-service.yaml"
 	ValidatingWebhookConfiguration = "admissionregistration.k8s.io_v1_validatingwebhookconfiguration_gatekeeper-validating-webhook-configuration.yaml"
-	//nolint:lll
-	MutatingWebhookConfiguration = "admissionregistration.k8s.io_v1_mutatingwebhookconfiguration_gatekeeper-mutating-webhook-configuration.yaml"
+	MutatingWebhookConfiguration   = "admissionregistration.k8s.io_v1_mutatingwebhookconfiguration_gatekeeper-mutating-webhook-configuration.yaml"
 )
 
 var (
 	orderedStaticAssets = []string{
 		NamespaceFile,
 		"v1_resourcequota_gatekeeper-critical-pods.yaml",
-		"apiextensions.k8s.io_v1_customresourcedefinition_configs.config.gatekeeper.sh.yaml",
-		"apiextensions.k8s.io_v1_customresourcedefinition_constrainttemplates.templates.gatekeeper.sh.yaml",
-		"apiextensions.k8s.io_v1_customresourcedefinition_constrainttemplatepodstatuses.status.gatekeeper.sh.yaml",
-		"apiextensions.k8s.io_v1_customresourcedefinition_constraintpodstatuses.status.gatekeeper.sh.yaml",
-		"apiextensions.k8s.io_v1_customresourcedefinition_expansiontemplate.expansion.gatekeeper.sh.yaml",
-		"apiextensions.k8s.io_v1_customresourcedefinition_expansiontemplatepodstatuses.status.gatekeeper.sh.yaml",
-		"apiextensions.k8s.io_v1_customresourcedefinition_syncsets.syncset.gatekeeper.sh.yaml",
-		ConfigPodStatusCRDFile,
-		ConnectionCRDFile,
-		ConnectionPodStatusCRDFile,
-		ProviderCRDFile,
-		ProviderPodStatusCRDFile,
 		"v1_serviceaccount_gatekeeper-admin.yaml",
+		ServiceFile,
+		AuditFile,
+		WebhookFile,
+		"apiextensions.k8s.io_v1_customresourcedefinition_configs.config.gatekeeper.sh.yaml",
+		"apiextensions.k8s.io_v1_customresourcedefinition_connections.connection.gatekeeper.sh.yaml",
+		"apiextensions.k8s.io_v1_customresourcedefinition_expansiontemplate.expansion.gatekeeper.sh.yaml",
+		"apiextensions.k8s.io_v1_customresourcedefinition_providers.externaldata.gatekeeper.sh.yaml",
+		"apiextensions.k8s.io_v1_customresourcedefinition_configpodstatuses.status.gatekeeper.sh.yaml",
+		"apiextensions.k8s.io_v1_customresourcedefinition_connectionpodstatuses.status.gatekeeper.sh.yaml",
+		"apiextensions.k8s.io_v1_customresourcedefinition_constraintpodstatuses.status.gatekeeper.sh.yaml",
+		"apiextensions.k8s.io_v1_customresourcedefinition_constrainttemplatepodstatuses.status.gatekeeper.sh.yaml",
+		"apiextensions.k8s.io_v1_customresourcedefinition_expansiontemplatepodstatuses.status.gatekeeper.sh.yaml",
+		"apiextensions.k8s.io_v1_customresourcedefinition_providerpodstatuses.status.gatekeeper.sh.yaml",
+		"apiextensions.k8s.io_v1_customresourcedefinition_constrainttemplates.templates.gatekeeper.sh.yaml",
+		"apiextensions.k8s.io_v1_customresourcedefinition_syncsets.syncset.gatekeeper.sh.yaml",
 		"policy_v1_poddisruptionbudget_gatekeeper-controller-manager.yaml",
 		ClusterRoleFile,
 		ClusterRoleBindingFile,
-		RoleFile,
+		"rbac.authorization.k8s.io_v1_role_gatekeeper-manager-role.yaml",
 		RoleBindingFile,
-		AuditFile,
-		WebhookFile,
-		ServiceFile,
 		// ServerCertFile will be added when it is not openshift platform
 	}
+
 	MutatingCRDs = []string{
-		AssignCRDFile,
-		AssignImageCRDFile,
-		AssignMetadataCRDFile,
-		ModifySetCRDFile,
-		MutatorPodStatusCRDFile,
+		"apiextensions.k8s.io_v1_customresourcedefinition_assign.mutations.gatekeeper.sh.yaml",
+		"apiextensions.k8s.io_v1_customresourcedefinition_assignimage.mutations.gatekeeper.sh.yaml",
+		"apiextensions.k8s.io_v1_customresourcedefinition_assignmetadata.mutations.gatekeeper.sh.yaml",
+		"apiextensions.k8s.io_v1_customresourcedefinition_modifyset.mutations.gatekeeper.sh.yaml",
+		"apiextensions.k8s.io_v1_customresourcedefinition_mutatorpodstatuses.status.gatekeeper.sh.yaml",
 	}
 )
 
@@ -201,6 +196,7 @@ const (
 // +kubebuilder:rbac:groups=constraints.gatekeeper.sh,resources=*,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=expansion.gatekeeper.sh,resources=*,verbs=create;delete;get;list;patch;update;watch
 // +kubebuilder:rbac:groups=externaldata.gatekeeper.sh,resources=providers,verbs=create;delete;get;list;patch;update;watch
+// +kubebuilder:rbac:groups=externaldata.gatekeeper.sh,resources=providers/status,verbs=get;list;patch;update;watch
 // +kubebuilder:rbac:groups=mutations.gatekeeper.sh,resources=*,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=status.gatekeeper.sh,resources=*,verbs=get;list;watch;create;update;patch;delete
 // +kubebuilder:rbac:groups=templates.gatekeeper.sh,resources=constrainttemplates,verbs=get;list;watch;create;update;patch;delete
