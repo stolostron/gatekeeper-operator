@@ -127,10 +127,16 @@ jobs:
         if: ${{ failure() }}
         continue-on-error: true
         run: |
-          echo "::group:Deployments"
+          echo "::group::Deployments"
           kubectl -n gatekeeper-system get all
           echo "---"
           kubectl -n gatekeeper-system get deployments -o yaml --ignore-not-found
+          echo "::endgroup::"
+          echo "::group::gatekeeper-controller-manager logs"
+          kubectl -n gatekeeper-system logs deployment/gatekeeper-operator-controller || true
+          echo "::endgroup::"
+          echo "::group::gatekeeper-audit logs"
+          kubectl -n gatekeeper-system logs deployment/gatekeeper-audit || true
           echo "::endgroup::"
           echo "::group::Operator Logs"
           cat operator.log
@@ -172,10 +178,16 @@ jobs:
         if: ${{ failure() }}
         continue-on-error: true
         run: |
-          echo "::group:Deployments"
+          echo "::group::Deployments"
           kubectl -n openshift-gatekeeper-system get all
           echo "---"
           kubectl -n openshift-gatekeeper-system get deployments -o yaml --ignore-not-found
+          echo "::endgroup::"
+          echo "::group::gatekeeper-controller-manager logs"
+          kubectl -n openshift-gatekeeper-system logs deployment/gatekeeper-operator-controller || true
+          echo "::endgroup::"
+          echo "::group::gatekeeper-audit logs"
+          kubectl -n openshift-gatekeeper-system logs deployment/gatekeeper-audit || true
           echo "::endgroup::"
           echo "::group::Operator Logs"
           cat operator.log

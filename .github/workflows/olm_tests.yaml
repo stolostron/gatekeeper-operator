@@ -72,7 +72,7 @@ jobs:
         if: ${{ failure() }}
         continue-on-error: true
         run: |
-          echo "::group:Deployments"
+          echo "::group::Deployments"
           kubectl -n mygatekeeper get all
           echo "---"
           kubectl -n mygatekeeper get deployments -o yaml --ignore-not-found
