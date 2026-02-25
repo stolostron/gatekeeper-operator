@@ -6,7 +6,7 @@ COPY bundle/metadata /metadata/
 
 # Core bundle annotations
 LABEL operators.operatorframework.io.bundle.channel.default.v1=stable
-LABEL operators.operatorframework.io.bundle.channels.v1="stable,3.20"
+LABEL operators.operatorframework.io.bundle.channels.v1="stable,3.21"
 LABEL operators.operatorframework.io.bundle.manifests.v1=manifests/
 LABEL operators.operatorframework.io.bundle.mediatype.v1=registry+v1
 LABEL operators.operatorframework.io.bundle.metadata.v1=metadata/
@@ -28,10 +28,10 @@ LABEL io.openshift.tags="data,images"
 LABEL name=gatekeeper/gatekeeper-operator-bundle
 LABEL description="The Gatekeeper Operator installs and configures Open Policy Agent Gatekeeper."
 LABEL summary="Red Hat Gatekeeper Operator"
-LABEL version=v3.20.0
+LABEL version=v3.21.0
 LABEL release="0"
 LABEL distribution-scope=public
 LABEL maintainer="acm-component-maintainers@redhat.com"
 LABEL url=https://github.com/stolostron/gatekeeper-operator
 LABEL vendor="Red Hat, Inc."
-LABEL cpe="cpe:/a:redhat:gatekeeper:3.20::el9"
+LABEL cpe="cpe:/a:redhat:gatekeeper:3.21::el9"
