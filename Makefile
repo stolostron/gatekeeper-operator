@@ -54,8 +54,8 @@ GOOS := $(shell go env GOOS)
 GOARCH := $(shell go env GOARCH)
 MAKEFILE_DIR := $(strip $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST)))))
 # Option to use podman or docker
-DOCKER ?= docker
-ifeq ($(DOCKER),podman)
+CONTAINER_ENGINE ?= podman
+ifeq ($(CONTAINER_ENGINE),podman)
 	TLS_VERIFY = --tls-verify=false
 	USE_HTTP = --use-http
 endif
@@ -220,11 +220,11 @@ build: generate fmt vet ## Build manager binary.
 
 .PHONY: docker-build
 docker-build: test ## Build docker image with the manager.
-	$(DOCKER) build --platform linux/$(GOARCH) --build-arg GOOS=linux --build-arg GOARCH=$(GOARCH) --build-arg LDFLAGS=${LDFLAGS} -t ${IMG} .
+	$(CONTAINER_ENGINE) build --platform linux/$(GOARCH) --build-arg GOOS=linux --build-arg GOARCH=$(GOARCH) --build-arg LDFLAGS=${LDFLAGS} -t ${IMG} .
 
 .PHONY: docker-push
 docker-push: ## Push docker image with the manager.
-	$(DOCKER) push ${IMG} $(TLS_VERIFY)
+	$(CONTAINER_ENGINE) push ${IMG} $(TLS_VERIFY)
 
 .PHONY: release
 release: manifests kustomize patch-deployment
@@ -332,7 +332,7 @@ bundle: operator-sdk manifests kustomize ## Generate bundle manifests and metada
 
 .PHONY: bundle-build
 bundle-build: ## Build the bundle image.
-	$(DOCKER) build -f bundle.Dockerfile -t $(BUNDLE_IMG) .
+	$(CONTAINER_ENGINE) build -f bundle.Dockerfile -t $(BUNDLE_IMG) .
 
 .PHONY: bundle-push
 bundle-push: ## Push the bundle image.
@@ -355,9 +355,9 @@ opm: $(OPM)
 .PHONY: bundle-index-build
 bundle-index-build: opm ## Build the bundle index image.
 ifneq ($(REPLACES_VERSION), none)
-	$(OPM) index add --bundles $(BUNDLE_IMG) --from-index quay.io/gatekeeper/gatekeeper-operator-bundle-index:v$(REPLACES_VERSION) --tag $(BUNDLE_INDEX_IMG) -c $(DOCKER) $(USE_HTTP)
+	$(OPM) index add --bundles $(BUNDLE_IMG) --from-index quay.io/gatekeeper/gatekeeper-operator-bundle-index:v$(REPLACES_VERSION) --tag $(BUNDLE_INDEX_IMG) -c $(CONTAINER_ENGINE) $(USE_HTTP)
 else
-	$(OPM) index add --bundles $(BUNDLE_IMG) --tag $(BUNDLE_INDEX_IMG) -c $(DOCKER) $(USE_HTTP)
+	$(OPM) index add --bundles $(BUNDLE_IMG) --tag $(BUNDLE_INDEX_IMG) -c $(CONTAINER_ENGINE) $(USE_HTTP)
 endif
 
 .PHONY: bundle-index-push
