@@ -7,6 +7,9 @@ spec:
     replicas: 1
     emitAuditEvents: Enabled
     auditEventsInvolvedNamespace: Enabled
+    containerArguments:
+      - name: sync-vap-enforcement-scope
+        value: "true"
   validatingWebhook: Enabled
   mutatingWebhook: Enabled
   webhook:
