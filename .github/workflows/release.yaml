@@ -8,6 +8,9 @@ on:
     tags:
       - "v*" # tags matching v*, i.e. v0.0.1, v1.0.0-rc.0
 
+env:
+  CONTAINER_ENGINE: docker
+
 jobs:
   build:
     name: Image build and push
