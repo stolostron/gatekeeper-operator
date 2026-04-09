@@ -543,7 +543,7 @@ func (r *GatekeeperReconciler) crudResource(
 		Name:      obj.GetName(),
 	}
 
-	logger := r.Log.WithValues("Gatekeeper resource", namespacedName)
+	logger := r.Log.WithValues("Gatekeeper resource", namespacedName, "kind", obj.GetKind())
 
 	// Skip adding a controller reference for the namespace so that a deletion
 	// of the Gatekeeper CR does not also delete the namespace and everything
@@ -891,37 +891,42 @@ func webhookConfigurationOverrides(
 	return nil
 }
 
-type matchRuleFunc func(map[string]interface{}) (bool, error)
-
-var matchMutatingRBACRuleFns = []matchRuleFunc{
-	matchGatekeeperMutatingRBACRule,
-	matchMutatingWebhookConfigurationRBACRule,
-}
+type matchRuleFunc func(map[string]interface{}) (map[string]interface{}, bool, error)
 
 func removeMutatingRBACRules(obj *unstructured.Unstructured) error {
-	for _, f := range matchMutatingRBACRuleFns {
-		if err := removeRBACRule(obj, f); err != nil {
-			return err
-		}
-	}
-
-	return nil
+	return removeRBACRules(
+		obj,
+		[]matchRuleFunc{
+			matchGatekeeperMutatingRBACRule,
+			matchMutatingWebhookConfigurationRBACRule,
+		},
+	)
 }
 
-func removeRBACRule(obj *unstructured.Unstructured, matchRuleFn matchRuleFunc) error {
+func removeRBACRules(obj *unstructured.Unstructured, matchRuleFns []matchRuleFunc) error {
 	rules, found, err := unstructured.NestedSlice(obj.Object, "rules")
 	if err != nil || !found {
 		return errors.Wrapf(err, "Failed to retrieve rules from clusterrole")
 	}
 
-	for i, rule := range rules {
-		r := rule.(map[string]interface{})
-		if found, err := matchRuleFn(r); err != nil {
-			return err
-		} else if found {
-			rules = append(rules[:i], rules[i+1:]...)
+	for _, f := range matchRuleFns {
+		for i, rule := range rules {
+			r := rule.(map[string]interface{})
 
-			break
+			newRule, found, err := f(r)
+			if err != nil {
+				return err
+			}
+
+			if found {
+				if newRule != nil {
+					rules[i] = newRule
+				} else {
+					rules = append(rules[:i], rules[i+1:]...)
+				}
+
+				break
+			}
 		}
 	}
 
@@ -932,36 +937,52 @@ func removeRBACRule(obj *unstructured.Unstructured, matchRuleFn matchRuleFunc) e
 	return nil
 }
 
-func matchGatekeeperMutatingRBACRule(rule map[string]interface{}) (bool, error) {
-	apiGroups, found, err := unstructured.NestedStringSlice(rule, "apiGroups")
+func matchGatekeeperMutatingRBACRule(rule map[string]interface{}) (map[string]interface{}, bool, error) {
+	apiGroups, found, err := unstructured.NestedSlice(rule, "apiGroups")
 	if !found || err != nil {
-		return false, errors.Wrapf(err, "Failed to retrieve apiGroups from rule")
+		return nil, false, errors.Wrapf(err, "Failed to retrieve apiGroups from rule")
 	}
 
 	if slices.Contains(apiGroups, "mutations.gatekeeper.sh") {
-		return true, nil
+		if len(apiGroups) == 1 {
+			return nil, true, nil
+		}
+
+		rule["apiGroups"] = slices.DeleteFunc(apiGroups, func(apiGroup interface{}) bool {
+			return apiGroup == "mutations.gatekeeper.sh"
+		})
+
+		return rule, true, nil
 	}
 
-	return false, nil
+	return nil, false, nil
 }
 
-func matchMutatingWebhookConfigurationRBACRule(rule map[string]interface{}) (bool, error) {
-	apiGroups, found, err := unstructured.NestedStringSlice(rule, "apiGroups")
+func matchMutatingWebhookConfigurationRBACRule(rule map[string]interface{}) (map[string]interface{}, bool, error) {
+	apiGroups, found, err := unstructured.NestedSlice(rule, "apiGroups")
 	if !found || err != nil {
-		return false, errors.Wrapf(err, "Failed to retrieve apiGroups from rule")
+		return nil, false, errors.Wrapf(err, "Failed to retrieve apiGroups from rule")
 	}
 
-	resources, found, err := unstructured.NestedStringSlice(rule, "resources")
+	resources, found, err := unstructured.NestedSlice(rule, "resources")
 	if !found || err != nil {
-		return false, errors.Wrapf(err, "Failed to retrieve resources from rule")
+		return nil, false, errors.Wrapf(err, "Failed to retrieve resources from rule")
 	}
 
 	if slices.Contains(apiGroups, "admissionregistration.k8s.io") &&
 		slices.Contains(resources, "mutatingwebhookconfigurations") {
-		return true, nil
+		if len(resources) == 1 {
+			return nil, true, nil
+		}
+
+		rule["resources"] = slices.DeleteFunc(resources, func(resource interface{}) bool {
+			return resource == "mutatingwebhookconfigurations"
+		})
+
+		return rule, true, nil
 	}
 
-	return false, nil
+	return nil, false, nil
 }
 
 func containerOverrides(obj *unstructured.Unstructured, spec operatorv1alpha1.GatekeeperSpec) error {

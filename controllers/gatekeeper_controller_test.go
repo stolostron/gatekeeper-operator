@@ -1928,160 +1928,56 @@ func TestSetCertNamespace(t *testing.T) {
 func TestMutationRBACConfig(t *testing.T) {
 	g := NewWithT(t)
 
-	gatekeeper := defaultGatekeeper()
-
 	clusterRoleObj, err := util.GetManifestObject(ClusterRoleFile)
 	g.Expect(err).ToNot(HaveOccurred())
 	g.Expect(clusterRoleObj).ToNot(BeNil())
-
-	// Test default RBAC config
-	obj := clusterRoleObj.DeepCopy()
-	err = crOverrides(logr.Logger{}, gatekeeper, ClusterRoleFile, obj, namespace, false, false)
-	g.Expect(err).ToNot(HaveOccurred())
-	rules, found, err := unstructured.NestedSlice(obj.Object, "rules")
+	initialRules, found, err := unstructured.NestedSlice(clusterRoleObj.Object, "rules")
 	g.Expect(err).ToNot(HaveOccurred())
 	g.Expect(found).To(BeTrue())
-	g.Expect(rules).NotTo(BeEmpty())
 
-	matchCount := 0
-
-	for _, rule := range rules {
-		r := rule.(map[string]interface{})
-		for _, f := range matchMutatingRBACRuleFns {
-			found, err := f(r)
-			g.Expect(err).ToNot(HaveOccurred())
-
-			if found {
-				matchCount++
-			}
-		}
+	expectedModifications := []interface{}{
+		map[string]interface{}{
+			"apiGroups": []interface{}{
+				"connection.gatekeeper.sh", "constraints.gatekeeper.sh",
+				"expansion.gatekeeper.sh", "status.gatekeeper.sh",
+			},
+			"resources": []interface{}{"*"},
+			"verbs":     []interface{}{"create", "delete", "get", "list", "patch", "update", "watch"},
+		},
+	}
+	expectedRemovals := []interface{}{
+		map[string]interface{}{
+			"apiGroups":     []interface{}{"admissionregistration.k8s.io"},
+			"resourceNames": []interface{}{"gatekeeper-mutating-webhook-configuration"},
+			"resources":     []interface{}{"mutatingwebhookconfigurations"},
+			"verbs":         []interface{}{"delete", "get", "list", "patch", "update", "watch"},
+		},
 	}
 
-	g.Expect(matchCount).To(Equal(len(matchMutatingRBACRuleFns)))
+	// defaultGatekeeper uses MutatingWebhook Enabled; crOverrides keeps mutating RBAC rules iff
+	// MutatingWebhook.IsEnabled() (see ClusterRoleFile case in crOverrides).
+	for _, tc := range []struct {
+		mutatingWebhook operatorv1alpha1.Mode
+	}{
+		{operatorv1alpha1.Enabled},
+		{operatorv1alpha1.Disabled},
+	} {
+		gatekeeper := defaultGatekeeper()
+		gatekeeper.Spec.MutatingWebhook = tc.mutatingWebhook
 
-	// Test RBAC config when mutating webhook mode is nil
-	obj = clusterRoleObj.DeepCopy()
-	err = crOverrides(logr.Logger{}, gatekeeper, ClusterRoleFile, obj, namespace, false, false)
-	g.Expect(err).ToNot(HaveOccurred())
-	rules, found, err = unstructured.NestedSlice(obj.Object, "rules")
-	g.Expect(err).ToNot(HaveOccurred())
-	g.Expect(found).To(BeTrue())
-	g.Expect(rules).NotTo(BeEmpty())
+		obj := clusterRoleObj.DeepCopy()
+		err = crOverrides(logr.Logger{}, gatekeeper, ClusterRoleFile, obj, namespace, false, false)
+		g.Expect(err).ToNot(HaveOccurred())
+		rules, found, err := unstructured.NestedSlice(obj.Object, "rules")
+		g.Expect(err).ToNot(HaveOccurred())
+		g.Expect(found).To(BeTrue())
+		g.Expect(rules).NotTo(BeEmpty())
 
-	matchCount = 0
-
-	for _, rule := range rules {
-		r := rule.(map[string]interface{})
-		for _, f := range matchMutatingRBACRuleFns {
-			found, err := f(r)
-			g.Expect(err).ToNot(HaveOccurred())
-
-			if found {
-				matchCount++
-			}
+		if tc.mutatingWebhook.IsEnabled() {
+			g.Expect(rules).To(Equal(initialRules))
+		} else {
+			g.Expect(rules).To(ContainElements(expectedModifications))
+			g.Expect(rules).To(Not(ContainElements(expectedRemovals)))
 		}
 	}
-
-	g.Expect(matchCount).To(Equal(len(matchMutatingRBACRuleFns)))
-
-	// Test RBAC config when mutating webhook mode is nil
-	obj = clusterRoleObj.DeepCopy()
-	err = crOverrides(logr.Logger{}, gatekeeper, ClusterRoleFile, obj, namespace, false, false)
-	g.Expect(err).ToNot(HaveOccurred())
-	rules, found, err = unstructured.NestedSlice(obj.Object, "rules")
-	g.Expect(err).ToNot(HaveOccurred())
-	g.Expect(found).To(BeTrue())
-	g.Expect(rules).NotTo(BeEmpty())
-
-	// Test RBAC config when mutating webhook mode is disabled
-	obj = clusterRoleObj.DeepCopy()
-	gatekeeper.Spec.MutatingWebhook = operatorv1alpha1.Disabled
-	err = crOverrides(logr.Logger{}, gatekeeper, ClusterRoleFile, obj, namespace, false, false)
-	g.Expect(err).ToNot(HaveOccurred())
-	rules, found, err = unstructured.NestedSlice(obj.Object, "rules")
-	g.Expect(err).ToNot(HaveOccurred())
-	g.Expect(found).To(BeTrue())
-	g.Expect(rules).NotTo(BeEmpty())
-
-	for _, rule := range rules {
-		r := rule.(map[string]interface{})
-		for _, f := range matchMutatingRBACRuleFns {
-			found, err := f(r)
-			g.Expect(err).ToNot(HaveOccurred())
-			g.Expect(found).To(BeFalse())
-		}
-	}
-
-	// Test RBAC config when mutating webhook mode is enabled
-	obj = clusterRoleObj.DeepCopy()
-	gatekeeper.Spec.MutatingWebhook = operatorv1alpha1.Enabled
-	err = crOverrides(logr.Logger{}, gatekeeper, ClusterRoleFile, obj, namespace, false, false)
-	g.Expect(err).ToNot(HaveOccurred())
-	rules, found, err = unstructured.NestedSlice(obj.Object, "rules")
-	g.Expect(err).ToNot(HaveOccurred())
-	g.Expect(found).To(BeTrue())
-	g.Expect(rules).NotTo(BeEmpty())
-
-	matchCount = 0
-
-	for _, rule := range rules {
-		r := rule.(map[string]interface{})
-		for _, f := range matchMutatingRBACRuleFns {
-			found, err := f(r)
-			g.Expect(err).ToNot(HaveOccurred())
-
-			if found {
-				matchCount++
-			}
-		}
-	}
-
-	g.Expect(matchCount).To(Equal(len(matchMutatingRBACRuleFns)))
-
-	// Test RBAC config when mutating webhook mode is disabled
-	obj = clusterRoleObj.DeepCopy()
-	gatekeeper.Spec.MutatingWebhook = operatorv1alpha1.Disabled
-	err = crOverrides(logr.Logger{}, gatekeeper, ClusterRoleFile, obj, namespace, false, false)
-	g.Expect(err).ToNot(HaveOccurred())
-	rules, found, err = unstructured.NestedSlice(obj.Object, "rules")
-	g.Expect(err).ToNot(HaveOccurred())
-	g.Expect(found).To(BeTrue())
-	g.Expect(rules).NotTo(BeEmpty())
-
-	for _, rule := range rules {
-		r := rule.(map[string]interface{})
-		for _, f := range matchMutatingRBACRuleFns {
-			found, err := f(r)
-			g.Expect(err).ToNot(HaveOccurred())
-			g.Expect(found).To(BeFalse())
-		}
-	}
-
-	// Test RBAC config when mutating webhook mode is enabled
-	obj = clusterRoleObj.DeepCopy()
-	gatekeeper.Spec.MutatingWebhook = operatorv1alpha1.Enabled
-
-	err = crOverrides(logr.Logger{}, gatekeeper, ClusterRoleFile, obj, namespace, false, false)
-	g.Expect(err).ToNot(HaveOccurred())
-
-	rules, found, err = unstructured.NestedSlice(obj.Object, "rules")
-	g.Expect(err).ToNot(HaveOccurred())
-	g.Expect(found).To(BeTrue())
-	g.Expect(rules).NotTo(BeEmpty())
-
-	matchCount = 0
-
-	for _, rule := range rules {
-		r := rule.(map[string]interface{})
-		for _, f := range matchMutatingRBACRuleFns {
-			found, err := f(r)
-			g.Expect(err).ToNot(HaveOccurred())
-
-			if found {
-				matchCount++
-			}
-		}
-	}
-
-	g.Expect(matchCount).To(Equal(len(matchMutatingRBACRuleFns)))
 }
