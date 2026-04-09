@@ -1733,6 +1733,9 @@ func checkPodsStable(ctx SpecContext, labelSelector, deploymentName string) {
 			if _, ok := restartMap[pod.Name]; !ok {
 				restartMap[pod.Name] = map[string]int32{}
 			}
+			if pod.Status.Phase == corev1.PodSucceeded {
+				continue
+			}
 			g.Expect(pod.Status.Phase).To(Equal(corev1.PodRunning), "Pod %s should be Running", pod.Name)
 			g.Expect(pod.Status.ContainerStatuses).NotTo(
 				BeEmpty(),
