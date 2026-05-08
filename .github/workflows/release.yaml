@@ -20,7 +20,7 @@ jobs:
           fetch-depth: 0 # Fetch all history for all tags and branches
 
       - name: Set Up Go to Install OPM
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
 
