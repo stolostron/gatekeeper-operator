@@ -240,7 +240,7 @@ var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_assi
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.5
   labels:
     gatekeeper.sh/system: "yes"
   name: assign.mutations.gatekeeper.sh
@@ -532,6 +532,8 @@ spec:
                             description: Provider is the name of the external data
                               provider.
                             type: string
+                        required:
+                        - provider
                         type: object
                       fromMetadata:
                         description: FromMetadata assigns a value from the specified
@@ -557,7 +559,6 @@ spec:
                         not applied. All ` + "`" + `subPath` + "`" + ` entries must be a prefix of ` + "`" + `location` + "`" + `. Any
                         glob characters will take on the same value as was used to
                         expand the matching glob in ` + "`" + `location` + "`" + `.
-
 
                         Available Tests:
                         * MustExist    - the path must exist or do not mutate
@@ -899,6 +900,8 @@ spec:
                             description: Provider is the name of the external data
                               provider.
                             type: string
+                        required:
+                        - provider
                         type: object
                       fromMetadata:
                         description: FromMetadata assigns a value from the specified
@@ -924,7 +927,6 @@ spec:
                         not applied. All ` + "`" + `subPath` + "`" + ` entries must be a prefix of ` + "`" + `location` + "`" + `. Any
                         glob characters will take on the same value as was used to
                         expand the matching glob in ` + "`" + `location` + "`" + `.
-
 
                         Available Tests:
                         * MustExist    - the path must exist or do not mutate
@@ -1266,6 +1268,8 @@ spec:
                             description: Provider is the name of the external data
                               provider.
                             type: string
+                        required:
+                        - provider
                         type: object
                       fromMetadata:
                         description: FromMetadata assigns a value from the specified
@@ -1291,7 +1295,6 @@ spec:
                         not applied. All ` + "`" + `subPath` + "`" + ` entries must be a prefix of ` + "`" + `location` + "`" + `. Any
                         glob characters will take on the same value as was used to
                         expand the matching glob in ` + "`" + `location` + "`" + `.
-
 
                         Available Tests:
                         * MustExist    - the path must exist or do not mutate
@@ -1380,7 +1383,7 @@ var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_assi
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.5
   labels:
     gatekeeper.sh/system: "yes"
   name: assignimage.mutations.gatekeeper.sh
@@ -1661,7 +1664,6 @@ spec:
                         glob characters will take on the same value as was used to
                         expand the matching glob in ` + "`" + `location` + "`" + `.
 
-
                         Available Tests:
                         * MustExist    - the path must exist or do not mutate
                         * MustNotExist - the path must not exist or do not mutate.
@@ -1749,7 +1751,7 @@ var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_assi
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.5
   labels:
     gatekeeper.sh/system: "yes"
   name: assignmetadata.mutations.gatekeeper.sh
@@ -2011,6 +2013,8 @@ spec:
                             description: Provider is the name of the external data
                               provider.
                             type: string
+                        required:
+                        - provider
                         type: object
                       fromMetadata:
                         description: FromMetadata assigns a value from the specified
@@ -2325,6 +2329,8 @@ spec:
                             description: Provider is the name of the external data
                               provider.
                             type: string
+                        required:
+                        - provider
                         type: object
                       fromMetadata:
                         description: FromMetadata assigns a value from the specified
@@ -2639,6 +2645,8 @@ spec:
                             description: Provider is the name of the external data
                               provider.
                             type: string
+                        required:
+                        - provider
                         type: object
                       fromMetadata:
                         description: FromMetadata assigns a value from the specified
@@ -2730,7 +2738,7 @@ var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_conf
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.5
   labels:
     gatekeeper.sh/system: "yes"
   name: configpodstatuses.status.gatekeeper.sh
@@ -2818,7 +2826,7 @@ var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_conf
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.5
   labels:
     gatekeeper.sh/system: "yes"
   name: configs.config.gatekeeper.sh
@@ -2989,7 +2997,7 @@ var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_cons
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.5
   labels:
     gatekeeper.sh/system: "yes"
   name: constraintpodstatuses.status.gatekeeper.sh
@@ -3106,7 +3114,7 @@ var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_cons
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.5
   labels:
     gatekeeper.sh/system: "yes"
   name: constrainttemplatepodstatuses.status.gatekeeper.sh
@@ -3641,7 +3649,7 @@ var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_expa
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.5
   labels:
     gatekeeper.sh/system: "yes"
   name: expansiontemplate.expansion.gatekeeper.sh
@@ -3914,7 +3922,7 @@ var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_expa
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.5
   labels:
     gatekeeper.sh/system: "yes"
   name: expansiontemplatepodstatuses.status.gatekeeper.sh
@@ -4008,7 +4016,7 @@ var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_modi
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.5
   labels:
     gatekeeper.sh/system: "yes"
   name: modifyset.mutations.gatekeeper.sh
@@ -4288,7 +4296,6 @@ spec:
                         glob characters will take on the same value as was used to
                         expand the matching glob in ` + "`" + `location` + "`" + `.
 
-
                         Available Tests:
                         * MustExist    - the path must exist or do not mutate
                         * MustNotExist - the path must not exist or do not mutate.
@@ -4622,7 +4629,6 @@ spec:
                         glob characters will take on the same value as was used to
                         expand the matching glob in ` + "`" + `location` + "`" + `.
 
-
                         Available Tests:
                         * MustExist    - the path must exist or do not mutate
                         * MustNotExist - the path must not exist or do not mutate.
@@ -4956,7 +4962,6 @@ spec:
                         glob characters will take on the same value as was used to
                         expand the matching glob in ` + "`" + `location` + "`" + `.
 
-
                         Available Tests:
                         * MustExist    - the path must exist or do not mutate
                         * MustNotExist - the path must not exist or do not mutate.
@@ -5049,7 +5054,7 @@ var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_muta
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.5
   labels:
     gatekeeper.sh/system: "yes"
   name: mutatorpodstatuses.status.gatekeeper.sh
@@ -5266,7 +5271,7 @@ var _configGatekeeperRenderedApiextensionsK8sIo_v1_customresourcedefinition_sync
 kind: CustomResourceDefinition
 metadata:
   annotations:
-    controller-gen.kubebuilder.io/version: v0.14.0
+    controller-gen.kubebuilder.io/version: v0.16.5
   labels:
     gatekeeper.sh/system: "yes"
   name: syncsets.syncset.gatekeeper.sh
@@ -5695,17 +5700,6 @@ rules:
   - config.gatekeeper.sh
   resources:
   - '*'
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - config.gatekeeper.sh
-  resources:
   - configs
   verbs:
   - create
@@ -5725,18 +5719,9 @@ rules:
   - update
 - apiGroups:
   - constraints.gatekeeper.sh
-  resources:
-  - '*'
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
   - expansion.gatekeeper.sh
+  - mutations.gatekeeper.sh
+  - status.gatekeeper.sh
   resources:
   - '*'
   verbs:
@@ -5760,18 +5745,6 @@ rules:
   - update
   - watch
 - apiGroups:
-  - mutations.gatekeeper.sh
-  resources:
-  - '*'
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
   - policy
   resourceNames:
   - gatekeeper-admin
@@ -5779,18 +5752,6 @@ rules:
   - podsecuritypolicies
   verbs:
   - use
-- apiGroups:
-  - status.gatekeeper.sh
-  resources:
-  - '*'
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
 - apiGroups:
   - templates.gatekeeper.sh
   resources:
