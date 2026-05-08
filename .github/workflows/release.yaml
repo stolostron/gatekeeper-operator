@@ -15,7 +15,7 @@ jobs:
       ff: ${{ steps.ff.outputs.ff }}
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0 # Fetch all history for all tags and branches
 
@@ -77,7 +77,7 @@ jobs:
     needs: [build]
     if: ${{ needs.build.outputs.ff == 'true'  }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           token: ${{ secrets.WORKFLOW_TOKEN }}
           fetch-depth: 0 # Fetch all history for all tags and branches
