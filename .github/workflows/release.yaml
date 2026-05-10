@@ -93,7 +93,7 @@ jobs:
           git push origin ${RELEASE_BRANCH}
 
       - name: Slack failure report
-        uses: slackapi/slack-github-action@v2.0.0
+        uses: slackapi/slack-github-action@v3.0.3
         if: ${{ failure() }}
         env:
           SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
