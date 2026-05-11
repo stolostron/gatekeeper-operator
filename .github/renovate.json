@@ -24,6 +24,10 @@
   "osvVulnerabilityAlerts": true,
   "packageRules": [
     {
+      "matchManagers": ["github-actions"],
+      "groupName": "GitHub actions"
+    },
+    {
       "groupName": "Bundle containerfile images",
       "matchManagers": ["dockerfile"],
       "ignorePaths": ["**/bundle.Dockerfile.rhtap"],
