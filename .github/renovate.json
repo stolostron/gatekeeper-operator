@@ -24,13 +24,13 @@
   "osvVulnerabilityAlerts": true,
   "packageRules": [
     {
-      "groupName": "containerfile images ({{{baseBranch}}})",
+      "groupName": "Bundle containerfile images",
       "matchManagers": ["dockerfile"],
       "ignorePaths": ["**/bundle.Dockerfile.rhtap"],
       "pinDigests": true
     },
     {
-      "groupName": "containerfile images ({{{baseBranch}}})",
+      "groupName": "Containerfile images",
       "matchManagers": ["dockerfile"],
       "ignorePaths": ["**/Dockerfile.rhtap"],
       "pinDigests": false
