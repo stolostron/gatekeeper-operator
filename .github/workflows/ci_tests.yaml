@@ -20,9 +20,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
 
@@ -84,7 +84,7 @@ jobs:
       - name: Upload artifacts
         if: |
           github.repository_owner == 'stolostron'
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: artifacts
           path: |
@@ -97,9 +97,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
 
@@ -141,9 +141,9 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
 
@@ -192,11 +192,11 @@ jobs:
       NAMESPACE: gatekeeper-system
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           path: gatekeeper-operator
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@v6
         with:
           go-version-file: gatekeeper-operator/go.mod
           cache-dependency-path: gatekeeper-operator/go.sum
@@ -228,7 +228,7 @@ jobs:
 
       # Checkout a local copy of Gatekeeper to use its bats e2e tests.
       - name: Checkout Gatekeeper to verify imported manifests
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
         with:
           repository: open-policy-agent/gatekeeper
           ref: ${{ env.GATEKEEPER_VERSION }}
