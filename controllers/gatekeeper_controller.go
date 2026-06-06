@@ -175,6 +175,9 @@ const (
 // +kubebuilder:rbac:groups=operator.gatekeeper.sh,resources=gatekeepers/status,verbs=get;update;patch
 // +kubebuilder:rbac:groups=operator.gatekeeper.sh,resources=gatekeepers/finalizers,verbs=delete;get;update;patch
 
+// OLM Operator requirement
+// +kubebuilder:rbac:groups=networking.k8s.io,resources=networkpolicies,verbs=create;delete;patch;update;
+
 // Gatekeeper Operator RBAC permissions to deploy Gatekeeper. Many of these
 // RBAC permissions are needed because the operator must have the permissions
 // to grant Gatekeeper its required RBAC permissions.
