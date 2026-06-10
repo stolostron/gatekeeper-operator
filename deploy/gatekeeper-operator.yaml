@@ -2222,7 +2222,7 @@ spec:
         resources:
           requests:
             cpu: 100m
-            memory: 512Mi
+            memory: 128Mi
         securityContext:
           allowPrivilegeEscalation: false
           capabilities:
