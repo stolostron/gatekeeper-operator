@@ -56,7 +56,7 @@ spec:
           resources:
             requests:
               cpu: 100m
-              memory: 512Mi
+              memory: 128Mi
           env:
             - name: RELATED_IMAGE_GATEKEEPER
               value: quay.io/gatekeeper/gatekeeper:v3.21.1
