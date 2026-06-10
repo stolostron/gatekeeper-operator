@@ -54,12 +54,9 @@ spec:
             initialDelaySeconds: 5
             periodSeconds: 10
           resources:
-            limits:
-              cpu: 200m
-              memory: 100Mi
             requests:
               cpu: 100m
-              memory: 20Mi
+              memory: 512Mi
           env:
             - name: RELATED_IMAGE_GATEKEEPER
               value: quay.io/gatekeeper/gatekeeper:v3.21.1
