@@ -536,7 +536,7 @@ func getStaticAssets(
 		applyOrderedAssets = append(applyOrderedAssets, ServerCertFile)
 	}
 
-	return
+	return deleteWebhookAssets, applyOrderedAssets, applyWebhookAssets, deleteCRDAssets
 }
 
 func mutatingWebhookEnabled(mode *operatorv1alpha1.Mode) bool {

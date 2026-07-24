@@ -1046,7 +1046,7 @@ func gatekeeperAuditDeployment(ctx SpecContext) (auditDeployment *appsv1.Deploym
 		return K8sClient.Get(ctx, auditName, auditDeployment)
 	}, timeout, pollInterval).ShouldNot(HaveOccurred())
 
-	return
+	return auditDeployment
 }
 
 func gatekeeperWebhookDeployment(ctx SpecContext) (webhookDeployment *appsv1.Deployment) {
@@ -1056,7 +1056,7 @@ func gatekeeperWebhookDeployment(ctx SpecContext) (webhookDeployment *appsv1.Dep
 		return K8sClient.Get(ctx, controllerManagerName, webhookDeployment)
 	}, timeout, pollInterval).ShouldNot(HaveOccurred())
 
-	return
+	return webhookDeployment
 }
 
 func assertResources(expected, current corev1.ResourceRequirements) {
