@@ -157,7 +157,7 @@ func TestCustomNamespace(t *testing.T) {
 	g.Expect(found).To(BeTrue())
 
 	for _, s := range subjects {
-		subject := s.(map[string]interface{})
+		subject := s.(map[string]any)
 		g.Expect(subject).NotTo(BeNil())
 		ns, found, err := unstructured.NestedString(subject, "namespace")
 		g.Expect(err).ToNot(HaveOccurred())
@@ -187,7 +187,7 @@ func TestCustomNamespace(t *testing.T) {
 		err = crOverrides(logr.Logger{}, gatekeeper, webhookConfigFile, webhookConfig, expectedNamespace, false, false)
 		g.Expect(err).ToNot(HaveOccurred())
 
-		assertWebhooksWithFn(g, webhookConfig, func(webhook map[string]interface{}) {
+		assertWebhooksWithFn(g, webhookConfig, func(webhook map[string]any) {
 			ns, found, err := unstructured.NestedString(webhook, "clientConfig", "service", "namespace")
 			g.Expect(err).ToNot(HaveOccurred())
 			g.Expect(found).To(BeTrue())
@@ -417,7 +417,7 @@ func assertWebhookAffinity(g *WithT, obj *unstructured.Unstructured, expected *c
 	}
 }
 
-func assertAffinity(g *WithT, expected *corev1.Affinity, current interface{}) {
+func assertAffinity(g *WithT, expected *corev1.Affinity, current any) {
 	g.Expect(util.ToMap(expected)).To(BeEquivalentTo(util.ToMap(current)))
 }
 
@@ -458,7 +458,7 @@ func assertOverrides(g *WithT, current *unstructured.Unstructured, isSet bool) {
 	g.ExpectWithOffset(1, containers).ToNot(BeEmpty())
 
 	for i := range containers {
-		container, ok := containers[i].(map[string]interface{})
+		container, ok := containers[i].(map[string]any)
 		if !ok {
 			continue
 		}
@@ -818,18 +818,18 @@ func assertResources(g *WithT, obj *unstructured.Unstructured, expected *corev1.
 	}
 }
 
-func assertResource(g *WithT, expected *corev1.ResourceRequirements, current map[string]interface{}) {
+func assertResource(g *WithT, expected *corev1.ResourceRequirements, current map[string]any) {
 	g.Expect(expected.Limits.Cpu().Cmp(
-		resource.MustParse(current["limits"].(map[string]interface{})["cpu"].(string))),
+		resource.MustParse(current["limits"].(map[string]any)["cpu"].(string))),
 	).To(BeZero())
 	g.Expect(expected.Limits.Memory().Cmp(
-		resource.MustParse(current["limits"].(map[string]interface{})["memory"].(string))),
+		resource.MustParse(current["limits"].(map[string]any)["memory"].(string))),
 	).To(BeZero())
 	g.Expect(expected.Requests.Cpu().Cmp(
-		resource.MustParse(current["requests"].(map[string]interface{})["cpu"].(string))),
+		resource.MustParse(current["requests"].(map[string]any)["cpu"].(string))),
 	).To(BeZero())
 	g.Expect(expected.Requests.Memory().Cmp(
-		resource.MustParse(current["requests"].(map[string]interface{})["memory"].(string))),
+		resource.MustParse(current["requests"].(map[string]any)["memory"].(string))),
 	).To(BeZero())
 }
 
@@ -924,12 +924,12 @@ func getDefaultImageConfig(g *WithT, obj *unstructured.Unstructured) (image stri
 	g.Expect(containers).NotTo(BeNil())
 	g.Expect(containers).To(HaveLen(1))
 
-	image, found, err = unstructured.NestedString(containers[0].(map[string]interface{}), "image")
+	image, found, err = unstructured.NestedString(containers[0].(map[string]any), "image")
 	g.Expect(err).NotTo(HaveOccurred())
 	g.Expect(found).To(BeTrue())
 	g.Expect(image).NotTo(BeNil())
 
-	policy, found, err := unstructured.NestedString(containers[0].(map[string]interface{}), "imagePullPolicy")
+	policy, found, err := unstructured.NestedString(containers[0].(map[string]any), "imagePullPolicy")
 	g.Expect(err).NotTo(HaveOccurred())
 	g.Expect(found).To(BeTrue())
 	g.Expect(policy).NotTo(BeNil())
@@ -998,7 +998,7 @@ func TestFailurePolicy(t *testing.T) {
 func assertFailurePolicy(
 	g *WithT, obj *unstructured.Unstructured, webhookName string, expected admregv1.FailurePolicyType,
 ) {
-	assertWebhooksWithFn(g, obj, func(webhook map[string]interface{}) {
+	assertWebhooksWithFn(g, obj, func(webhook map[string]any) {
 		if webhook["name"] == webhookName {
 			current, found, err := unstructured.NestedString(webhook, "failurePolicy")
 			g.Expect(err).ToNot(HaveOccurred())
@@ -1085,7 +1085,7 @@ func TestNamespaceSelector(t *testing.T) {
 func assertNamespaceSelector(
 	g *WithT, obj *unstructured.Unstructured, webhookName string, expected *metav1.LabelSelector,
 ) {
-	assertWebhooksWithFn(g, obj, func(webhook map[string]interface{}) {
+	assertWebhooksWithFn(g, obj, func(webhook map[string]any) {
 		if webhook["name"] == webhookName {
 			current, found, err := unstructured.NestedFieldCopy(webhook, "namespaceSelector")
 			g.Expect(err).ToNot(HaveOccurred())
@@ -1102,7 +1102,7 @@ func assertNamespaceSelector(
 	})
 }
 
-func assertWebhooksWithFn(g *WithT, obj *unstructured.Unstructured, webhookFn func(map[string]interface{})) {
+func assertWebhooksWithFn(g *WithT, obj *unstructured.Unstructured, webhookFn func(map[string]any)) {
 	g.Expect(obj).NotTo(BeNil())
 	webhooks, found, err := unstructured.NestedSlice(obj.Object, "webhooks")
 	g.Expect(err).ToNot(HaveOccurred())
@@ -1110,7 +1110,7 @@ func assertWebhooksWithFn(g *WithT, obj *unstructured.Unstructured, webhookFn fu
 	g.Expect(webhooks).ToNot(BeNil())
 
 	for _, w := range webhooks {
-		webhook := w.(map[string]interface{})
+		webhook := w.(map[string]any)
 		webhookFn(webhook)
 	}
 }
@@ -1611,14 +1611,14 @@ func TestWebhookOperations(t *testing.T) {
 func overrideWebhookOperations(
 	g *WithT, obj *unstructured.Unstructured, webhookName string, expected []operatorv1alpha1.OperationType,
 ) {
-	assertWebhooksWithFn(g, obj, func(webhook map[string]interface{}) {
+	assertWebhooksWithFn(g, obj, func(webhook map[string]any) {
 		if webhook["name"] == webhookName {
 			current, found, err := unstructured.NestedSlice(webhook, "rules")
 			g.Expect(err).ToNot(HaveOccurred())
 			g.Expect(found).To(BeTrue())
 
 			for _, rule := range current {
-				operations := rule.(map[string]interface{})["operations"].([]string)
+				operations := rule.(map[string]any)["operations"].([]string)
 				g.Expect(reflect.DeepEqual(expected, operations)).To(BeTrue())
 			}
 		}
@@ -1704,7 +1704,7 @@ func TestWebhookRules(t *testing.T) {
 func assertWebhookRules(
 	g *WithT, obj *unstructured.Unstructured, webhookName string, expected []admregv1.RuleWithOperations,
 ) {
-	assertWebhooksWithFn(g, obj, func(webhook map[string]interface{}) {
+	assertWebhooksWithFn(g, obj, func(webhook map[string]any) {
 		if webhook["name"] == webhookName {
 			current, found, err := unstructured.NestedSlice(webhook, "rules")
 			g.Expect(err).ToNot(HaveOccurred())
@@ -1712,7 +1712,7 @@ func assertWebhookRules(
 			g.Expect(current).To(HaveLen(len(expected)))
 
 			for i, rule := range current {
-				ruleMap := rule.(map[string]interface{})
+				ruleMap := rule.(map[string]any)
 				expectedRule := expected[i]
 
 				// Check operations
@@ -1750,14 +1750,14 @@ func assertWebhookRules(
 func assertWebhookOperations(
 	g *WithT, obj *unstructured.Unstructured, webhookName string, expected []operatorv1alpha1.OperationType,
 ) {
-	assertWebhooksWithFn(g, obj, func(webhook map[string]interface{}) {
+	assertWebhooksWithFn(g, obj, func(webhook map[string]any) {
 		if webhook["name"] == webhookName {
 			rules, found, err := unstructured.NestedSlice(webhook, "rules")
 			g.Expect(err).ToNot(HaveOccurred())
 			g.Expect(found).To(BeTrue())
 			g.Expect(rules).To(HaveLen(1))
 
-			ruleMap := rules[0].(map[string]interface{})
+			ruleMap := rules[0].(map[string]any)
 
 			// Check operations
 			ops, found, err := unstructured.NestedStringSlice(ruleMap, "operations")
@@ -1865,7 +1865,7 @@ func TestWebhookTimeoutSeconds(t *testing.T) {
 }
 
 func assertTimeoutSeconds(g *WithT, obj *unstructured.Unstructured, webhookName string, expected int32) {
-	assertWebhooksWithFn(g, obj, func(webhook map[string]interface{}) {
+	assertWebhooksWithFn(g, obj, func(webhook map[string]any) {
 		if webhook["name"] == webhookName {
 			current, found, err := unstructured.NestedInt64(webhook, "timeoutSeconds")
 			g.Expect(err).ToNot(HaveOccurred())
@@ -1946,7 +1946,7 @@ func TestMutationRBACConfig(t *testing.T) {
 	matchCount := 0
 
 	for _, rule := range rules {
-		r := rule.(map[string]interface{})
+		r := rule.(map[string]any)
 		for _, f := range matchMutatingRBACRuleFns {
 			found, err := f(r)
 			g.Expect(err).ToNot(HaveOccurred())
@@ -1971,7 +1971,7 @@ func TestMutationRBACConfig(t *testing.T) {
 	matchCount = 0
 
 	for _, rule := range rules {
-		r := rule.(map[string]interface{})
+		r := rule.(map[string]any)
 		for _, f := range matchMutatingRBACRuleFns {
 			found, err := f(r)
 			g.Expect(err).ToNot(HaveOccurred())
@@ -2004,7 +2004,7 @@ func TestMutationRBACConfig(t *testing.T) {
 	g.Expect(rules).NotTo(BeEmpty())
 
 	for _, rule := range rules {
-		r := rule.(map[string]interface{})
+		r := rule.(map[string]any)
 		for _, f := range matchMutatingRBACRuleFns {
 			found, err := f(r)
 			g.Expect(err).ToNot(HaveOccurred())
@@ -2025,7 +2025,7 @@ func TestMutationRBACConfig(t *testing.T) {
 	matchCount = 0
 
 	for _, rule := range rules {
-		r := rule.(map[string]interface{})
+		r := rule.(map[string]any)
 		for _, f := range matchMutatingRBACRuleFns {
 			found, err := f(r)
 			g.Expect(err).ToNot(HaveOccurred())
@@ -2049,7 +2049,7 @@ func TestMutationRBACConfig(t *testing.T) {
 	g.Expect(rules).NotTo(BeEmpty())
 
 	for _, rule := range rules {
-		r := rule.(map[string]interface{})
+		r := rule.(map[string]any)
 		for _, f := range matchMutatingRBACRuleFns {
 			found, err := f(r)
 			g.Expect(err).ToNot(HaveOccurred())
@@ -2072,7 +2072,7 @@ func TestMutationRBACConfig(t *testing.T) {
 	matchCount = 0
 
 	for _, rule := range rules {
-		r := rule.(map[string]interface{})
+		r := rule.(map[string]any)
 		for _, f := range matchMutatingRBACRuleFns {
 			found, err := f(r)
 			g.Expect(err).ToNot(HaveOccurred())

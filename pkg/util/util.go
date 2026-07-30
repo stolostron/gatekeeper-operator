@@ -63,8 +63,8 @@ func unmarshalJSON(in []byte) (*unstructured.Unstructured, error) {
 }
 
 // ToMap Convenience method to convert any struct into a map
-func ToMap(obj interface{}) map[string]interface{} {
-	var result map[string]interface{}
+func ToMap(obj any) map[string]any {
+	var result map[string]any
 
 	//nolint:errchkjson
 	resultRec, _ := json.Marshal(obj)
