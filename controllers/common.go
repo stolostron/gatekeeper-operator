@@ -39,7 +39,7 @@ func checkCrdAvailable(
 	}
 
 	for _, condition := range conditions {
-		parsedCondition := condition.(map[string]interface{})
+		parsedCondition := condition.(map[string]any)
 
 		status, ok := parsedCondition["status"].(string)
 		if !ok {
