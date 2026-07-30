@@ -156,7 +156,7 @@ func GetWithTimeout(
 
 // Kubectl execute kubectl cli
 func Kubectl(args ...string) {
-	cmd := exec.Command("kubectl", args...)
+	cmd := exec.CommandContext(context.Background(), "kubectl", args...)
 
 	err := cmd.Start()
 	if err != nil {
@@ -166,7 +166,7 @@ func Kubectl(args ...string) {
 
 // KubectlWithOutput execute kubectl cli and return output and error
 func KubectlWithOutput(args ...string) (string, error) {
-	kubectlCmd := exec.Command("kubectl", args...)
+	kubectlCmd := exec.CommandContext(context.Background(), "kubectl", args...)
 
 	output, err := kubectlCmd.CombinedOutput()
 	if err != nil {
