@@ -23,7 +23,7 @@ COPY pkg/ pkg/
 RUN CGO_ENABLED=1 GOOS=${GOOS} GOARCH=${GOARCH} go build -mod=readonly -a -ldflags "${LDFLAGS}" -o manager main.go
 
 # Copy to base image
-FROM registry.access.redhat.com/ubi9/ubi-minimal:latest@sha256:062c52ff973065752b0965787649db2bcf551a6c727a00e95a3eb42cebadbdab
+FROM registry.access.redhat.com/ubi9/ubi-minimal:latest@sha256:17fd831ced9434de0a984d60b3fbe61008308261ba98bbc348d6fbdef05fa7c0
 WORKDIR /
 COPY --from=builder /workspace/manager .
 RUN mkdir licenses/
