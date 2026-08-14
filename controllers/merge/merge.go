@@ -120,8 +120,8 @@ func retainWebhookConfigurationFields(desiredObj, clusterObj *unstructured.Unstr
 
 	for i := range desiredWebhooks {
 		for j := range clusterWebhooks {
-			desiredWebhook := desiredWebhooks[i].(map[string]interface{})
-			clusterWebhook := clusterWebhooks[j].(map[string]interface{})
+			desiredWebhook := desiredWebhooks[i].(map[string]any)
+			clusterWebhook := clusterWebhooks[j].(map[string]any)
 
 			if desiredWebhook["name"] != clusterWebhook["name"] {
 				continue

@@ -57,6 +57,7 @@ var _ = Describe("Test auditFromCache", Ordered, func() {
 		Kubectl("create", "ns", denyNamespace)
 
 		By("Create a gatekeeper resource")
+
 		_, err := KubectlWithOutput("apply", "-f", case1GatekeeperYaml)
 		Expect(err).ShouldNot(HaveOccurred())
 		// Need enough time until gatekeeper is up
@@ -76,6 +77,7 @@ var _ = Describe("Test auditFromCache", Ordered, func() {
 
 		_, err = KubectlWithOutput("apply", "-f", case1TemplateYaml)
 		Expect(err).ShouldNot(HaveOccurred())
+
 		template := GetWithTimeout(clientHubDynamic, templateGVR, "case1template", "", true, 60)
 		Expect(template).NotTo(BeNil())
 
@@ -84,6 +86,7 @@ var _ = Describe("Test auditFromCache", Ordered, func() {
 
 			return err
 		}, timeout).ShouldNot(HaveOccurred())
+
 		storageclass := GetWithTimeout(clientHubDynamic, constraintGVR, "case1-storageclass-deny", "", true, 60)
 		Expect(storageclass).NotTo(BeNil())
 
@@ -92,6 +95,7 @@ var _ = Describe("Test auditFromCache", Ordered, func() {
 
 			return err
 		}, timeout).ShouldNot(HaveOccurred())
+
 		pod := GetWithTimeout(clientHubDynamic, constraintGVR, "case1-pod-deny", "", true, 60)
 		Expect(pod).NotTo(BeNil())
 
@@ -100,6 +104,7 @@ var _ = Describe("Test auditFromCache", Ordered, func() {
 
 			return err
 		}, timeout).ShouldNot(HaveOccurred())
+
 		pod2 := GetWithTimeout(clientHubDynamic, constraintGVR, "case1-pod-deny-2", "", true, 60)
 		Expect(pod2).NotTo(BeNil())
 
@@ -108,6 +113,7 @@ var _ = Describe("Test auditFromCache", Ordered, func() {
 
 			return err
 		}, timeout).ShouldNot(HaveOccurred())
+
 		ingress := GetWithTimeout(clientHubDynamic, constraintGVR, "case1-ingress-deny", "", true, 60)
 		Expect(ingress).NotTo(BeNil())
 	})
@@ -161,6 +167,7 @@ var _ = Describe("Test auditFromCache", Ordered, func() {
 	Describe("Gatekeeper with auditFromCache=Automatic delete syncOnly config", Ordered, func() {
 		It("Should have 3 syncOnly elements in config", func(ctx SpecContext) {
 			config := &v1alpha1.Config{}
+
 			By("Config syncOnly should have 3 elements")
 
 			Eventually(func(g Gomega) []v1alpha1.SyncOnlyEntry {
@@ -206,6 +213,7 @@ var _ = Describe("Test auditFromCache", Ordered, func() {
 		})
 		It("Should still have 1 syncOnly elements in config when Pod constraint is deleted", func(ctx SpecContext) {
 			Kubectl("delete", "-f", case1ConstraintPodYaml, "--ignore-not-found")
+
 			config := &v1alpha1.Config{}
 
 			Eventually(func(g Gomega) []v1alpha1.SyncOnlyEntry {
@@ -222,6 +230,7 @@ var _ = Describe("Test auditFromCache", Ordered, func() {
 		})
 		It("Should have 0 syncOnly elements in config ", func(ctx SpecContext) {
 			Kubectl("delete", "-f", case1ConstraintPod2Yaml, "--ignore-not-found")
+
 			config := &v1alpha1.Config{}
 
 			Eventually(func(g Gomega) []v1alpha1.SyncOnlyEntry {
@@ -361,6 +370,7 @@ var _ = Describe("Test auditFromCache", Ordered, func() {
 		ctlDeployment := GetWithTimeout(clientHubDynamic, deploymentGVR,
 			"gatekeeper-controller-manager", gatekeeperNamespace, false, 60)
 		Expect(ctlDeployment).Should(BeNil())
+
 		auditDeployment := GetWithTimeout(clientHubDynamic, deploymentGVR,
 			"gatekeeper-audit", gatekeeperNamespace, false, 60)
 		Expect(auditDeployment).Should(BeNil())
@@ -397,6 +407,7 @@ var _ = Describe("Test auditFromCache with namespaceSelector in constraint", Ord
 
 		_, err = KubectlWithOutput("apply", "-f", templateYaml)
 		Expect(err).ShouldNot(HaveOccurred())
+
 		template := GetWithTimeout(clientHubDynamic, templateGVR, "case1namespaceselector", "", true, 60)
 		Expect(template).NotTo(BeNil())
 
@@ -445,6 +456,7 @@ var _ = Describe("Test auditFromCache with namespaceSelector in constraint", Ord
 		ctlDeployment := GetWithTimeout(clientHubDynamic, deploymentGVR,
 			"gatekeeper-controller-manager", gatekeeperNamespace, false, 60)
 		Expect(ctlDeployment).Should(BeNil())
+
 		auditDeployment := GetWithTimeout(clientHubDynamic, deploymentGVR,
 			"gatekeeper-audit", gatekeeperNamespace, false, 60)
 		Expect(auditDeployment).Should(BeNil())
