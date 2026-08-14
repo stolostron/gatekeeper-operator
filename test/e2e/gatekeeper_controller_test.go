@@ -20,6 +20,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"maps"
 	"os"
 	"strings"
 	"time"
@@ -65,6 +66,7 @@ var _ = Describe("Gatekeeper", func() {
 
 	AfterEach(func(ctx SpecContext) {
 		By("Clean gatekeeper")
+
 		_, err := test.KubectlWithOutput("delete", "gatekeeper", "gatekeeper", "--ignore-not-found")
 		Expect(err).ShouldNot(HaveOccurred())
 
@@ -98,6 +100,7 @@ var _ = Describe("Gatekeeper", func() {
 
 		By("Clean Config", func() {
 			_, _ = test.KubectlWithOutput("delete", "config", "config", "-n", gatekeeperNamespace, "--ignore-not-found")
+
 			Eventually(func() bool {
 				err := K8sClient.Get(ctx, types.NamespacedName{
 					Name:      "config",
@@ -121,6 +124,7 @@ var _ = Describe("Gatekeeper", func() {
 
 		AfterEach(func(ctx SpecContext) {
 			By("Clean gatekeeper")
+
 			_, err := test.KubectlWithOutput("delete", "gatekeeper", "gatekeeper", "--ignore-not-found")
 			Expect(err).ShouldNot(HaveOccurred())
 
@@ -153,18 +157,21 @@ var _ = Describe("Gatekeeper", func() {
 
 		It("Recovers audit Deployment after manual deletion", func(ctx SpecContext) {
 			gatekeeper := emptyGatekeeper()
+
 			By("Creating Gatekeeper resource", func() {
 				Expect(K8sClient.Create(ctx, gatekeeper)).Should(Succeed())
 			})
 
 			By("Waiting for gatekeeper-audit deployment to be ready", func() {
 				gkDeployment := &appsv1.Deployment{}
+
 				Eventually(func() (int32, error) {
 					return getDeploymentReadyReplicas(ctx, auditName, gkDeployment)
 				}, timeout, pollInterval).Should(Equal(test.DefaultDeployment.AuditReplicas))
 			})
 
 			By("Deleting the gatekeeper-audit Deployment")
+
 			toDelete := &appsv1.Deployment{}
 			Expect(K8sClient.Get(ctx, auditName, toDelete)).To(Succeed())
 			Expect(K8sClient.Delete(ctx, toDelete)).To(Succeed())
@@ -186,6 +193,7 @@ var _ = Describe("Gatekeeper", func() {
 			}, timeout*2, pollInterval).Should(Succeed())
 			// And reach the expected ready replicas
 			recreated := &appsv1.Deployment{}
+
 			Eventually(func() (int32, error) {
 				return getDeploymentReadyReplicas(ctx, auditName, recreated)
 			}, timeout*2, pollInterval).Should(Equal(test.DefaultDeployment.AuditReplicas))
@@ -303,7 +311,9 @@ var _ = Describe("Gatekeeper", func() {
 			}, timeout, pollInterval).Should(Succeed())
 
 			By("Getting Config")
+
 			config := &gkv1alpha1.Config{}
+
 			Eventually(func(g Gomega) []gkv1alpha1.MatchEntry {
 				g.Expect(
 					K8sClient.Get(ctx, types.NamespacedName{Namespace: gatekeeperNamespace, Name: "config"}, config),
@@ -313,6 +323,7 @@ var _ = Describe("Gatekeeper", func() {
 			}, 150, 5).Should(HaveLen(2))
 
 			By("Apply Config with 'shouldnotexist' namespace")
+
 			config.Spec.Match = []gkv1alpha1.MatchEntry{
 				{
 					ExcludedNamespaces: []wildcard.Wildcard{
@@ -437,6 +448,7 @@ var _ = Describe("Gatekeeper", func() {
 
 			By("Checking gatekeeper-controller-manager readiness", func() {
 				gkDeployment := &appsv1.Deployment{}
+
 				Eventually(func() (int32, error) {
 					return getDeploymentReadyReplicas(ctx, controllerManagerName, gkDeployment)
 				}, timeout, pollInterval).Should(Equal(test.DefaultDeployment.WebhookReplicas))
@@ -444,6 +456,7 @@ var _ = Describe("Gatekeeper", func() {
 
 			By("Checking gatekeeper-audit readiness", func() {
 				gkDeployment := &appsv1.Deployment{}
+
 				Eventually(func() (int32, error) {
 					return getDeploymentReadyReplicas(ctx, auditName, gkDeployment)
 				}, timeout, pollInterval).Should(Equal(test.DefaultDeployment.AuditReplicas))
@@ -451,6 +464,7 @@ var _ = Describe("Gatekeeper", func() {
 
 			By("Checking validatingWebhookConfiguration is deployed", func() {
 				validatingWebhookConfiguration := &admregv1.ValidatingWebhookConfiguration{}
+
 				Eventually(func() error {
 					return K8sClient.Get(ctx, validatingWebhookName, validatingWebhookConfiguration)
 				}, timeout, pollInterval).ShouldNot(HaveOccurred())
@@ -461,6 +475,7 @@ var _ = Describe("Gatekeeper", func() {
 
 			By("Checking mutatingWebhookConfiguration is deployed", func() {
 				mutatingWebhookConfiguration := &admregv1.MutatingWebhookConfiguration{}
+
 				Eventually(func() error {
 					return K8sClient.Get(ctx, mutatingWebhookName, mutatingWebhookConfiguration)
 				}, timeout, pollInterval).ShouldNot(HaveOccurred())
@@ -499,6 +514,7 @@ var _ = Describe("Gatekeeper", func() {
 				Expect(err).NotTo(HaveOccurred())
 				Expect(auditContainer.Image).To(Equal(auditImage))
 				Expect(auditContainer.ImagePullPolicy).To(Equal(auditImagePullPolicy))
+
 				webhookImage, webhookImagePullPolicy, err := getDefaultImage(controllers.WebhookFile)
 				Expect(err).NotTo(HaveOccurred())
 				Expect(webhookContainer.Image).To(Equal(webhookImage))
@@ -627,12 +643,9 @@ var _ = Describe("Gatekeeper", func() {
 				for k, v := range gatekeeper.Spec.PodAnnotations {
 					mergedAudit[k], mergedWebhook[k] = v, v
 				}
-				for k, v := range gatekeeper.Spec.Audit.PodAnnotations {
-					mergedAudit[k] = v
-				}
-				for k, v := range gatekeeper.Spec.Webhook.PodAnnotations {
-					mergedWebhook[k] = v
-				}
+
+				maps.Copy(mergedAudit, gatekeeper.Spec.Audit.PodAnnotations)
+				maps.Copy(mergedWebhook, gatekeeper.Spec.Webhook.PodAnnotations)
 
 				Expect(auditTemplate.Annotations).To(BeEquivalentTo(mergedAudit))
 				Expect(webhookTemplate.Annotations).To(BeEquivalentTo(mergedWebhook))
@@ -657,6 +670,7 @@ var _ = Describe("Gatekeeper", func() {
 
 			By("Checking ready replicas", func() {
 				gkDeployment := &appsv1.Deployment{}
+
 				Eventually(func() (int32, error) {
 					return getDeploymentReadyReplicas(ctx, controllerManagerName, gkDeployment)
 				}, timeout, pollInterval).Should(Equal(*gatekeeper.Spec.Webhook.Replicas))
@@ -760,12 +774,14 @@ var _ = Describe("Gatekeeper", func() {
 
 		It("Should have stable pods without restarts", func(ctx SpecContext) {
 			gatekeeper := emptyGatekeeper()
+
 			By("Creating Gatekeeper resource", func() {
 				Expect(K8sClient.Create(ctx, gatekeeper)).Should(Succeed())
 			})
 
 			By("Waiting for gatekeeper-controller-manager deployment to be ready", func() {
 				gkDeployment := &appsv1.Deployment{}
+
 				Eventually(func() (int32, error) {
 					return getDeploymentReadyReplicas(ctx, controllerManagerName, gkDeployment)
 				}, timeout, pollInterval).Should(Equal(test.DefaultDeployment.WebhookReplicas))
@@ -773,6 +789,7 @@ var _ = Describe("Gatekeeper", func() {
 
 			By("Waiting for gatekeeper-audit deployment to be ready", func() {
 				gkDeployment := &appsv1.Deployment{}
+
 				Eventually(func() (int32, error) {
 					return getDeploymentReadyReplicas(ctx, auditName, gkDeployment)
 				}, timeout, pollInterval).Should(Equal(test.DefaultDeployment.AuditReplicas))
@@ -789,6 +806,7 @@ var _ = Describe("Gatekeeper", func() {
 
 		It("Disables the ValidatingWebhookConfiguration", func(ctx SpecContext) {
 			gatekeeper := emptyGatekeeper()
+
 			By("Create Gatekeeper CR with validation disabled", func() {
 				webhookMode := v1alpha1.Disabled
 				gatekeeper.Spec.ValidatingWebhook = webhookMode
@@ -801,6 +819,7 @@ var _ = Describe("Gatekeeper", func() {
 
 		It("Enables then disables the ValidatingWebhookConfiguration", func(ctx SpecContext) {
 			gatekeeper := emptyGatekeeper()
+
 			By("First creating Gatekeeper CR with validation enabled", func() {
 				Expect(K8sClient.Create(ctx, gatekeeper)).Should(Succeed())
 				gatekeeperDeployments(ctx)
@@ -852,6 +871,7 @@ var _ = Describe("Gatekeeper", func() {
 			gatekeeper := emptyGatekeeper()
 			err := loadGatekeeperFromFile(gatekeeper, gatekeeperWithAllValuesFile)
 			Expect(err).ToNot(HaveOccurred())
+
 			webhookMode := v1alpha1.Enabled
 			gatekeeper.Spec.MutatingWebhook = webhookMode
 			Expect(K8sClient.Create(ctx, gatekeeper)).Should(Succeed())
@@ -884,6 +904,7 @@ var _ = Describe("Gatekeeper", func() {
 			})
 
 			By("Updating the mutating webhook namespaceSelector")
+
 			gatekeeper.Spec.MutatingWebhookConfig.NamespaceSelector.MatchExpressions[0].Key = "foo.sh/really-enabled"
 			Expect(K8sClient.Update(ctx, gatekeeper)).Should(Succeed())
 
@@ -895,6 +916,7 @@ var _ = Describe("Gatekeeper", func() {
 
 		It("Disables Gatekeeper mutation", func(ctx SpecContext) {
 			gatekeeper := emptyGatekeeper()
+
 			By("Create Gatekeeper CR with mutation disabled", func() {
 				webhookMode := v1alpha1.Disabled
 				gatekeeper.Spec.MutatingWebhook = webhookMode
@@ -905,6 +927,7 @@ var _ = Describe("Gatekeeper", func() {
 
 		It("Enables then disables Gatekeeper mutation", func(ctx SpecContext) {
 			gatekeeper := emptyGatekeeper()
+
 			By("First creating Gatekeeper CR with mutation enabled", func() {
 				webhookMode := v1alpha1.Enabled
 				gatekeeper.Spec.MutatingWebhook = webhookMode
@@ -947,7 +970,9 @@ var _ = Describe("Gatekeeper", func() {
 			gatekeeperDeployments(ctx)
 
 			By("ValidatingWebhookConfiguration Rules should have 4 operations")
+
 			validatingWebhookConfiguration := &admregv1.ValidatingWebhookConfiguration{}
+
 			Eventually(func(g Gomega) {
 				err := K8sClient.Get(ctx, validatingWebhookName, validatingWebhookConfiguration)
 				g.Expect(err).ShouldNot(HaveOccurred())
@@ -957,7 +982,9 @@ var _ = Describe("Gatekeeper", func() {
 			}, timeout, pollInterval).Should(Succeed())
 
 			By("MutatingWebhookConfiguration Rules should have 4 operations")
+
 			mutatingWebhookConfiguration := &admregv1.MutatingWebhookConfiguration{}
+
 			Eventually(func(g Gomega) {
 				err := K8sClient.Get(ctx, mutatingWebhookName, mutatingWebhookConfiguration)
 				g.Expect(err).ShouldNot(HaveOccurred())
@@ -1057,6 +1084,7 @@ var _ = Describe("Gatekeeper", func() {
 				if err != nil {
 					return err
 				}
+
 				gatekeeper.Spec.Webhook.TimeoutSeconds = 20
 				gatekeeper.Spec.MutatingWebhookConfig.TimeoutSeconds = 12
 
@@ -1128,7 +1156,9 @@ var _ = Describe("Gatekeeper", func() {
 			gatekeeperDeployments(ctx)
 
 			By("ValidatingWebhookConfiguration should have custom rules, not operations")
+
 			validatingWebhookConfiguration := &admregv1.ValidatingWebhookConfiguration{}
+
 			Eventually(func(g Gomega) {
 				err := K8sClient.Get(ctx, validatingWebhookName, validatingWebhookConfiguration)
 				g.Expect(err).ShouldNot(HaveOccurred())
@@ -1143,7 +1173,9 @@ var _ = Describe("Gatekeeper", func() {
 			}, timeout, pollInterval).Should(Succeed())
 
 			By("MutatingWebhookConfiguration should have custom rules, not operations")
+
 			mutatingWebhookConfiguration := &admregv1.MutatingWebhookConfiguration{}
+
 			Eventually(func(g Gomega) {
 				err := K8sClient.Get(ctx, mutatingWebhookName, mutatingWebhookConfiguration)
 				g.Expect(err).ShouldNot(HaveOccurred())
@@ -1163,6 +1195,7 @@ var _ = Describe("Gatekeeper", func() {
 				if err != nil {
 					return err
 				}
+
 				gatekeeper.Spec.Webhook.Rules = []admregv1.RuleWithOperations{
 					{
 						Operations: []admregv1.OperationType{"DELETE"},
@@ -1223,7 +1256,9 @@ var _ = Describe("Gatekeeper", func() {
 			gatekeeperDeployments(ctx)
 
 			By("ValidatingWebhookConfiguration should have custom rules from spec.webhook")
+
 			validatingWebhookConfiguration := &admregv1.ValidatingWebhookConfiguration{}
+
 			Eventually(func(g Gomega) {
 				err := K8sClient.Get(ctx, validatingWebhookName, validatingWebhookConfiguration)
 				g.Expect(err).ShouldNot(HaveOccurred())
@@ -1238,7 +1273,9 @@ var _ = Describe("Gatekeeper", func() {
 			}, timeout, pollInterval).Should(Succeed())
 
 			By("MutatingWebhookConfiguration should NOT have rules from spec.webhook, should use default operations")
+
 			mutatingWebhookConfiguration := &admregv1.MutatingWebhookConfiguration{}
+
 			Eventually(func(g Gomega) {
 				err := K8sClient.Get(ctx, mutatingWebhookName, mutatingWebhookConfiguration)
 				g.Expect(err).ShouldNot(HaveOccurred())
@@ -1262,6 +1299,7 @@ var _ = Describe("Gatekeeper", func() {
 			It("Should have Openshift Cert Annotation in the Service Resource"+
 				" and not have Cert Secret in the Gatekeeper Namespace", func(ctx SpecContext) {
 				gatekeeper := emptyGatekeeper()
+
 				By("First creating Gatekeeper CR", func() {
 					Expect(K8sClient.Create(ctx, gatekeeper)).Should(Succeed())
 				})
@@ -1684,7 +1722,7 @@ func loadGatekeeperFromFile(gatekeeper *v1alpha1.Gatekeeper, fileName string) er
 	return decodeYAML(f, gatekeeper)
 }
 
-func decodeYAML(r io.Reader, obj interface{}) error {
+func decodeYAML(r io.Reader, obj any) error {
 	decoder := yaml.NewYAMLToJSONDecoder(r)
 
 	return decoder.Decode(obj)
@@ -1733,18 +1771,22 @@ func checkPodsStable(ctx SpecContext, labelSelector, deploymentName string) {
 			if _, ok := restartMap[pod.Name]; !ok {
 				restartMap[pod.Name] = map[string]int32{}
 			}
+
 			if pod.Status.Phase == corev1.PodSucceeded {
 				continue
 			}
+
 			g.Expect(pod.Status.Phase).To(Equal(corev1.PodRunning), "Pod %s should be Running", pod.Name)
 			g.Expect(pod.Status.ContainerStatuses).NotTo(
 				BeEmpty(),
 				"Pod %s should have at least one container status", pod.Name,
 			)
+
 			containerStatus := pod.Status.ContainerStatuses[0]
 			if _, ok := restartMap[pod.Name][containerStatus.Name]; !ok {
 				restartMap[pod.Name][containerStatus.Name] = containerStatus.RestartCount
 			}
+
 			expectedRestarts := restartMap[pod.Name][containerStatus.Name]
 			g.Expect(containerStatus.State.Waiting).To(BeNil(), "Pod %s should not be in waiting state", pod.Name)
 			g.Expect(containerStatus.RestartCount).To(
@@ -1783,7 +1825,7 @@ func getDefaultImage(file string) (image string, imagePullPolicy corev1.PullPoli
 		return "", "", fmt.Errorf("Containers not found")
 	}
 
-	image, found, err = unstructured.NestedString(containers[0].(map[string]interface{}), "image")
+	image, found, err = unstructured.NestedString(containers[0].(map[string]any), "image")
 	if err != nil {
 		return "", "", err
 	}
@@ -1792,7 +1834,7 @@ func getDefaultImage(file string) (image string, imagePullPolicy corev1.PullPoli
 		return "", "", fmt.Errorf("Image not found")
 	}
 
-	policy, found, err := unstructured.NestedString(containers[0].(map[string]interface{}), "imagePullPolicy")
+	policy, found, err := unstructured.NestedString(containers[0].(map[string]any), "imagePullPolicy")
 	if err != nil {
 		return "", "", err
 	}

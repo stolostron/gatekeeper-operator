@@ -87,11 +87,14 @@ linters:
       - std-error-handling
     rules:
       - linters:
-          - golint
           - revive
           - staticcheck
         path: _test\.go$|^test/
         source: \. "github\.com/onsi/(gomega|ginkgo)(/v[0-9])?"
+      - linters:
+          - staticcheck
+        path: _test\.go$|^test/
+        source: github\.com/stolostron/governance-policy-framework/test/common
       - linters:
           - forbidgo
         path: _test\.go$|^test/

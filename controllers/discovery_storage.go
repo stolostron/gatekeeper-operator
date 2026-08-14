@@ -21,7 +21,7 @@ type DiscoveryStorage struct {
 	Log                    logr.Logger
 }
 
-func (r *DiscoveryStorage) getSyncOnlys(constraintMatchKinds []interface{}) (
+func (r *DiscoveryStorage) getSyncOnlys(constraintMatchKinds []any) (
 	[]v1alpha1.SyncOnlyEntry, error,
 ) {
 	syncOnlys := []v1alpha1.SyncOnlyEntry{}
@@ -29,17 +29,17 @@ func (r *DiscoveryStorage) getSyncOnlys(constraintMatchKinds []interface{}) (
 	var finalErr error
 
 	for _, match := range constraintMatchKinds {
-		newKind, ok := match.(map[string]interface{})
+		newKind, ok := match.(map[string]any)
 		if !ok {
 			continue
 		}
 
-		apiGroups, ok := newKind["apiGroups"].([]interface{})
+		apiGroups, ok := newKind["apiGroups"].([]any)
 		if !ok {
 			continue
 		}
 
-		kindsInKinds, ok := newKind["kinds"].([]interface{})
+		kindsInKinds, ok := newKind["kinds"].([]any)
 		if !ok {
 			continue
 		}
