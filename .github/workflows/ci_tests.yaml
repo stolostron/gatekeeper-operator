@@ -60,8 +60,8 @@ jobs:
       - name: Verify containerfiles are synced
         run: |
           diff \
-            <(sed -E 's/FROM .*go([0-9.]+).* AS builder/FROM \1 AS builder/' build/Dockerfile) \
-            <(sed -E 's/FROM .*rhel_[0-9]+_([0-9.]+).* AS builder/FROM \1 AS builder/;s/FROM (.*\/ubi-minimal:latest).*/FROM \1/' build/Dockerfile.rhtap)
+            <(sed -E 's/FROM .*:go([0-9.]+).* AS builder/FROM \1 AS builder/' build/Dockerfile) \
+            <(sed -E 's/FROM .*:golang-builder-v([0-9.]+).* AS builder/FROM \1 AS builder/;s/FROM (.*\/ubi-minimal:latest).*/FROM \1/' build/Dockerfile.rhtap)
 
       - name: Unit and Integration Tests
         run: |
