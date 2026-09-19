@@ -70,7 +70,7 @@ func (r *GatekeeperReconciler) handleCPSController(ctx context.Context,
 		Cache: cacheRuntime.Options{
 			ByObject: map[client.Object]cacheRuntime.ByObject{
 				&gkv1beta1.ConstraintPodStatus{}: {
-					Transform: func(obj interface{}) (interface{}, error) {
+					Transform: func(obj any) (any, error) {
 						constraintStatus := obj.(*gkv1beta1.ConstraintPodStatus)
 						// Only cache fields that are utilized by the controllers.
 						guttedObj := &gkv1beta1.ConstraintPodStatus{
@@ -115,10 +115,9 @@ func (r *GatekeeperReconciler) handleCPSController(ctx context.Context,
 	}
 
 	r.isCPSCtrlRunning = true
-	r.subControllerWait.Add(1)
 
 	// Use another go routine for the ConstraintPodStatus controller
-	go func() {
+	r.subControllerWait.Go(func() {
 		err := cpsMgr.Start(cpsCtrlCtx)
 		if err != nil {
 			setupLog.Error(err, "A problem running ConstraintPodStatus manager. Triggering a reconcile to restart it.")
@@ -134,18 +133,16 @@ func (r *GatekeeperReconciler) handleCPSController(ctx context.Context,
 		// If the error happens when cpsMgr start, it will retry to start cpsMgr
 		r.ManualReconcileTrigger <- event.GenericEvent{
 			Object: &unstructured.Unstructured{
-				Object: map[string]interface{}{
+				Object: map[string]any{
 					"apiVersion": operatorv1alpha1.GroupVersion.String(),
 					"kind":       "Gatekeeper",
-					"metadata": map[string]interface{}{
+					"metadata": map[string]any{
 						"name": defaultGatekeeperCrName,
 					},
 				},
 			},
 		}
-
-		r.subControllerWait.Done()
-	}()
+	})
 
 	return nil
 }
