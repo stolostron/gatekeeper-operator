@@ -262,10 +262,9 @@ func (r *GatekeeperReconciler) handleConfigController(ctx context.Context) error
 	}
 
 	r.isConfigCtrlRunning = true
-	r.subControllerWait.Add(1)
 
 	// Use another go routine for the Config controller
-	go func() {
+	r.subControllerWait.Go(func() {
 		err := configMgr.Start(configCtrlCtx)
 		if err != nil {
 			setupLog.Error(err, "A problem running Config manager. Triggering a reconcile to restart it.")
@@ -277,18 +276,16 @@ func (r *GatekeeperReconciler) handleConfigController(ctx context.Context) error
 
 		r.ManualReconcileTrigger <- event.GenericEvent{
 			Object: &unstructured.Unstructured{
-				Object: map[string]interface{}{
+				Object: map[string]any{
 					"apiVersion": v1alpha1.GroupVersion.String(),
 					"kind":       "Gatekeeper",
-					"metadata": map[string]interface{}{
+					"metadata": map[string]any{
 						"name": defaultGatekeeperCrName,
 					},
 				},
 			},
 		}
-
-		r.subControllerWait.Done()
-	}()
+	})
 
 	return nil
 }

@@ -23,6 +23,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+// Mode specifies whether the Gatekeeper is enabled or disabled.
 // +kubebuilder:validation:Enum:=Enabled;Disabled
 type Mode string
 
@@ -43,7 +44,7 @@ func (m Mode) ToBoolString() string {
 	return "false"
 }
 
-// LogLevel specifies the verbosity of the Pod logs. The supported parameter values are DEBUG, INFO,
+// LogLevelMode specifies the verbosity of the Pod logs. The supported parameter values are DEBUG, INFO,
 // WARNING, or ERROR. The parameter value DEBUG produces the most logs, while ERROR produces the
 // least. The default value is INFO.
 //
@@ -103,6 +104,7 @@ type CommonConfig struct {
 	ContainerArguments []Arg `json:"containerArguments,omitempty"`
 }
 
+// AuditFromCacheMode specifies whether audit uses cached data or not.
 // +kubebuilder:validation:Enum:=Enabled;Disabled;Automatic
 type AuditFromCacheMode string
 
@@ -165,6 +167,7 @@ type AuditConfig struct {
 	AuditEventsInvolvedNamespace *Mode `json:"auditEventsInvolvedNamespace,omitempty"`
 }
 
+// OperationType specifies the webhook operation types.
 // +kubebuilder:validation:Enum:=CONNECT;CREATE;UPDATE;DELETE;*
 type OperationType admregv1.OperationType
 

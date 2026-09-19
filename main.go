@@ -81,6 +81,7 @@ func main() {
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&opts)))
 
 	ctrl.Log.WithName("Gatekeeper Operator version").Info(fmt.Sprintf("%#v", version.Get()))
+
 	ctx := ctrl.SetupSignalHandler()
 
 	validateName := true
