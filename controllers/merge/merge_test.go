@@ -48,11 +48,11 @@ func TestRetainWebhookConfigurationFields(t *testing.T) {
 		for _, kind := range webhookConfigKinds {
 			t.Run(testName, func(t *testing.T) {
 				desiredObj := &unstructured.Unstructured{
-					Object: map[string]interface{}{
+					Object: map[string]any{
 						"kind": kind,
-						"webhooks": []interface{}{
-							map[string]interface{}{
-								"clientConfig": map[string]interface{}{
+						"webhooks": []any{
+							map[string]any{
+								"clientConfig": map[string]any{
 									"caBundle": testCase.desiredCABundle,
 								},
 							},
@@ -60,11 +60,11 @@ func TestRetainWebhookConfigurationFields(t *testing.T) {
 					},
 				}
 				clusterObj := &unstructured.Unstructured{
-					Object: map[string]interface{}{
+					Object: map[string]any{
 						"kind": kind,
-						"webhooks": []interface{}{
-							map[string]interface{}{
-								"clientConfig": map[string]interface{}{
+						"webhooks": []any{
+							map[string]any{
+								"clientConfig": map[string]any{
 									"caBundle": testCase.clusterCABundle,
 								},
 							},
@@ -81,7 +81,7 @@ func TestRetainWebhookConfigurationFields(t *testing.T) {
 				g.Expect(desiredWebhooks).ToNot(BeNil())
 
 				desiredCABundle, found, err := unstructured.NestedString(
-					desiredWebhooks[0].(map[string]interface{}), "clientConfig", "caBundle")
+					desiredWebhooks[0].(map[string]any), "clientConfig", "caBundle")
 				g.Expect(err).ToNot(HaveOccurred())
 				g.Expect(found).To(BeTrue())
 				g.Expect(desiredCABundle).To(Equal(testCase.clusterCABundle))
@@ -94,32 +94,32 @@ func TestRetainServiceAccountFields(t *testing.T) {
 	g := NewWithT(t)
 
 	testCases := map[string]struct {
-		clusterSecretsList []interface{}
-		desiredSecretsList []interface{}
+		clusterSecretsList []any
+		desiredSecretsList []any
 	}{
 		"ServiceAccount has no secrets": {
 			clusterSecretsList: nil,
 			desiredSecretsList: nil,
 		},
 		"ServiceAccount has empty secrets": {
-			clusterSecretsList: []interface{}{},
+			clusterSecretsList: []any{},
 			desiredSecretsList: nil,
 		},
 		"ServiceAccount has secrets": {
-			clusterSecretsList: []interface{}{"secret1", "secret2"},
-			desiredSecretsList: []interface{}{"secret1", "secret2"},
+			clusterSecretsList: []any{"secret1", "secret2"},
+			desiredSecretsList: []any{"secret1", "secret2"},
 		},
 	}
 
 	for testName, testCase := range testCases {
 		t.Run(testName, func(t *testing.T) {
 			desiredObj := &unstructured.Unstructured{
-				Object: map[string]interface{}{
+				Object: map[string]any{
 					"kind": "ServiceAccount",
 				},
 			}
 			clusterObj := &unstructured.Unstructured{
-				Object: map[string]interface{}{
+				Object: map[string]any{
 					"kind":    "ServiceAccount",
 					"secrets": testCase.clusterSecretsList,
 				},

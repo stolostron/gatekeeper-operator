@@ -100,6 +100,7 @@ var _ = BeforeSuite(func(ctx SpecContext) {
 	logf.SetLogger(zap.New(zap.WriteTo(GinkgoWriter), zap.UseDevMode(true)))
 
 	By("bootstrapping test environment")
+
 	testEnv = &envtest.Environment{
 		CRDDirectoryPaths: []string{filepath.Join("..", "config", "crd", "bases")},
 	}
@@ -165,6 +166,7 @@ var _ = AfterSuite(func(ctx SpecContext) {
 		err := deleteAffinityPod(ctx)
 		Expect(err).ToNot(HaveOccurred())
 	}
+
 	err := testEnv.Stop()
 	Expect(err).NotTo(HaveOccurred())
 })

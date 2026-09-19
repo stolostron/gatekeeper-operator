@@ -71,8 +71,8 @@ func (r *ConstraintPodStatusReconciler) SetupWithManager(mgr ctrl.Manager) error
 		Complete(r)
 }
 
-// When spec.audit.auditFromCache is set to Automatic,
-// Reconcile analyzes the constraint associated with the ConstraintPodStatus reconcile request.
+// Reconcile analyzes the constraint associated with the ConstraintPodStatus reconcile request
+// when spec.audit.auditFromCache is set to Automatic.
 // The kinds used in the constraint's match configuration is used to configure the syncOnly option.
 func (r *ConstraintPodStatusReconciler) Reconcile(ctx context.Context,
 	request reconcile.Request,

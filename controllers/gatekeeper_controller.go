@@ -20,6 +20,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"maps"
 	"os"
 	"slices"
 	"strconv"
@@ -68,7 +69,7 @@ const (
 	managerContainer                  = "manager"
 	OpenshiftSecretName               = "gatekeeper-webhook-server-cert-ocp"
 
-	// Container arguments
+	// LogLevelArg specifies the container argument for setting the log level.
 	LogLevelArg                         = "--log-level"
 	AuditIntervalArg                    = "--audit-interval"
 	ConstraintViolationLimitArg         = "--constraint-violations-limit"
@@ -609,7 +610,7 @@ var commonSpecOverridesFn = []func(*unstructured.Unstructured, operatorv1alpha1.
 	setEnableMutation,
 }
 
-var commonContainerOverridesFn = []func(map[string]interface{}, operatorv1alpha1.GatekeeperSpec) error{
+var commonContainerOverridesFn = []func(map[string]any, operatorv1alpha1.GatekeeperSpec) error{
 	setImage,
 }
 
@@ -894,7 +895,7 @@ func webhookConfigurationOverrides(
 	return nil
 }
 
-type matchRuleFunc func(map[string]interface{}) (map[string]interface{}, bool, error)
+type matchRuleFunc func(map[string]any) (map[string]any, bool, error)
 
 func removeMutatingRBACRules(obj *unstructured.Unstructured) error {
 	return removeRBACRules(
@@ -914,7 +915,7 @@ func removeRBACRules(obj *unstructured.Unstructured, matchRuleFns []matchRuleFun
 
 	for _, f := range matchRuleFns {
 		for i, rule := range rules {
-			r := rule.(map[string]interface{})
+			r := rule.(map[string]any)
 
 			newRule, found, err := f(r)
 			if err != nil {
@@ -940,7 +941,7 @@ func removeRBACRules(obj *unstructured.Unstructured, matchRuleFns []matchRuleFun
 	return nil
 }
 
-func matchGatekeeperMutatingRBACRule(rule map[string]interface{}) (map[string]interface{}, bool, error) {
+func matchGatekeeperMutatingRBACRule(rule map[string]any) (map[string]any, bool, error) {
 	apiGroups, found, err := unstructured.NestedSlice(rule, "apiGroups")
 	if !found || err != nil {
 		return nil, false, errors.Wrapf(err, "Failed to retrieve apiGroups from rule")
@@ -951,7 +952,7 @@ func matchGatekeeperMutatingRBACRule(rule map[string]interface{}) (map[string]in
 			return nil, true, nil
 		}
 
-		rule["apiGroups"] = slices.DeleteFunc(apiGroups, func(apiGroup interface{}) bool {
+		rule["apiGroups"] = slices.DeleteFunc(apiGroups, func(apiGroup any) bool {
 			return apiGroup == "mutations.gatekeeper.sh"
 		})
 
@@ -961,7 +962,7 @@ func matchGatekeeperMutatingRBACRule(rule map[string]interface{}) (map[string]in
 	return nil, false, nil
 }
 
-func matchMutatingWebhookConfigurationRBACRule(rule map[string]interface{}) (map[string]interface{}, bool, error) {
+func matchMutatingWebhookConfigurationRBACRule(rule map[string]any) (map[string]any, bool, error) {
 	apiGroups, found, err := unstructured.NestedSlice(rule, "apiGroups")
 	if !found || err != nil {
 		return nil, false, errors.Wrapf(err, "Failed to retrieve apiGroups from rule")
@@ -978,7 +979,7 @@ func matchMutatingWebhookConfigurationRBACRule(rule map[string]interface{}) (map
 			return nil, true, nil
 		}
 
-		rule["resources"] = slices.DeleteFunc(resources, func(resource interface{}) bool {
+		rule["resources"] = slices.DeleteFunc(resources, func(resource any) bool {
 			return resource == "mutatingwebhookconfigurations"
 		})
 
@@ -990,7 +991,7 @@ func matchMutatingWebhookConfigurationRBACRule(rule map[string]interface{}) (map
 
 func containerOverrides(obj *unstructured.Unstructured, spec operatorv1alpha1.GatekeeperSpec) error {
 	for _, f := range commonContainerOverridesFn {
-		err := setContainerAttrWithFn(obj, func(container map[string]interface{}) error {
+		err := setContainerAttrWithFn(obj, func(container map[string]any) error {
 			return f(container, spec)
 		})
 		if err != nil {
@@ -1013,7 +1014,7 @@ func setCommonConfig(log logr.Logger, obj *unstructured.Unstructured, config ope
 
 	// Set container resources
 	if config.Resources != nil {
-		err := setContainerAttrWithFn(obj, func(container map[string]interface{}) error {
+		err := setContainerAttrWithFn(obj, func(container map[string]any) error {
 			if err := unstructured.SetNestedField(container, util.ToMap(config.Resources), "resources"); err != nil {
 				return errors.Wrapf(err, "Failed to set container resources")
 			}
@@ -1082,7 +1083,7 @@ func openShiftDeploymentOverrides(obj *unstructured.Unstructured) error {
 	}
 
 	for i := range containers {
-		container, ok := containers[i].(map[string]interface{})
+		container, ok := containers[i].(map[string]any)
 		if !ok {
 			continue
 		}
@@ -1129,7 +1130,7 @@ func openShiftDeploymentOverrides(obj *unstructured.Unstructured) error {
 		return errors.Wrapf(err, volumeErrMsg)
 	}
 
-	vol, ok := volumes[0].(map[string]interface{})
+	vol, ok := volumes[0].(map[string]any)
 	if !ok {
 		return errors.Wrapf(err, "Failed to parse volumes")
 	}
@@ -1276,7 +1277,7 @@ func setEnableMutation(obj *unstructured.Unstructured, spec operatorv1alpha1.Gat
 }
 
 func setWebhookConfigurationWithFn(
-	obj *unstructured.Unstructured, webhookName string, webhookFn func(map[string]interface{}) error,
+	obj *unstructured.Unstructured, webhookName string, webhookFn func(map[string]any) error,
 ) error {
 	webhooks, found, err := unstructured.NestedSlice(obj.Object, "webhooks")
 	if err != nil || !found {
@@ -1284,7 +1285,7 @@ func setWebhookConfigurationWithFn(
 	}
 
 	for _, w := range webhooks {
-		webhook := w.(map[string]interface{})
+		webhook := w.(map[string]any)
 		if webhook["name"] == webhookName {
 			if err := webhookFn(webhook); err != nil {
 				return err
@@ -1302,7 +1303,7 @@ func setWebhookConfigurationWithFn(
 func setFailurePolicy(
 	obj *unstructured.Unstructured, failurePolicy admregv1.FailurePolicyType, webhookName string,
 ) error {
-	setFailurePolicyFn := func(webhook map[string]interface{}) error {
+	setFailurePolicyFn := func(webhook map[string]any) error {
 		if err := unstructured.SetNestedField(webhook, string(failurePolicy), "failurePolicy"); err != nil {
 			return errors.Wrapf(err, "Failed to set webhook failure policy")
 		}
@@ -1319,14 +1320,14 @@ func setNamespaceSelector(
 	// If no namespaceSelector is provided, override usage of the default Gatekeeper namespace.
 	if namespaceSelector == nil {
 		// Don't perform any overrides if no overrides are set and the default namespaceSelector can't be parsed
-		webhooks, ok := obj.Object["webhooks"].([]interface{})
+		webhooks, ok := obj.Object["webhooks"].([]any)
 		if !ok || len(webhooks) == 0 {
 			// Return nil since an invalid object is unrecoverable
 			return nil
 		}
 
 		for _, webhook := range webhooks {
-			webhookMap, ok := webhook.(map[string]interface{})
+			webhookMap, ok := webhook.(map[string]any)
 			if !ok {
 				continue
 			}
@@ -1336,7 +1337,7 @@ func setNamespaceSelector(
 				continue
 			}
 
-			namespaceSelectorUntyped, ok := webhookMap["namespaceSelector"].(map[string]interface{})
+			namespaceSelectorUntyped, ok := webhookMap["namespaceSelector"].(map[string]any)
 			if !ok {
 				// Return nil since an invalid namespaceSelector is unrecoverable
 				return nil
@@ -1375,7 +1376,7 @@ func setNamespaceSelector(
 		return nil
 	}
 
-	setNamespaceSelectorFn := func(webhook map[string]interface{}) error {
+	setNamespaceSelectorFn := func(webhook map[string]any) error {
 		if err := unstructured.SetNestedField(webhook, util.ToMap(namespaceSelector), "namespaceSelector"); err != nil {
 			return errors.Wrapf(err, "Failed to set webhook namespace selector")
 		}
@@ -1394,19 +1395,19 @@ func setOperations(
 		return nil
 	}
 
-	setOperationsFn := func(webhook map[string]interface{}) error {
-		rules := webhook["rules"].([]interface{})
+	setOperationsFn := func(webhook map[string]any) error {
+		rules := webhook["rules"].([]any)
 		if len(rules) == 0 {
 			return nil
 		}
 
-		converted := make([]interface{}, 0, len(operations))
+		converted := make([]any, 0, len(operations))
 		for _, op := range operations {
 			converted = append(converted, string(op))
 		}
 
 		for i, r := range rules {
-			firstRuleObj := r.(map[string]interface{})
+			firstRuleObj := r.(map[string]any)
 			firstRuleObj["operations"] = converted
 			rules[i] = firstRuleObj
 		}
@@ -1429,8 +1430,8 @@ func setRules(
 		return nil
 	}
 
-	setRulesFn := func(webhook map[string]interface{}) error {
-		converted := make([]interface{}, 0, len(rules))
+	setRulesFn := func(webhook map[string]any) error {
+		converted := make([]any, 0, len(rules))
 		for _, rule := range rules {
 			converted = append(converted, util.ToMap(rule))
 		}
@@ -1448,7 +1449,7 @@ func setRules(
 func setTimeoutSeconds(
 	obj *unstructured.Unstructured, timeoutSeconds int32, webhookName string,
 ) error {
-	setTimeoutSecondsFn := func(webhook map[string]interface{}) error {
+	setTimeoutSecondsFn := func(webhook map[string]any) error {
 		webhook["timeoutSeconds"] = int64(timeoutSeconds)
 
 		return nil
@@ -1507,13 +1508,8 @@ func setPodAnnotations(obj *unstructured.Unstructured, spec operatorv1alpha1.Gat
 
 	mergedAnnotations := make(map[string]string)
 
-	for k, v := range globalAnnotations {
-		mergedAnnotations[k] = v
-	}
-
-	for k, v := range componentAnnotations {
-		mergedAnnotations[k] = v
-	}
+	maps.Copy(mergedAnnotations, globalAnnotations)
+	maps.Copy(mergedAnnotations, componentAnnotations)
 
 	err := unstructured.SetNestedStringMap(obj.Object, mergedAnnotations, "spec", "template", "metadata", "annotations")
 	if err != nil {
@@ -1525,7 +1521,7 @@ func setPodAnnotations(obj *unstructured.Unstructured, spec operatorv1alpha1.Gat
 
 func setTolerations(obj *unstructured.Unstructured, spec operatorv1alpha1.GatekeeperSpec) error {
 	if spec.Tolerations != nil {
-		tolerations := make([]interface{}, len(spec.Tolerations))
+		tolerations := make([]any, len(spec.Tolerations))
 		for i, t := range spec.Tolerations {
 			tolerations[i] = util.ToMap(t)
 		}
@@ -1541,7 +1537,7 @@ func setTolerations(obj *unstructured.Unstructured, spec operatorv1alpha1.Gateke
 
 // Container specific setters
 
-func setImage(container map[string]interface{}, spec operatorv1alpha1.GatekeeperSpec) error {
+func setImage(container map[string]any, spec operatorv1alpha1.GatekeeperSpec) error {
 	image := os.Getenv(GatekeeperImageEnvVar)
 	if image != "" {
 		if err := unstructured.SetNestedField(container, image, "image"); err != nil {
@@ -1565,14 +1561,14 @@ func setImage(container map[string]interface{}, spec operatorv1alpha1.Gatekeeper
 	return nil
 }
 
-func setContainerAttrWithFn(obj *unstructured.Unstructured, containerFn func(map[string]interface{}) error) error {
+func setContainerAttrWithFn(obj *unstructured.Unstructured, containerFn func(map[string]any) error) error {
 	containers, found, err := unstructured.NestedSlice(obj.Object, "spec", "template", "spec", "containers")
 	if err != nil || !found {
 		return errors.Wrapf(err, "Failed to retrieve containers")
 	}
 
 	for _, c := range containers {
-		container := c.(map[string]interface{})
+		container := c.(map[string]any)
 		if name, found, err := unstructured.NestedString(container, "name"); err != nil || !found {
 			return errors.Wrapf(err, "Unable to retrieve container: %s", name)
 		} else if name == managerContainer {
@@ -1596,7 +1592,7 @@ func setContainerAttrWithFn(obj *unstructured.Unstructured, containerFn func(map
 func updateContainerArg(
 	obj *unstructured.Unstructured, argName string, argValue string, remove bool,
 ) error {
-	return setContainerAttrWithFn(obj, func(container map[string]interface{}) error {
+	return setContainerAttrWithFn(obj, func(container map[string]any) error {
 		args, found, err := unstructured.NestedStringSlice(container, "args")
 		if !found || err != nil {
 			return errors.Wrapf(err, "Unable to retrieve container arguments for: %s", managerContainer)
@@ -1677,7 +1673,7 @@ func setClientConfigNamespace(obj *unstructured.Unstructured, asset, namespace s
 	}
 
 	for _, w := range webhooks {
-		webhook := w.(map[string]interface{})
+		webhook := w.(map[string]any)
 		if err := unstructured.SetNestedField(webhook, namespace, "clientConfig", "service", "namespace"); err != nil {
 			return errors.Wrapf(err, "Failed to set webhook clientConfig.service.namespace")
 		}
@@ -1709,7 +1705,7 @@ func setRoleBindingSubjectNamespace(obj *unstructured.Unstructured, asset, names
 	}
 
 	for _, s := range subjects {
-		subject := s.(map[string]interface{})
+		subject := s.(map[string]any)
 		if err := unstructured.SetNestedField(subject, namespace, "namespace"); err != nil {
 			return errors.Wrapf(err, "Failed to set namespace for rolebinding subject")
 		}
