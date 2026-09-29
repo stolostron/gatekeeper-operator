@@ -1,17 +1,15 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "schedule": ["* 0-9 1-7,15-21,29-31 * 1"],
   "timezone": "America/New_York",
-  "schedule": [
-    "* 0-9 1-7,15-21 * 1"
-  ],
+  "updateNotScheduled": true,
+  "commitMessageSuffix": "({{{baseBranch}}})",
   "kustomize": {
     "enabled": false
   },
   "dockerfile": {
     "managerFilePatterns": ["build/*Dockerfile.rhtap"],
-    "ignorePaths": [
-      "**/Dockerfile"
-    ]
+    "ignorePaths": ["**/Dockerfile"]
   },
   "gomod": {
     "packageRules": [
@@ -22,7 +20,8 @@
     ]
   },
   "vulnerabilityAlerts": {
-    "enabled": true
+    "enabled": true,
+    "commitMessageSuffix": "[SECURITY] ({{{baseBranch}}})"
   },
   "osvVulnerabilityAlerts": true,
   "packageRules": [
@@ -44,11 +43,7 @@
     },
     {
       "matchManagers": ["gomod"],
-      "enabled": false,
-      "vulnerabilityAlerts": {
-        "enabled": true
-      },
-      "osvVulnerabilityAlerts": true
+      "enabled": false
     }
   ]
 }
