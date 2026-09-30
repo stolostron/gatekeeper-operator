@@ -2214,7 +2214,7 @@ spec:
         env:
         - name: RELATED_IMAGE_GATEKEEPER
           value: quay.io/gatekeeper/gatekeeper:v3.21.1
-        image: quay.io/gatekeeper/gatekeeper-operator:v3.21.0
+        image: quay.io/gatekeeper/gatekeeper-operator:v3.21.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
