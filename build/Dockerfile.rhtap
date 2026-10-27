@@ -1,5 +1,5 @@
 # Build the manager binary
-FROM registry.redhat.io/openshift/golang-builder:golang-builder-v1.26-rhel9@sha256:7e9c3b1b1d35bfc006b18fc5fdff7e0db0ab3136dbba77c2b7f4bd933c0a3235 AS builder
+FROM registry.redhat.io/openshift/golang-builder:golang-builder-v1.26-rhel9@sha256:cdb2b291b842dc836be849d735d47a80c13a910bdd61a95933167bbaff6b8bc3 AS builder
 
 ARG GOOS
 ARG GOARCH
@@ -23,7 +23,7 @@ COPY pkg/ pkg/
 RUN CGO_ENABLED=1 GOOS=${GOOS} GOARCH=${GOARCH} go build -mod=readonly -a -ldflags "${LDFLAGS}" -o manager main.go
 
 # Copy to base image
-FROM registry.access.redhat.com/ubi9/ubi-minimal:latest@sha256:1d7c5517a4a1a8e2688620b39ee980e82505ca1ab7ae5541b5463120ae9b3897
+FROM registry.access.redhat.com/ubi9/ubi-minimal:latest@sha256:6f3a78179e0b30b930a186e7f68a4af52e51bb82406c9653be10bddd624e40f5
 WORKDIR /
 COPY --from=builder /workspace/manager .
 RUN mkdir licenses/
