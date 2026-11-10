@@ -8,12 +8,12 @@ metadata:
     build.appstudio.redhat.com/target_branch: '{{target_branch}}'
     pipelinesascode.tekton.dev/cancel-in-progress: "false"
     pipelinesascode.tekton.dev/max-keep-runs: "3"
-    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "release-3.21" && (".tekton/gatekeeper-operator-[!b]*.yaml".pathChanged() ||  "build/Dockerfile*".pathChanged() || "go.{mod,sum}".pathChanged() ||  "main.go".pathChanged() || "{api,pkg,controllers}/***".pathChanged())
+    pipelinesascode.tekton.dev/on-cel-expression: event == "push" && target_branch == "release-3.23" && (".tekton/gatekeeper-operator-[!b]*.yaml".pathChanged() ||  "build/Dockerfile*".pathChanged() || "go.{mod,sum}".pathChanged() ||  "main.go".pathChanged() || "{api,pkg,controllers}/***".pathChanged())
   labels:
-    appstudio.openshift.io/application: gatekeeper-operator-3-21
-    appstudio.openshift.io/component: gatekeeper-operator-3-21
+    appstudio.openshift.io/application: gatekeeper-operator-3-23
+    appstudio.openshift.io/component: gatekeeper-operator-3-23
     pipelines.appstudio.openshift.io/type: build
-  name: gatekeeper-operator-3-21-on-push
+  name: gatekeeper-operator-3-23-on-push
   namespace: gatekeeper-tenant
 spec:
   params:
@@ -22,7 +22,7 @@ spec:
     - name: revision
       value: '{{revision}}'
     - name: output-image
-      value: quay.io/redhat-user-workloads/gatekeeper-tenant/gatekeeper-operator-3-21/gatekeeper-operator-3-21:{{revision}}
+      value: quay.io/redhat-user-workloads/gatekeeper-tenant/gatekeeper-operator-3-23/gatekeeper-operator-3-23:{{revision}}
     - name: path-context
       value: .
     - name: dockerfile
@@ -49,7 +49,7 @@ spec:
       - name: pathInRepo
         value: pipelines/common-base.yaml
   taskRunTemplate:
-    serviceAccountName: build-pipeline-gatekeeper-operator-3-21
+    serviceAccountName: build-pipeline-gatekeeper-operator-3-23
   workspaces:
     - name: git-auth
       secret:

@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"context"
+	"slices"
 	"strings"
 
 	gkv1alpha1 "github.com/open-policy-agent/gatekeeper/v3/apis/config/v1alpha1"
@@ -11,7 +12,6 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/dynamic"
-	"k8s.io/utils/strings/slices"
 	ctrl "sigs.k8s.io/controller-runtime"
 	cacheRuntime "sigs.k8s.io/controller-runtime/pkg/cache"
 	"sigs.k8s.io/controller-runtime/pkg/client"

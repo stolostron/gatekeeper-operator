@@ -13,7 +13,6 @@ spec:
     listKind: ConfigPodStatusList
     plural: configpodstatuses
     singular: configpodstatus
-  preserveUnknownFields: false
   scope: Namespaced
   versions:
   - name: v1beta1

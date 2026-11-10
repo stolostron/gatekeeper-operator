@@ -443,7 +443,3 @@ type GatekeeperList struct {
 
 	Items []Gatekeeper `json:"items"`
 }
-
-func init() {
-	SchemeBuilder.Register(&Gatekeeper{}, &GatekeeperList{})
-}

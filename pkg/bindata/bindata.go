@@ -255,7 +255,6 @@ spec:
     listKind: AssignList
     plural: assign
     singular: assign
-  preserveUnknownFields: false
   scope: Cluster
   versions:
   - name: v1
@@ -294,8 +293,9 @@ spec:
                   schemas are associated with specific GVKs.
                 items:
                   description: |-
-                    ApplyTo determines what GVKs items the mutation should apply to.
-                    Globs are not allowed.
+                    MutationApplyTo extends ApplyTo with operation filtering for mutations.
+                    This type is used by mutation resources (Assign, AssignImage, ModifySet)
+                    to specify which GVKs and admission operations trigger the mutation.
                   properties:
                     groups:
                       items:
@@ -303,6 +303,22 @@ spec:
                       type: array
                     kinds:
                       items:
+                        type: string
+                      type: array
+                    operations:
+                      description: |-
+                        Operations specifies which admission operations (CREATE, UPDATE, *) should trigger
+                        this mutation. If empty, all operations supported by the mutation webhook are allowed for backward compatibility.
+                        The Gatekeeper mutation webhook currently only processes CREATE and UPDATE operations, so those are the only
+                        concrete values accepted. DELETE and CONNECT are rejected until the mutation webhook supports them.
+                        "*" means all operations the mutation webhook currently supports and will broaden automatically if support
+                        for additional operations is added in a future release.
+                      items:
+                        description: OperationType specifies an operation for a request.
+                        enum:
+                        - CREATE
+                        - UPDATE
+                        - '*'
                         type: string
                       type: array
                     versions:
@@ -662,8 +678,9 @@ spec:
                   schemas are associated with specific GVKs.
                 items:
                   description: |-
-                    ApplyTo determines what GVKs items the mutation should apply to.
-                    Globs are not allowed.
+                    MutationApplyTo extends ApplyTo with operation filtering for mutations.
+                    This type is used by mutation resources (Assign, AssignImage, ModifySet)
+                    to specify which GVKs and admission operations trigger the mutation.
                   properties:
                     groups:
                       items:
@@ -671,6 +688,22 @@ spec:
                       type: array
                     kinds:
                       items:
+                        type: string
+                      type: array
+                    operations:
+                      description: |-
+                        Operations specifies which admission operations (CREATE, UPDATE, *) should trigger
+                        this mutation. If empty, all operations supported by the mutation webhook are allowed for backward compatibility.
+                        The Gatekeeper mutation webhook currently only processes CREATE and UPDATE operations, so those are the only
+                        concrete values accepted. DELETE and CONNECT are rejected until the mutation webhook supports them.
+                        "*" means all operations the mutation webhook currently supports and will broaden automatically if support
+                        for additional operations is added in a future release.
+                      items:
+                        description: OperationType specifies an operation for a request.
+                        enum:
+                        - CREATE
+                        - UPDATE
+                        - '*'
                         type: string
                       type: array
                     versions:
@@ -1030,8 +1063,9 @@ spec:
                   schemas are associated with specific GVKs.
                 items:
                   description: |-
-                    ApplyTo determines what GVKs items the mutation should apply to.
-                    Globs are not allowed.
+                    MutationApplyTo extends ApplyTo with operation filtering for mutations.
+                    This type is used by mutation resources (Assign, AssignImage, ModifySet)
+                    to specify which GVKs and admission operations trigger the mutation.
                   properties:
                     groups:
                       items:
@@ -1039,6 +1073,22 @@ spec:
                       type: array
                     kinds:
                       items:
+                        type: string
+                      type: array
+                    operations:
+                      description: |-
+                        Operations specifies which admission operations (CREATE, UPDATE, *) should trigger
+                        this mutation. If empty, all operations supported by the mutation webhook are allowed for backward compatibility.
+                        The Gatekeeper mutation webhook currently only processes CREATE and UPDATE operations, so those are the only
+                        concrete values accepted. DELETE and CONNECT are rejected until the mutation webhook supports them.
+                        "*" means all operations the mutation webhook currently supports and will broaden automatically if support
+                        for additional operations is added in a future release.
+                      items:
+                        description: OperationType specifies an operation for a request.
+                        enum:
+                        - CREATE
+                        - UPDATE
+                        - '*'
                         type: string
                       type: array
                     versions:
@@ -1398,7 +1448,6 @@ spec:
     listKind: AssignImageList
     plural: assignimage
     singular: assignimage
-  preserveUnknownFields: false
   scope: Cluster
   versions:
   - name: v1alpha1
@@ -1437,8 +1486,9 @@ spec:
                   schemas are associated with specific GVKs.
                 items:
                   description: |-
-                    ApplyTo determines what GVKs items the mutation should apply to.
-                    Globs are not allowed.
+                    MutationApplyTo extends ApplyTo with operation filtering for mutations.
+                    This type is used by mutation resources (Assign, AssignImage, ModifySet)
+                    to specify which GVKs and admission operations trigger the mutation.
                   properties:
                     groups:
                       items:
@@ -1446,6 +1496,22 @@ spec:
                       type: array
                     kinds:
                       items:
+                        type: string
+                      type: array
+                    operations:
+                      description: |-
+                        Operations specifies which admission operations (CREATE, UPDATE, *) should trigger
+                        this mutation. If empty, all operations supported by the mutation webhook are allowed for backward compatibility.
+                        The Gatekeeper mutation webhook currently only processes CREATE and UPDATE operations, so those are the only
+                        concrete values accepted. DELETE and CONNECT are rejected until the mutation webhook supports them.
+                        "*" means all operations the mutation webhook currently supports and will broaden automatically if support
+                        for additional operations is added in a future release.
+                      items:
+                        description: OperationType specifies an operation for a request.
+                        enum:
+                        - CREATE
+                        - UPDATE
+                        - '*'
                         type: string
                       type: array
                     versions:
@@ -1766,7 +1832,6 @@ spec:
     listKind: AssignMetadataList
     plural: assignmetadata
     singular: assignmetadata
-  preserveUnknownFields: false
   scope: Cluster
   versions:
   - name: v1
@@ -2753,7 +2818,6 @@ spec:
     listKind: ConfigPodStatusList
     plural: configpodstatuses
     singular: configpodstatus
-  preserveUnknownFields: false
   scope: Namespaced
   versions:
   - name: v1beta1
@@ -2841,7 +2905,6 @@ spec:
     listKind: ConfigList
     plural: configs
     singular: config
-  preserveUnknownFields: false
   scope: Namespaced
   versions:
   - name: v1alpha1
@@ -3012,7 +3075,6 @@ spec:
     listKind: ConnectionPodStatusList
     plural: connectionpodstatuses
     singular: connectionpodstatus
-  preserveUnknownFields: false
   scope: Namespaced
   versions:
   - name: v1alpha1
@@ -3110,7 +3172,6 @@ spec:
     listKind: ConnectionList
     plural: connections
     singular: connection
-  preserveUnknownFields: false
   scope: Namespaced
   versions:
   - name: v1alpha1
@@ -3229,7 +3290,6 @@ spec:
     listKind: ConstraintPodStatusList
     plural: constraintpodstatuses
     singular: constraintpodstatus
-  preserveUnknownFields: false
   scope: Namespaced
   versions:
   - name: v1beta1
@@ -3346,7 +3406,6 @@ spec:
     listKind: ConstraintTemplatePodStatusList
     plural: constrainttemplatepodstatuses
     singular: constrainttemplatepodstatus
-  preserveUnknownFields: false
   scope: Namespaced
   versions:
   - name: v1beta1
@@ -3456,7 +3515,6 @@ spec:
     listKind: ConstraintTemplateList
     plural: constrainttemplates
     singular: constrainttemplate
-  preserveUnknownFields: false
   scope: Cluster
   versions:
   - name: v1
@@ -3486,10 +3544,15 @@ spec:
             description: ConstraintTemplateSpec defines the desired state of ConstraintTemplate.
             properties:
               crd:
+                description: CRD defines the custom resource definition specification
+                  for the constraint.
                 properties:
                   spec:
+                    description: CRDSpec defines the spec for the CRD.
                     properties:
                       names:
+                        description: Names defines the naming conventions for the
+                          constraint kind.
                         properties:
                           kind:
                             type: string
@@ -3501,6 +3564,8 @@ spec:
                       validation:
                         default:
                           legacySchema: false
+                        description: Validation defines the schema for constraint
+                          parameters.
                         properties:
                           legacySchema:
                             default: false
@@ -3513,12 +3578,16 @@ spec:
                 type: object
               targets:
                 items:
+                  description: Target defines the target handler and policy for the
+                    constraint template.
                   properties:
                     code:
                       description: |-
                         The source code options for the constraint template. "Rego" can only
                         be specified in one place (either here or in the "rego" field)
                       items:
+                        description: Code defines the policy source code for a specific
+                          engine.
                         properties:
                           engine:
                             description: 'The engine used to evaluate the code. Example:
@@ -3627,10 +3696,15 @@ spec:
             description: ConstraintTemplateSpec defines the desired state of ConstraintTemplate.
             properties:
               crd:
+                description: CRD defines the custom resource definition specification
+                  for the constraint.
                 properties:
                   spec:
+                    description: CRDSpec defines the spec for the CRD.
                     properties:
                       names:
+                        description: Names defines the naming conventions for the
+                          constraint kind.
                         properties:
                           kind:
                             type: string
@@ -3642,6 +3716,8 @@ spec:
                       validation:
                         default:
                           legacySchema: true
+                        description: Validation defines the schema for constraint
+                          parameters.
                         properties:
                           legacySchema:
                             default: true
@@ -3654,12 +3730,16 @@ spec:
                 type: object
               targets:
                 items:
+                  description: Target defines the target handler and policy for the
+                    constraint template.
                   properties:
                     code:
                       description: |-
                         The source code options for the constraint template. "Rego" can only
                         be specified in one place (either here or in the "rego" field)
                       items:
+                        description: Code defines the policy source code for a specific
+                          engine.
                         properties:
                           engine:
                             description: 'The engine used to evaluate the code. Example:
@@ -3681,14 +3761,14 @@ spec:
                         type: string
                       type: array
                     operations:
-                      enum:
-                      - '*'
-                      - CREATE
-                      - DELETE
-                      - UPDATE
-                      - CONNECT
                       items:
                         description: OperationType specifies an operation for a request.
+                        enum:
+                        - '*'
+                        - CREATE
+                        - DELETE
+                        - UPDATE
+                        - CONNECT
                         type: string
                       type: array
                     rego:
@@ -3768,10 +3848,15 @@ spec:
             description: ConstraintTemplateSpec defines the desired state of ConstraintTemplate.
             properties:
               crd:
+                description: CRD defines the custom resource definition specification
+                  for the constraint.
                 properties:
                   spec:
+                    description: CRDSpec defines the spec for the CRD.
                     properties:
                       names:
+                        description: Names defines the naming conventions for the
+                          constraint kind.
                         properties:
                           kind:
                             type: string
@@ -3783,6 +3868,8 @@ spec:
                       validation:
                         default:
                           legacySchema: true
+                        description: Validation defines the schema for constraint
+                          parameters.
                         properties:
                           legacySchema:
                             default: true
@@ -3795,12 +3882,16 @@ spec:
                 type: object
               targets:
                 items:
+                  description: Target defines the target handler and policy for the
+                    constraint template.
                   properties:
                     code:
                       description: |-
                         The source code options for the constraint template. "Rego" can only
                         be specified in one place (either here or in the "rego" field)
                       items:
+                        description: Code defines the policy source code for a specific
+                          engine.
                         properties:
                           engine:
                             description: 'The engine used to evaluate the code. Example:
@@ -3914,7 +4005,6 @@ spec:
     listKind: ExpansionTemplateList
     plural: expansiontemplate
     singular: expansiontemplate
-  preserveUnknownFields: false
   scope: Cluster
   versions:
   - name: v1alpha1
@@ -3952,7 +4042,7 @@ spec:
                   which will be expanded.
                 items:
                   description: |-
-                    ApplyTo determines what GVKs items the mutation should apply to.
+                    ApplyTo determines what GVKs the resource applies to.
                     Globs are not allowed.
                   properties:
                     groups:
@@ -4069,7 +4159,7 @@ spec:
                   which will be expanded.
                 items:
                   description: |-
-                    ApplyTo determines what GVKs items the mutation should apply to.
+                    ApplyTo determines what GVKs the resource applies to.
                     Globs are not allowed.
                   properties:
                     groups:
@@ -4187,7 +4277,6 @@ spec:
     listKind: ExpansionTemplatePodStatusList
     plural: expansiontemplatepodstatuses
     singular: expansiontemplatepodstatus
-  preserveUnknownFields: false
   scope: Namespaced
   versions:
   - name: v1beta1
@@ -4281,7 +4370,6 @@ spec:
     listKind: ModifySetList
     plural: modifyset
     singular: modifyset
-  preserveUnknownFields: false
   scope: Cluster
   versions:
   - name: v1
@@ -4322,8 +4410,9 @@ spec:
                   schemas are associated with specific GVKs.
                 items:
                   description: |-
-                    ApplyTo determines what GVKs items the mutation should apply to.
-                    Globs are not allowed.
+                    MutationApplyTo extends ApplyTo with operation filtering for mutations.
+                    This type is used by mutation resources (Assign, AssignImage, ModifySet)
+                    to specify which GVKs and admission operations trigger the mutation.
                   properties:
                     groups:
                       items:
@@ -4331,6 +4420,22 @@ spec:
                       type: array
                     kinds:
                       items:
+                        type: string
+                      type: array
+                    operations:
+                      description: |-
+                        Operations specifies which admission operations (CREATE, UPDATE, *) should trigger
+                        this mutation. If empty, all operations supported by the mutation webhook are allowed for backward compatibility.
+                        The Gatekeeper mutation webhook currently only processes CREATE and UPDATE operations, so those are the only
+                        concrete values accepted. DELETE and CONNECT are rejected until the mutation webhook supports them.
+                        "*" means all operations the mutation webhook currently supports and will broaden automatically if support
+                        for additional operations is added in a future release.
+                      items:
+                        description: OperationType specifies an operation for a request.
+                        enum:
+                        - CREATE
+                        - UPDATE
+                        - '*'
                         type: string
                       type: array
                     versions:
@@ -4655,8 +4760,9 @@ spec:
                   schemas are associated with specific GVKs.
                 items:
                   description: |-
-                    ApplyTo determines what GVKs items the mutation should apply to.
-                    Globs are not allowed.
+                    MutationApplyTo extends ApplyTo with operation filtering for mutations.
+                    This type is used by mutation resources (Assign, AssignImage, ModifySet)
+                    to specify which GVKs and admission operations trigger the mutation.
                   properties:
                     groups:
                       items:
@@ -4664,6 +4770,22 @@ spec:
                       type: array
                     kinds:
                       items:
+                        type: string
+                      type: array
+                    operations:
+                      description: |-
+                        Operations specifies which admission operations (CREATE, UPDATE, *) should trigger
+                        this mutation. If empty, all operations supported by the mutation webhook are allowed for backward compatibility.
+                        The Gatekeeper mutation webhook currently only processes CREATE and UPDATE operations, so those are the only
+                        concrete values accepted. DELETE and CONNECT are rejected until the mutation webhook supports them.
+                        "*" means all operations the mutation webhook currently supports and will broaden automatically if support
+                        for additional operations is added in a future release.
+                      items:
+                        description: OperationType specifies an operation for a request.
+                        enum:
+                        - CREATE
+                        - UPDATE
+                        - '*'
                         type: string
                       type: array
                     versions:
@@ -4988,8 +5110,9 @@ spec:
                   schemas are associated with specific GVKs.
                 items:
                   description: |-
-                    ApplyTo determines what GVKs items the mutation should apply to.
-                    Globs are not allowed.
+                    MutationApplyTo extends ApplyTo with operation filtering for mutations.
+                    This type is used by mutation resources (Assign, AssignImage, ModifySet)
+                    to specify which GVKs and admission operations trigger the mutation.
                   properties:
                     groups:
                       items:
@@ -4997,6 +5120,22 @@ spec:
                       type: array
                     kinds:
                       items:
+                        type: string
+                      type: array
+                    operations:
+                      description: |-
+                        Operations specifies which admission operations (CREATE, UPDATE, *) should trigger
+                        this mutation. If empty, all operations supported by the mutation webhook are allowed for backward compatibility.
+                        The Gatekeeper mutation webhook currently only processes CREATE and UPDATE operations, so those are the only
+                        concrete values accepted. DELETE and CONNECT are rejected until the mutation webhook supports them.
+                        "*" means all operations the mutation webhook currently supports and will broaden automatically if support
+                        for additional operations is added in a future release.
+                      items:
+                        description: OperationType specifies an operation for a request.
+                        enum:
+                        - CREATE
+                        - UPDATE
+                        - '*'
                         type: string
                       type: array
                     versions:
@@ -5319,7 +5458,6 @@ spec:
     listKind: MutatorPodStatusList
     plural: mutatorpodstatuses
     singular: mutatorpodstatus
-  preserveUnknownFields: false
   scope: Namespaced
   versions:
   - name: v1beta1
@@ -5416,7 +5554,6 @@ spec:
     listKind: ProviderPodStatusList
     plural: providerpodstatuses
     singular: providerpodstatus
-  preserveUnknownFields: false
   scope: Namespaced
   versions:
   - name: v1beta1
@@ -5527,7 +5664,6 @@ spec:
     listKind: ProviderList
     plural: providers
     singular: provider
-  preserveUnknownFields: false
   scope: Cluster
   versions:
   - deprecated: true
@@ -5635,7 +5771,7 @@ spec:
   - name: v1beta1
     schema:
       openAPIV3Schema:
-        description: Provider is the Schema for the providers API
+        description: Provider is the Schema for the providers API.
         properties:
           apiVersion:
             description: |-
@@ -5763,7 +5899,6 @@ spec:
     listKind: SyncSetList
     plural: syncsets
     singular: syncset
-  preserveUnknownFields: false
   scope: Cluster
   versions:
   - name: v1alpha1
@@ -5881,7 +6016,7 @@ spec:
           value: manager
         - name: OTEL_RESOURCE_ATTRIBUTES
           value: k8s.pod.name=$(POD_NAME),k8s.namespace.name=$(NAMESPACE),k8s.container.name=$(CONTAINER_NAME)
-        image: quay.io/gatekeeper/gatekeeper:v3.21.1
+        image: quay.io/gatekeeper/gatekeeper:v3.23.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
@@ -6017,7 +6152,7 @@ spec:
           value: manager
         - name: OTEL_RESOURCE_ATTRIBUTES
           value: k8s.pod.name=$(POD_NAME),k8s.namespace.name=$(NAMESPACE),k8s.container.name=$(CONTAINER_NAME)
-        image: quay.io/gatekeeper/gatekeeper:v3.21.1
+        image: quay.io/gatekeeper/gatekeeper:v3.23.1
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:
