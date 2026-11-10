@@ -2213,8 +2213,8 @@ spec:
         - /manager
         env:
         - name: RELATED_IMAGE_GATEKEEPER
-          value: quay.io/gatekeeper/gatekeeper:v3.21.1
-        image: quay.io/gatekeeper/gatekeeper-operator:v3.21.2
+          value: quay.io/gatekeeper/gatekeeper:v3.23.1
+        image: quay.io/gatekeeper/gatekeeper-operator:v3.23.0
         imagePullPolicy: IfNotPresent
         livenessProbe:
           httpGet:

@@ -26,7 +26,7 @@ metadata:
     features.operators.openshift.io/token-auth-aws: "false"
     features.operators.openshift.io/token-auth-azure: "false"
     features.operators.openshift.io/token-auth-gcp: "false"
-    olm.skipRange: "<3.21.2"
+    olm.skipRange: "<3.23.0"
     operators.openshift.io/valid-subscription: '["OpenShift Platform Plus", "Red Hat
       Advanced Cluster Management for Kubernetes"]'
     operators.operatorframework.io/builder: operator-sdk-v1.41.1
@@ -39,7 +39,7 @@ metadata:
     operatorframework.io/arch.ppc64le: supported
     operatorframework.io/arch.s390x: supported
     operatorframework.io/os.linux: supported
-  name: gatekeeper-operator-product.v3.21.2
+  name: gatekeeper-operator-product.v3.23.0
   namespace: placeholder
 spec:
   apiservicedefinitions: {}
@@ -419,8 +419,8 @@ spec:
                 - /manager
                 env:
                 - name: RELATED_IMAGE_GATEKEEPER
-                  value: quay.io/gatekeeper/gatekeeper:v3.21.1
-                image: quay.io/gatekeeper/gatekeeper-operator:v3.21.2
+                  value: quay.io/gatekeeper/gatekeeper:v3.23.1
+                image: quay.io/gatekeeper/gatekeeper-operator:v3.23.0
                 imagePullPolicy: IfNotPresent
                 livenessProbe:
                   httpGet:
@@ -555,7 +555,7 @@ spec:
   provider:
     name: Red Hat
   relatedImages:
-  - image: quay.io/gatekeeper/gatekeeper:v3.21.1
+  - image: quay.io/gatekeeper/gatekeeper:v3.23.1
     name: gatekeeper
-  replaces: gatekeeper-operator-product.v3.21.1
-  version: "3.21.2"
+  replaces: gatekeeper-operator-product.v3.21.2
+  version: "3.23.0"
