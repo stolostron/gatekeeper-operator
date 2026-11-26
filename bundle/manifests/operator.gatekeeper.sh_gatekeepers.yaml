@@ -1027,6 +1027,8 @@ spec:
                       • disable-cert-rotation
                       • client-cert-name
                       • tls-min-version
+                      • tls-cipher-suites
+                      • tls-groups
                     items:
                       description: Arg represents an argument for the container binary.
                       properties:
@@ -1486,6 +1488,8 @@ spec:
                       • disable-cert-rotation
                       • client-cert-name
                       • tls-min-version
+                      • tls-cipher-suites
+                      • tls-groups
                     items:
                       description: Arg represents an argument for the container binary.
                       properties:

@@ -1048,6 +1048,8 @@ func setCommonConfig(log logr.Logger, obj *unstructured.Unstructured, config ope
 		"disable-cert-rotation",
 		"client-cert-name",
 		"tls-min-version",
+		"tls-cipher-suites",
+		"tls-groups",
 	}
 
 	for _, arg := range config.ContainerArguments {

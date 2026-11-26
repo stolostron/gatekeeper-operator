@@ -98,6 +98,8 @@ type CommonConfig struct {
 	// • disable-cert-rotation
 	// • client-cert-name
 	// • tls-min-version
+	// • tls-cipher-suites
+	// • tls-groups
 	//
 	// +optional
 	ContainerArguments []Arg `json:"containerArguments,omitempty"`
