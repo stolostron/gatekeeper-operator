@@ -267,6 +267,16 @@ func TestSetCommonConfig(t *testing.T) {
 				Name: "health-addr",
 			}},
 		},
+		"deny listed tls cipher suites argument": {
+			containerArgs: []operatorv1alpha1.Arg{{
+				Name: "tls-cipher-suites", Value: "TLS_AES_128_GCM_SHA256",
+			}},
+		},
+		"deny listed tls groups argument": {
+			containerArgs: []operatorv1alpha1.Arg{{
+				Name: "tls-groups", Value: "secp384r1",
+			}},
+		},
 		"single-arg flags": {
 			containerArgs: []operatorv1alpha1.Arg{{
 				Name: "log-file", Value: "/dev/null",
